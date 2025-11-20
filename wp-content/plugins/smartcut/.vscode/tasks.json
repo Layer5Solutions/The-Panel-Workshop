@@ -1,0 +1,61 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Convert Case",
+			"type": "shell",
+			"command": "php",
+			"args": [
+				"${workspaceFolder}/deployment/convert-case.php",
+				"${file}"
+			],
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared",
+				"clear": true
+			},
+			"problemMatcher": [ ]
+		},
+		{
+			"type": "shell",
+			"command": "wp i18n make-pot --skip-js '/Users/Jon/JGMedia/Apps/sc store/wp-content/plugins/smartcut'",
+			"label": "Create POT translation file"
+		},
+		{
+			"type": "shell",
+			"command": "cd '/Users/Jon/JGMedia/Apps/sc store/wp-content/plugins' && zip -r 'smartcut.zip' 'smartcut' --exclude '*/.git/*'",
+			"label": "Create zip"
+		},
+		{
+			"type": "shell",
+			"command": "wp core update",
+			"label": "Check for update",
+		},
+		{
+			"type": "shell",
+			"command": "wp plugin get smartcut",
+			"label": "Get SmartCut plugin info",
+		},
+		{
+			"type": "shell",
+			"command": "deployment/build.sh",
+			"label": "Build plugin in prod mode",
+			"args": [
+				"production"
+			]
+		},
+		{
+			"type": "shell",
+			"command": "deployment/build.sh",
+			"label": "Build plugin in dev mode",
+			"args": [
+				"development"
+			]
+		},
+		{
+			"type": "shell",
+			"command": "deployment/deploy.sh",
+			"label": "Deploy & publish plugin"
+		},
+	]
+}

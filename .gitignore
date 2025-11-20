@@ -1,0 +1,7 @@
+/wp-content/uploads/
+/.buildpath
+/.project
+/.settings/
+/wp-content/cache/
+/wp-content/cache/*
+/wp-content/wflogs/*

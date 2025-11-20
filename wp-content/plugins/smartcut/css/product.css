@@ -1,0 +1,43 @@
+table.variations .label {
+  text-transform: capitalize;
+}
+
+#smartcut-app {
+  margin-bottom: 20px;
+}
+
+.woocommerce-variation-description {
+  text-transform: capitalize;
+}
+
+#smartcut-banding-total,
+#smartcut-finish-total {
+  margin-top: 10px;
+}
+
+#smartcut-banding-key,
+#smartcut-cut-length-total {
+  margin-bottom: 10px;
+}
+
+#smartcut-pricing-notes {
+  margin-bottom: 10px;
+}
+
+table#smartcut-pricing-table {
+  border: 1px solid #ccc;
+}
+table#smartcut-pricing-table td,
+table#smartcut-pricing-table th {
+  padding: 10px;
+}
+
+#smartcut-intro-text,
+#smartcut-banding-key,
+#smartcut-pricing-table {
+  display: none;
+}
+
+.woocommerce-variation-price {
+  font-weight: bold;
+}
