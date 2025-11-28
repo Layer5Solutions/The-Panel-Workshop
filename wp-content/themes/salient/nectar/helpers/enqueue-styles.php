@@ -62,6 +62,7 @@ function nectar_main_styles() {
 
 
 		 // Header Formats.
+		 wp_register_style( 'nectar-header-megamenu', $nectar_get_template_directory_uri . '/css/'.$src_dir.'/header/header-megamenu.css', '', $nectar_theme_version );
 		 wp_register_style( 'nectar-header-layout-left', $nectar_get_template_directory_uri . '/css/'.$src_dir.'/header/header-layout-left.css', '', $nectar_theme_version );
 		 wp_register_style( 'nectar-header-layout-left-aligned', $nectar_get_template_directory_uri . '/css/'.$src_dir.'/header/header-layout-menu-left-aligned.css', '', $nectar_theme_version );
 		 wp_register_style( 'nectar-header-layout-centered-bottom-bar', $nectar_get_template_directory_uri . '/css/'.$src_dir.'/header/header-layout-centered-bottom-bar.css', '', $nectar_theme_version );
@@ -223,6 +224,11 @@ function nectar_main_styles() {
 	 else if( $header_format === 'centered-logo-between-menu-alt' ) {
 		 wp_enqueue_style( 'nectar-header-layout-centered-logo-between-menu-alt' );
 	 }
+
+	// Megamenu
+	if( nectar_has_megamenu_anywhere() ) {
+		wp_enqueue_style( 'nectar-header-megamenu' );
+	}
 
 	// Secondary navigation bar.
 	$header_secondary_format = ( ! empty( $nectar_options['header_layout'] ) ) ? $nectar_options['header_layout'] : 'standard';
@@ -452,6 +458,12 @@ function nectar_main_styles() {
 	if( defined('WPFORMS_VERSION') ) {
 		wp_enqueue_style( 'nectar-wpforms', $nectar_get_template_directory_uri . '/css/'.$src_dir.'/third-party/wpforms.css', '', $nectar_theme_version );
 	}
+	if( defined('FLUENTFORM_VERSION') ) {
+		wp_add_inline_style( 'fluent-form-styles', 'body {
+			--fluentform-danger: #f32e2e;
+			--fluentform-primary: var(--nectar-accent-color);
+		}');
+	}
 	if( class_exists( 'bbPress' ) ) {
 		wp_enqueue_style( 'nectar-basic-bbpress', $nectar_get_template_directory_uri . '/css/'.$src_dir.'/third-party/bbpress.css', '', $nectar_theme_version );
 	}
@@ -481,11 +493,20 @@ function nectar_main_styles() {
 			break;
 		}
 	}
+	// Also load the brands when using dynamic social icons
+	if( isset($nectar_options['social_networks_mode']) && 'dynamic' === $nectar_options['social_networks_mode'] ) {
+		wp_enqueue_style('nectar-brands');
+	}
 
 
 
 	// Default Salient font (Open Sans).
 	$nectar_default_font = ( ! empty( $nectar_options['default-theme-font'] ) ) ? $nectar_options['default-theme-font'] : 'from_google';
+	if ( isset( $nectar_options['typography_google_fonts_local'] ) &&
+		'1' === $nectar_options['typography_google_fonts_local'] &&
+		'from_google' === $nectar_options['default-theme-font'] ) {
+			$nectar_default_font = 'from_theme';
+	}
 
 	if( 'from_google' === $nectar_default_font ) {
 		// Load from Google.
@@ -600,12 +621,12 @@ function nectar_main_styles() {
 			'1' === $nectar_options['rm-block-editor-css'] ) {
 
 		$post_content_length = ( $post && isset($post->post_content) ) ? strlen( $post->post_content ) : 0;
-
 		if ( !NectarElAssets::locate(array('<!-- wp:')) || $post_content_length < 100 ) {
 			wp_dequeue_style( 'wp-block-library' );
 			wp_dequeue_style( 'wp-block-library' );
 			wp_dequeue_style( 'wc-block-style' );
 			wp_dequeue_style( 'wc-blocks-style' );
+			wp_dequeue_style( 'global-styles' );
 		}
 
 	}
@@ -1322,20 +1343,148 @@ function nectar_page_sepcific_styles() {
 
 add_action( 'wp_enqueue_scripts', 'nectar_page_sepcific_styles' );
 
+if ( ! function_exists( 'nectar_preload_background_images' ) ) {
+	function nectar_preload_background_images() {
+
+		global $post;
+		$preload_links = '';
+
+		// Helper function to process background images
+		function process_background_image($bg_image, $bg_image_phone, $bg_image_type = 'default') {
+			$links = '';
+
+			// Process phone image if it exists
+			if(!empty($bg_image_phone)) {
+				// Check if image is an attachment ID
+				if(is_numeric($bg_image_phone)) {
+					if ($bg_image_type === 'img') {
+						$image_src = wp_get_attachment_image_src($bg_image_phone, 'large');
+						if($image_src && isset($image_src[0])) {
+							$links .= '<link rel="preload" fetchpriority="high" as="image" href="' . esc_url($image_src[0]) . '" media="(max-width: 690px)">';
+						}
+					} else {
+						$links .= '<link rel="preload" fetchpriority="high" as="image" href="' . esc_url($bg_image_phone) . '" media="(max-width: 690px)">';
+					}
+				} else {
+					$links .= '<link rel="preload" fetchpriority="high" as="image" href="' . esc_url($bg_image_phone) . '" media="(max-width: 690px)">';
+				}
+			}
+
+			// Process desktop image if it exists
+			if(!empty($bg_image)) {
+				// Check if image is an attachment ID
+				if(is_numeric($bg_image)) {
+					$image_url = wp_get_attachment_url($bg_image);
+					if($image_url) {
+						// Only add media query if phone image exists
+						$media_query = !empty($bg_image_phone) ? ' media="(min-width: 691px)"' : '';
+						$links .= '<link rel="preload" fetchpriority="high" as="image" href="' . esc_url($image_url) . '"' . $media_query . '>';
+					}
+				} else {
+					// Only add media query if phone image exists
+					$media_query = !empty($bg_image_phone) ? ' media="(min-width: 691px)"' : '';
+					$links .= '<link rel="preload" fetchpriority="high" as="image" href="' . esc_url($bg_image) . '"' . $media_query . '>';
+				}
+			}
+
+			return $links;
+		}
+
+		// Preload background images from shortcodes
+		if( $post && isset($post->post_content) ) {
+
+			$nectar_options = get_nectar_theme_options();
+
+			// Process vc_row shortcodes
+			preg_match_all('/\\[vc_row(.*?)\\]/s', $post->post_content, $row_matches);
+			if( !empty($row_matches[0]) ) {
+				$row_index = 0;
+				foreach($row_matches[0] as $shortcode) {
+					$atts = shortcode_parse_atts($shortcode);
+
+					// check if first row based on loop count and lcp option for top level images
+					if ( $row_index === 0 && isset($nectar_options['lcp-optimize-top-level-images']) && $nectar_options['lcp-optimize-top-level-images'] == '1' ) {
+						$atts['background_image_preload'] = 'true';
+						$atts['bg_image_type'] = 'img';
+					}
+
+					if( isset($atts['background_image_preload']) && $atts['background_image_preload'] === 'true' ) {
+						$bg_image = isset($atts['bg_image']) ? $atts['bg_image'] : '';
+						$bg_image_phone = isset($atts['bg_image_phone']) ? $atts['bg_image_phone'] : '';
+						$bg_image_type = isset($atts['bg_image_type']) ? $atts['bg_image_type'] : 'default';
+
+						// Fallback: if phone image not set, use desktop image for img type and attachment ID
+						if ( !$bg_image_phone && preg_match('/^\d+$/', $bg_image) && $bg_image_type === 'img' ) {
+							$bg_image_phone = $bg_image;
+						}
+						$preload_links .= process_background_image($bg_image, $bg_image_phone, $bg_image_type);
+					}
+					$row_index++;
+				}
+			}
+
+			// Process vc_column shortcodes
+			preg_match_all('/\\[vc_column(.*?)\\]/s', $post->post_content, $column_matches);
+			if( !empty($column_matches[0]) ) {
+				$column_index = 0;
+				foreach($column_matches[0] as $shortcode) {
+					$atts = shortcode_parse_atts($shortcode);
+
+					// check if first row based on loop count and lcp option for top level images
+					if ( $column_index === 0 && isset($nectar_options['lcp-optimize-top-level-images']) && $nectar_options['lcp-optimize-top-level-images'] == '1' ) {
+						$atts['background_image_preload'] = 'true';
+						$atts['background_image_type'] = 'img';
+					}
+
+					if( isset($atts['background_image_preload']) && $atts['background_image_preload'] === 'true' ) {
+						$bg_image = isset($atts['background_image']) ? $atts['background_image'] : '';
+						$bg_image_phone = isset($atts['background_image_phone']) ? $atts['background_image_phone'] : '';
+						$bg_image_type = isset($atts['background_image_type']) ? $atts['background_image_type'] : 'default';
+						if ( !$bg_image_phone && preg_match('/^\d+$/', $bg_image) && $bg_image_type === 'img' ) {
+							$bg_image_phone = $bg_image;
+						}
+						$preload_links .= process_background_image($bg_image, $bg_image_phone, $bg_image_type);
+					}
+					$column_index++;
+				}
+			}
+		}
+
+		return $preload_links;
+	}
+}
 
 if( !function_exists('nectar_preload_key_requests') ) {
 	function nectar_preload_key_requests() {
 
 		global $nectar_options;
 		global $nectar_get_template_directory_uri;
+		global $post;
 
 		if( isset($nectar_options['typography_font_swap']) && '1' === $nectar_options['typography_font_swap'] ) {
-
 			// Icomoon.
-			echo '<link rel="preload" href="'.esc_attr($nectar_get_template_directory_uri) . '/css/fonts/icomoon.woff?v=1.6" as="font" type="font/woff" crossorigin="anonymous">';
+			echo '<link rel="preload" href="'.esc_attr($nectar_get_template_directory_uri) . '/css/fonts/icomoon.woff?v=1.7" as="font" type="font/woff" crossorigin="anonymous">';
 		}
-	}
 
+		$preload_links = nectar_preload_background_images();
+		if( !empty($preload_links) ) {
+			echo $preload_links;
+		}
+
+		// Preload critical local Google fonts  when enabled.
+		if ( isset( $nectar_options['typography_google_fonts_local'] ) && '1' === $nectar_options['typography_google_fonts_local'] ) {
+			if ( ! class_exists( 'Salient_Local_Google_Fonts' ) ) {
+				$class_file = get_template_directory() . '/nectar/redux-framework/local-fonts/class-salient-local-google-fonts.php';
+				if ( file_exists( $class_file ) ) {
+					require_once $class_file;
+				}
+			}
+			// if ( class_exists( 'Salient_Local_Google_Fonts' ) && method_exists( 'Salient_Local_Google_Fonts', 'output_preload_links' ) ) {
+			// 	Salient_Local_Google_Fonts::output_preload_links();
+			// }
+		}
+
+	}
 }
 add_action( 'wp_head', 'nectar_preload_key_requests', 5 );
 
@@ -1562,7 +1711,7 @@ add_filter('wmac_filter_css_exclude', 'nectar_deferred_styles_add_string', 10);
 
  		if ( 'dns-prefetch' === $relation_type ) {
  			foreach ( $urls as $key => $url ) {
- 				if (  false !== strpos( $url, 'https://s.w.org/images/core/emoji' ) ) {
+				if ( is_string( $url ) && false !== strpos( $url, 'https://s.w.org/images/core/emoji' ) ) {
  					unset( $urls[$key] );
  				}
  			}

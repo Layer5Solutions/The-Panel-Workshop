@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -9,7 +9,7 @@ $el_color_list = array(
     esc_html__( "Default (inherit from row Text Color)", "salient-core") => "default",
 	esc_html__( "Accent Color", "salient-core") => "accent-color",
 	esc_html__( "Extra Color 1", "salient-core") => "extra-color-1",
-	esc_html__( "Extra Color 2", "salient-core") => "extra-color-2",	
+	esc_html__( "Extra Color 2", "salient-core") => "extra-color-2",
 	esc_html__( "Extra Color 3", "salient-core") => "extra-color-3",
 	esc_html__( "Color Gradient 1", "salient-core") => "extra-color-gradient-1",
 	esc_html__( "Color Gradient 2", "salient-core") => "extra-color-gradient-2",
@@ -34,7 +34,6 @@ return array(
 			"heading" => '<span class="group-title">' . esc_html__("Height", "salient-core") . "</span>",
 			"param_name" => "custom_height",
 			"edit_field_class" => "desktop divider-height-device-group",
-			"description" => esc_html__("If you would like to control the specific number of pixels your divider is, enter it here.", "salient-core"),
 		),
 		array(
 			"type" => "textfield",
@@ -150,7 +149,7 @@ return array(
 			"dependency" => Array('element' => "line_type", 'value' => array('Full Width Line','Small Line')),
 			"description" => esc_html__("Enter delay (in milliseconds) if needed e.g. 150. This parameter comes in handy when creating the animate in \"one by one\" effect.", "salient-core")
 		),
-		
+
 	)
 );
 

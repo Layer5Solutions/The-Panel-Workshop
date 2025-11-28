@@ -13,6 +13,7 @@ if ( !window.vc ) {
 	'use strict';
 
 	var storagePrefix = 'formData';
+	var previousStatePrefix = 'formDataPrevious';
 
 	window.vc.PostSettingsSeoUIPanel = vc.PostSettingsSeoUIPanelView
 		.vcExtendUI( vc.HelperPanelViewHeaderFooter )
@@ -63,6 +64,44 @@ if ( !window.vc ) {
 				var $tabs = this.$el.find( '.vc_panel-tab' );
 				if ( $tabs.length ) {
 					this.$tabs = $tabs;
+				}
+			},
+			hide: function ( e ) {
+				if ( this.isSeoSettingsChanged() ) {
+					var isModalConfirmed = confirm( window.i18nLocale.page_settings_confirm );
+					if ( isModalConfirmed ) {
+						vc.PanelView.prototype.hide.call( this, e );
+						this.rollBackChanges();
+					} else {
+						return;
+					}
+				} else {
+					vc.PanelView.prototype.hide.call( this, e );
+				}
+
+				vc.PanelView.prototype.hide.call( this, e );
+				this.trigger( 'hide' );
+			},
+			isSeoSettingsChanged: function () {
+				var formData = vc.seo_storage.get( storagePrefix );
+				var formDataPrevious = vc.seo_storage.get( previousStatePrefix );
+
+				return !_.isEqual( formData, formDataPrevious );
+			},
+			rollBackChanges: function () {
+				var formDataPrevious = vc.seo_storage.get( previousStatePrefix );
+				var $form = $( '#vc_setting-seo-form' );
+
+				for ( var key in formDataPrevious ) {
+					if ( formDataPrevious.hasOwnProperty( key ) ) {
+						// Reset the current formData to the previous state
+						vc.seo_storage.setResults( formDataPrevious[key], key, storagePrefix );
+						var fieldName = key;
+						if ( key === 'keyphrase' ) {
+							fieldName = 'focus-keyphrase';
+						}
+						$form.find( '[name="' + fieldName + '"]' ).val( formDataPrevious[key]);
+					}
 				}
 			},
 			changeTab: function ( e ) {
@@ -145,18 +184,20 @@ if ( !window.vc ) {
 					var inputName = $( input ).attr( 'name' );
 					var inputValue = $( input ).val();
 					vc.seo_storage.setResults( inputValue, inputName, storagePrefix );
+					vc.seo_storage.setResults( inputValue, inputName, previousStatePrefix );
 				});
 				this.$el.find( '#vc_ui-seo-social' ).find( 'input[type="text"], textarea' ).each( function ( index, input ) {
 					var inputName = $( input ).attr( 'name' );
 					var inputValue = $( input ).val();
 					vc.seo_storage.setResults( inputValue, inputName, storagePrefix );
+					vc.seo_storage.setResults( inputValue, inputName, previousStatePrefix );
 				});
 			},
-			// If empty fills social inputs  with general tab data
+			// If empty fills social inputs with general tab data
 			fillSocialInputs: function ( e ) {
 				var value = $( e.currentTarget ).val();
 				var name = $( e.currentTarget ).attr( 'name' );
-				var formData = vc.seo_storage.get( 'formData' );
+				var formData = vc.seo_storage.get( storagePrefix );
 				var fieldMap = {
 					'title': [ 'social-title-x', 'social-title-facebook' ],
 					'description': [ 'social-description-x', 'social-description-facebook' ]
@@ -166,6 +207,7 @@ if ( !window.vc ) {
 					fieldMap[name].forEach( function ( field ) {
 						if ( !formData[field]) {
 							$( '#' + field ).val( value ).trigger( 'input' );
+							vc.seo_storage.setResults( value, field, storagePrefix );
 						}
 					});
 				}

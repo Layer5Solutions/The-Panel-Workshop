@@ -14,7 +14,8 @@ $el_color_list = array(
 	esc_html__("Color Gradient 1", "salient-core") => "extra-color-gradient-1",
 	esc_html__("Color Gradient 2", "salient-core") => "extra-color-gradient-2",
 	esc_html__("Black", "salient-core") => "black",
-	esc_html__("White", "salient-core") => "white"
+	esc_html__("White", "salient-core") => "white",
+	esc_html__("Custom", "salient-core") => "custom"
 );
 $custom_colors = apply_filters('nectar_additional_theme_colors', array());
 $el_color_list = array_merge($el_color_list, $custom_colors);
@@ -24,34 +25,123 @@ $nectar_cta_params = array(
 		"type" => "dropdown",
 		"class" => "",
 		'save_always' => true,
-		"heading" => "Style",
+		"heading" => "Type",
 		"param_name" => "btn_style",
 		"admin_label" => true,
 		"value" => array(
-			esc_html__("See Through Button", "salient-core") => "see-through",
+			esc_html__("Basic", "salient-core") => "basic",
+			esc_html__("See Through", "salient-core") => "see-through",
 			esc_html__("Arrow Animation", "salient-core") => "arrow-animation",
+			esc_html__("Arrow Circle Animation", "salient-core") => "arrow-circle-animation",
 			esc_html__("Curved Arrow Animation", "salient-core") => "curved-arrow-animation",
 			esc_html__("Material Button", "salient-core") => "material",
 			esc_html__("Underline", "salient-core") => "underline",
 			esc_html__("Text Reveal Wave", "salient-core") => "text-reveal-wave",
 			esc_html__("Text Reveal", "salient-core") => "text-reveal",
-			esc_html__("Basic", "salient-core") => "basic",
 			esc_html__("Next Section Button", "salient-core") => "next-section"
 		)
 	),
 
 	array(
+		"type" => "textfield",
+		"heading" => esc_html__("Text Before Link", "salient-core"),
+		"param_name" => "text",
+		"admin_label" => true,
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'material', 'underline')),
+		"description" => esc_html__("The text that will appear before the actual button link", "salient-core")
+	),
+	array(
+		"type" => "textfield",
+		"heading" => esc_html__("Link text", "salient-core"),
+		"param_name" => "link_text",
+		"admin_label" => true,
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'arrow-circle-animation', 'material', 'underline')),
+		"description" => esc_html__("The text that will be used for the button link", "salient-core")
+	),
+
+	array(
 		"type" => "dropdown",
-		"heading" => esc_html__("Button Type", "salient-core"),
+		"heading" => esc_html__("Style", "salient-core"),
 		"dependency" => array('element' => "btn_style", 'value' => array('next-section')),
 		"param_name" => "btn_type",
 		"value" => array(
 			esc_html__('Down Arrow With Border', 'salient-core') => 'down-arrow-bordered',
-			esc_html__('Down Arrow with BG Color', 'salient-core') => 'down-arrow-bounce',
-			esc_html__('Mouse Wheel Scroll Animation', 'salient-core') => 'mouse-wheel',
-			esc_html__('Minimal Arrow Animation', 'salient-core') => 'minimal-arrow'
+			esc_html__('Down Arrow With BG Color', 'salient-core') => 'down-arrow-bounce',
+			esc_html__('Mouse Wheel', 'salient-core') => 'mouse-wheel',
+			esc_html__('Minimal Arrow', 'salient-core') => 'minimal-arrow',
+			esc_html__('Minimal Arrow Alt', 'salient-core') => 'minimal-arrow-alt'
 		),
 		'save_always' => true
+	),
+
+	array(
+		'type' => 'nectar_range_slider',
+		'heading' => esc_html__('Icon Size', 'salient-core'),
+		'param_name' => 'next_section_icon_size',
+		"dependency" => array('element' => "btn_style", 'value' => array('next-section')),
+		'description' => esc_html__('Controls the size of the icon.', 'salient-core'),
+		'value' => '1',
+		'options' => array(
+			'min' => '0.5',
+			'max' => '2',
+			'step' => '0.1',
+			'suffix' => 'x',
+			'default' => '1'
+		)
+	),
+
+
+	array(
+		"type" => "dropdown",
+		"heading" => esc_html__("Underline Visibility", "salient-core"),
+		"param_name" => "underline_visibility",
+		"value" => array(
+			esc_html__('Default (Visible)', 'salient-core') => 'default',
+			esc_html__('Visible on Hover', 'salient-core') => 'visible-on-hover',
+		),
+		'save_always' => true,
+		"dependency" => array('element' => "btn_style", 'value' => array('underline')),
+		"description" => ''
+	),
+
+
+	array(
+		"type" => "dropdown",
+		"heading" => esc_html__("Arrow Animation", "salient-core"),
+		"param_name" => "next_section_down_arrow_alt_animation",
+		"value" => array(
+			esc_html__('Looped', 'salient-core') => 'default',
+			esc_html__('On Hover Only', 'salient-core') => 'hover-only',
+		),
+		'save_always' => true,
+		"dependency" => array('element' => "btn_type", 'value' => array('minimal-arrow-alt')),
+		"description" => ''
+	),
+
+	array(
+		"type" => "dropdown",
+		"heading" => esc_html__("Button Animation", "salient-core"),
+		"param_name" => "next_section_down_arrow_animation",
+		"value" => array(
+			esc_html__('Bounce', 'salient-core') => 'default',
+			esc_html__('No Animation', 'salient-core') => 'none',
+		),
+		'save_always' => true,
+		"dependency" => array('element' => "btn_type", 'value' => array('down-arrow-bounce')),
+		"description" => ''
+	),
+
+	array(
+		"type" => "dropdown",
+		"heading" => esc_html__("Shadow", "salient-core"),
+		"param_name" => "next_section_shadow",
+		"value" => array(
+			esc_html__('None', 'salient-core') => 'none',
+			esc_html__('Add Shadow', 'salient-core') => 'add_shadow',
+		),
+		'save_always' => true,
+		"dependency" => array('element' => "btn_type", 'value' => array('down-arrow-bordered', 'down-arrow-bounce')),
+		"description" => ''
 	),
 
 	array(
@@ -59,17 +149,17 @@ $nectar_cta_params = array(
 		"class" => "",
 		'save_always' => true,
 		"heading" => "Display Tag",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'material', 'underline')),
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'arrow-circle-animation', 'curved-arrow-animation', 'material', 'underline')),
 		"param_name" => "heading_tag",
 		"value" => array(
+			"Span" => "span",
+			"Paragraph" => "p",
 			"H6" => "h6",
 			"H5" => "h5",
 			"H4" => "h4",
 			"H3" => "h3",
 			"H2" => "h2",
-			"H1" => "h1",
-			"Paragraph" => "p",
-			"Span" => "span"
+			"H1" => "h1"
 		)
 	),
 
@@ -113,22 +203,6 @@ $nectar_cta_params = array(
 		"description" => ""
 	),
 
-	array(
-		"type" => "textfield",
-		"heading" => esc_html__("Call to action text", "salient-core"),
-		"param_name" => "text",
-		"admin_label" => true,
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'material', 'underline')),
-		"description" => esc_html__("The text that will appear before the actual CTA link", "salient-core")
-	),
-	array(
-		"type" => "textfield",
-		"heading" => esc_html__("Link text", "salient-core"),
-		"param_name" => "link_text",
-		"admin_label" => true,
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'material', 'underline')),
-		"description" => esc_html__("The text that will be used for the CTA link", "salient-core")
-	),
 
 	array(
 		"type" => "nectar_numerical",
@@ -138,127 +212,26 @@ $nectar_cta_params = array(
 		"placeholder" => '',
 		"param_name" => "border_radius",
 		"description" => "",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'material', 'underline')),
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'arrow-circle-animation', 'curved-arrow-animation', 'material', 'underline')),
 	  ),
+
+
+
 
 	array(
 		"type" => "nectar_group_header",
 		"class" => "",
-		"heading" => esc_html__("Coloring", "salient-core"),
-		"param_name" => "group_header_2",
+		"heading" => esc_html__("Link", "salient-core"),
+		"param_name" => "group_header_3",
 		"edit_field_class" => "",
 		"value" => ''
-	),
-	array(
-		'type' => 'dropdown',
-		'heading' => __('CTA Background Color', 'salient-core'),
-		'value' => $el_color_list,
-		'save_always' => true,
-		'param_name' => 'button_color',
-		"description" => "",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'underline')),
-	),
-	array(
-		"type" => "colorpicker",
-		"class" => "",
-		"heading" => "CTA Background Color Hover",
-		"param_name" => "button_color_hover",
-		"value" => "",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'underline')),
-		"description" => ""
-	),
-	array(
-		"type" => "colorpicker",
-		"class" => "",
-		"heading" => "CTA Text Color",
-		"param_name" => "text_color",
-		"value" => "",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'material', 'underline')),
-		"description" => ""
-	),
-	array(
-		"type" => "colorpicker",
-		"class" => "",
-		"heading" => "CTA Text Color Hover",
-		"param_name" => "text_color_hover",
-		"value" => "",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','curved-arrow-animation', 'material', 'underline')),
-		"description" => ""
-	),
-	array(
-		"type" => "colorpicker",
-		"class" => "",
-		"heading" => esc_html__("Border Color", "salient-core"),
-		"param_name" => "button_border_color",
-		"value" => "",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','curved-arrow-animation', 'underline')),
-		"description" => ""
-	),
-	array(
-		"type" => "colorpicker",
-		"class" => "",
-		"heading" => esc_html__("Border Color Hover", "salient-core"),
-		"param_name" => "button_border_color_hover",
-		"value" => "",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','curved-arrow-animation', 'underline')),
-		"description" => ""
-	),
-	array(
-		"type" => "dropdown",
-		"heading" => esc_html__("Border Thickness", "salient-core"),
-		"param_name" => "button_border_thickness",
-		"value" => array(
-			esc_html__('0px', 'salient-core') => '0px',
-			esc_html__('1px', 'salient-core') => '1px',
-			esc_html__('2px', 'salient-core') => '2px',
-			esc_html__('3px', 'salient-core') => '3px',
-			esc_html__('4px', 'salient-core') => '4px',
-		),
-		'save_always' => true,
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation','underline')),
-		"description" => ''
-	),
-
-	array(
-		"type" => "colorpicker",
-		"class" => "",
-		"heading" => "Color",
-		"param_name" => "next_section_color",
-		"value" => "",
-		"dependency" => array('element' => "btn_style", 'value' => array('next-section')),
-		"description" => ""
-	),
-	array(
-		"type" => "dropdown",
-		"heading" => esc_html__("Button Animation", "salient-core"),
-		"param_name" => "next_section_down_arrow_animation",
-		"value" => array(
-			esc_html__('Bounce', 'salient-core') => 'default',
-			esc_html__('No Animation', 'salient-core') => 'none',
-		),
-		'save_always' => true,
-		"dependency" => array('element' => "btn_type", 'value' => array('down-arrow-bounce')),
-		"description" => ''
-	),
-
-	array(
-		"type" => "dropdown",
-		"heading" => esc_html__("Shadow", "salient-core"),
-		"param_name" => "next_section_shadow",
-		"value" => array(
-			esc_html__('None', 'salient-core') => 'none',
-			esc_html__('Add Shadow', 'salient-core') => 'add_shadow',
-		),
-		'save_always' => true,
-		"dependency" => array('element' => "btn_type", 'value' => array('down-arrow-bordered', 'down-arrow-bounce')),
-		"description" => ''
 	),
 
 	array(
 		"type" => "textfield",
 		"heading" => esc_html__("Link URL", "salient-core"),
 		"param_name" => "url",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'material', 'underline', 'curved-arrow-animation')),
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'arrow-circle-animation', 'material', 'underline', 'curved-arrow-animation')),
 		"description" => esc_html__("The URL that will be used for the link", "salient-core")
 	),
 	array(
@@ -280,8 +253,105 @@ $nectar_cta_params = array(
 			esc_html__('Open Image Lightbox', 'salient-core') => 'image_lightbox',
 		),
 		'save_always' => true,
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','curved-arrow-animation', 'material', 'underline')),
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','arrow-circle-animation', 'curved-arrow-animation', 'material', 'underline')),
 		"description" => esc_html__("Please select the type of link you will be using.", "salient-core")
+	),
+
+
+	array(
+		"type" => "nectar_group_header",
+		"class" => "",
+		"heading" => esc_html__("Coloring", "salient-core"),
+		"param_name" => "group_header_2",
+		"edit_field_class" => "",
+		"value" => ''
+	),
+	array(
+		'type' => 'dropdown',
+		'heading' => __('Background Color', 'salient-core'),
+		'value' => $el_color_list,
+		'save_always' => true,
+		'param_name' => 'button_color',
+		"description" => "",
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','arrow-circle-animation', 'curved-arrow-animation', 'underline')),
+	),
+	array(
+		"type" => "colorpicker",
+		'heading' => __('Background Color Custom', 'salient-core'),
+		'value' => '',
+		'param_name' => 'button_color_custom',
+		"description" => "",
+		"dependency" => array('element' => "button_color", 'value' => 'custom'),
+	),
+	array(
+		"type" => "colorpicker",
+		"class" => "",
+		"heading" => "Background Color Hover",
+		"param_name" => "button_color_hover",
+		"value" => "",
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','arrow-circle-animation', 'curved-arrow-animation', 'underline')),
+		"description" => ""
+	),
+	array(
+		"type" => "colorpicker",
+		"class" => "",
+		"heading" => "Text Color",
+		"param_name" => "text_color",
+		"value" => "",
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','arrow-circle-animation', 'curved-arrow-animation', 'material', 'underline')),
+		"description" => ""
+	),
+	array(
+		"type" => "colorpicker",
+		"class" => "",
+		"heading" => "Text Color Hover",
+		"param_name" => "text_color_hover",
+		"value" => "",
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','arrow-circle-animation', 'curved-arrow-animation', 'material', 'underline')),
+		"description" => ""
+	),
+	array(
+		"type" => "colorpicker",
+		"class" => "",
+		"heading" => esc_html__("Border Color", "salient-core"),
+		"param_name" => "button_border_color",
+		"value" => "",
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','arrow-circle-animation', 'curved-arrow-animation', 'underline')),
+		"description" => ""
+	),
+	array(
+		"type" => "colorpicker",
+		"class" => "",
+		"heading" => esc_html__("Border Color Hover", "salient-core"),
+		"param_name" => "button_border_color_hover",
+		"value" => "",
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','arrow-circle-animation', 'curved-arrow-animation', 'underline')),
+		"description" => ""
+	),
+	array(
+		"type" => "dropdown",
+		"heading" => esc_html__("Border Thickness", "salient-core"),
+		"param_name" => "button_border_thickness",
+		"value" => array(
+			esc_html__('0px', 'salient-core') => '0px',
+			esc_html__('1px', 'salient-core') => '1px',
+			esc_html__('2px', 'salient-core') => '2px',
+			esc_html__('3px', 'salient-core') => '3px',
+			esc_html__('4px', 'salient-core') => '4px',
+		),
+		'save_always' => true,
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation','arrow-circle-animation', 'curved-arrow-animation', 'underline')),
+		"description" => ''
+	),
+
+	array(
+		"type" => "colorpicker",
+		"class" => "",
+		"heading" => "Color",
+		"param_name" => "next_section_color",
+		"value" => "",
+		"dependency" => array('element' => "btn_style", 'value' => array('next-section')),
+		"description" => ""
 	),
 
 
@@ -302,10 +372,10 @@ $nectar_cta_params = array(
 			esc_html__('Left', 'salient-core') => 'left',
 			esc_html__('Center', 'salient-core') => 'center',
 			esc_html__('Right', 'salient-core') => 'right',
+			esc_html__('Stretch', 'salient-core') => 'stretch'
 		),
 		'save_always' => true,
-		"edit_field_class" => "desktop alignment-device-group",
-		"description" => esc_html__("Please select the desired alignment for your CTA", "salient-core")
+		"edit_field_class" => "desktop alignment-device-group"
 	),
 
 	array(
@@ -392,7 +462,7 @@ $nectar_cta_params = array(
 		"param_name" => "padding_top",
 		"placeholder" => esc_html__("Top", 'salient-core'),
 		"edit_field_class" => "col-md-2 no-device-group constrain_group_3",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'underline')),
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'arrow-circle-animation', 'curved-arrow-animation', 'underline')),
 		"description" => ''
 	),
 	array(
@@ -401,7 +471,7 @@ $nectar_cta_params = array(
 		'param_name' => 'constrain_group_3',
 		'description' => '',
 		"edit_field_class" => "no-device-group constrain-icon",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'underline')),
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'arrow-circle-animation', 'curved-arrow-animation', 'underline')),
 		'value' => array(esc_html__('Yes', 'salient-core') => 'yes'),
 	),
 	array(
@@ -410,7 +480,7 @@ $nectar_cta_params = array(
 		"param_name" => "padding_bottom",
 		"placeholder" => esc_html__("Bottom", 'salient-core'),
 		"edit_field_class" => "col-md-2 no-device-group constrain_group_3",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'underline')),
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'arrow-circle-animation', 'curved-arrow-animation', 'underline')),
 		"description" => ''
 	),
 	array(
@@ -419,7 +489,7 @@ $nectar_cta_params = array(
 		"param_name" => "padding_left",
 		"placeholder" => esc_html__("Left", 'salient-core'),
 		"edit_field_class" => "col-md-2 no-device-group constrain_group_4",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'underline')),
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'arrow-circle-animation', 'curved-arrow-animation', 'underline')),
 		"description" => ''
 	),
 	array(
@@ -427,7 +497,7 @@ $nectar_cta_params = array(
 		'heading' => esc_html__('Constrain 4', 'salient-core'),
 		'param_name' => 'constrain_group_4',
 		'description' => '',
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'underline')),
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'arrow-circle-animation', 'curved-arrow-animation', 'underline')),
 		"edit_field_class" => "no-device-group constrain-icon",
 		'value' => array(esc_html__('Yes', 'salient-core') => 'yes'),
 	),
@@ -437,8 +507,23 @@ $nectar_cta_params = array(
 		"param_name" => "padding_right",
 		"placeholder" => esc_html__("Right", 'salient-core'),
 		"edit_field_class" => "no-device-group col-md-2 constrain_group_4",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'curved-arrow-animation', 'underline')),
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'arrow-circle-animation', 'curved-arrow-animation', 'underline')),
 		"description" => ''
+	),
+
+	array(
+		'type' => 'nectar_range_slider',
+		'heading' => esc_html__('Icon Gap', 'salient-core'),
+		'param_name' => 'icon_gap',
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'arrow-animation', 'arrow-circle-animation', 'curved-arrow-animation', 'underline')),
+		'description' => esc_html__('Controls the space between your text and icon when using an icon.', 'salient-core'),
+		'value' => '10',
+		'options' => array(
+			'min' => '5',
+			'max' => '50',
+			'step' => '1',
+			'suffix' => 'px'
+		)
 	),
 
 
@@ -451,6 +536,8 @@ $nectar_cta_params = array(
 		"value" => ''
 	),
 
+	...SalientWPbakeryParamGroups::backdrop_filter_group('', []),
+
 	array(
 		"type" => "dropdown",
 		"heading" => '<span class="group-title">' . esc_html__("Display", "salient-core") . "</span>",
@@ -458,11 +545,12 @@ $nectar_cta_params = array(
 		"value" => array(
 			esc_html__('Block', 'salient-core') => 'block',
 			esc_html__('Inline', 'salient-core') => 'inline',
+			esc_html__('None', 'salient-core') => 'none',
 		),
 		'save_always' => true,
 		"edit_field_class" => "desktop display-device-group",
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'material', 'arrow-animation', 'curved-arrow-animation', 'underline')),
-		"description" => esc_html__("Block will cause the CTA to go a new line, while inline will allow multiple CTA's to appear on the same line.", "salient-core")
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'material', 'arrow-animation', 'arrow-circle-animation', 'curved-arrow-animation', 'underline')),
+		"description" => esc_html__("Block will cause the button to go a new line, while inline will allow multiple buttons to appear on the same line.", "salient-core")
 	),
 
 	array(
@@ -473,10 +561,11 @@ $nectar_cta_params = array(
 			esc_html__('Inherit', 'salient-core') => 'inherit',
 			esc_html__('Block', 'salient-core') => 'block',
 			esc_html__('Inline', 'salient-core') => 'inline-block',
+			esc_html__('None', 'salient-core') => 'none',
 		),
 		'save_always' => true,
 		"edit_field_class" => "tablet display-device-group",
-		"description" => esc_html__("Block will cause the CTA to go a new line, while inline will allow multiple CTA's to appear on the same line.", "salient-core")
+		"description" => esc_html__("Block will cause the button to go a new line, while inline will allow multiple buttons to appear on the same line.", "salient-core")
 	),
 	array(
 		"type" => "dropdown",
@@ -486,6 +575,7 @@ $nectar_cta_params = array(
 			esc_html__('Inherit', 'salient-core') => 'inherit',
 			esc_html__('Block', 'salient-core') => 'block',
 			esc_html__('Inline', 'salient-core') => 'inline-block',
+			esc_html__('None', 'salient-core') => 'none',
 		),
 		'save_always' => true,
 		"edit_field_class" => "phone display-device-group",
@@ -499,7 +589,7 @@ $nectar_cta_params = array(
 		"heading" => esc_html__("Nofollow Link", "salient-core"),
 		"param_name" => "nofollow",
 		'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
-		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'material', 'arrow-animation', 'curved-arrow-animation', 'underline')),
+		"dependency" => array('element' => "btn_style", 'value' => array('see-through', 'basic', 'text-reveal-wave', 'text-reveal', 'material', 'arrow-animation', 'arrow-circle-animation', 'curved-arrow-animation', 'underline')),
 		"value" => array(esc_html__("Yes", "salient-core") => 'true'),
 		"description" => ""
 	),
@@ -586,11 +676,11 @@ foreach ($imported_groups as $group) {
 }
 
 return array(
-	"name" => esc_html__("Call To Action", "salient-core"),
+	"name" => esc_html__("Button", "salient-core"),
 	"base" => "nectar_cta",
 	"icon" => "icon-cta",
 	'weight' => '10',
 	"category" => esc_html__('Interactive', 'salient-core'),
-	"description" => esc_html__('minimal & animated', 'salient-core'),
+	"description" => esc_html__('Formerly "Call to Action"', 'salient-core'),
 	"params" => $nectar_cta_params
 );

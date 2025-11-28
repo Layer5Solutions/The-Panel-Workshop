@@ -262,6 +262,7 @@ if( !class_exists('NectarWPMenu') ) {
 				'menu_item_link_border_radius'            => 'regular',
 				'menu_item_link_margin'                   => 'array',
 				'menu_item_icon_position'                 => 'regular',
+				'menu_item_icon_alignment'                => 'regular',
 				'menu_item_icon_size'                     => 'regular',
 				'menu_item_hide_menu_title'               => 'regular',
 				'menu_item_icon_custom_text'              => 'regular',

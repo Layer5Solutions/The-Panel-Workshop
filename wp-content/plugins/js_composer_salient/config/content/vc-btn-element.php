@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function vc_btn_element_params() {
 
-	$pixel_icons = vc_pixel_icons();
+	$pixel_icons = vc_get_shared( 'pixel icons' );
 	require_once vc_path_dir( 'CONFIG_DIR', 'content/vc-icon-element.php' );
 
 	$icons_params = vc_map_integrate_shortcode( vc_icon_element_params(), 'i_', '', [
@@ -301,24 +301,6 @@ function vc_btn_element_params() {
 			],
 		],
 	], $icons_params, [
-		[
-			'type' => 'iconpicker',
-			'heading' => esc_html__( 'Icon', 'js_composer' ),
-			'param_name' => 'i_icon_pixelicons',
-			'value' => 'vc_pixel_icon vc_pixel_icon-alert',
-			'settings' => [
-				'emptyIcon' => false,
-				// default true, display an "EMPTY" icon.
-				'type' => 'pixelicons',
-				'source' => $pixel_icons,
-			],
-			'dependency' => [
-				'element' => 'i_type',
-				'value' => 'pixelicons',
-			],
-			'description' => esc_html__( 'Select icon from library.', 'js_composer' ),
-		],
-	], [
 		vc_map_add_css_animation( true ),
 		[
 			'type' => 'el_id',

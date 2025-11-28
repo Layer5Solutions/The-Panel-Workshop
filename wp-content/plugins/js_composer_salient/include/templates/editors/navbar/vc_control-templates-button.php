@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 
 <li>
-	<a href="javascript:;" class="vc_icon-btn vc_templates-button"  id="vc_templates-editor-button" title="<?php esc_attr__( 'Templates', 'js_composer' ); ?>">
+	<a href="javascript:;" class="vc_icon-btn vc_templates-button"  id="vc_templates-editor-button" title="<?php echo esc_attr( wpb_get_title_with_shortcut( 'Templates' ) ); ?>">
 		<i class="vc-composer-icon vc-c-icon-add_template"></i>
 	</a>
 </li>

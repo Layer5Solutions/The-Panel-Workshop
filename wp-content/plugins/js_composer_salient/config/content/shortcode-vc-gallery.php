@@ -145,7 +145,7 @@ return [
 					'img_link_large',
 				],
 			],
-			'value' => vc_target_param_list(),
+			'value' => vc_get_shared( 'target param list' ),
 		],
 		vc_map_add_css_animation(),
 		[

@@ -321,19 +321,19 @@
 
     });
 
- 
+
     that.$modalInner.find('.switch-options.salient input[type="hidden"]').on('change',function(e) {
 
       var $parent = $(this).parents('.nectar-setting-switch_toggle');
-      
+
       if( $(this).parents('.setting-field').attr('data-cat') !== that.state.category ) {
         return;
       }
-      
+
       if( $parent.is('[data-toggles]') ) {
 
         var toggles = $parent.attr('data-toggles');
- 
+
         console.log(that.$modalInner.find('[id*="' + toggles + '"]'));
         if( $(this).val() == 'on' ) {
           that.$modalInner.find('[id*="' + toggles + '"]').parents('.setting-field').show();
@@ -378,8 +378,8 @@
         var fieldName = $(this).attr('name');
 
         that.$modalInner.find('[id*="' + $parentSetting.attr('data-toggles') + '"]').parents('.setting-field').hide().addClass('dep-hidden');
-        
-        //// toggle by array 
+
+        //// toggle by array
         that.$modalInner.find('[data-toggled-by]').each(function(){
 
           if( $(this).attr('data-toggled-by') === fieldName ) {
@@ -387,15 +387,15 @@
             $(this).hide();
 
             var values = $(this).attr('data-toggled-by-value');
-          
+
             values = values.split(',');
 
             if( values.includes(selectedVal) ) {
               $(this).show();
-            } 
-            
+            }
+
           }
-          
+
         });
 
         // Show Dep.
@@ -417,6 +417,7 @@
 
       var $iconSelect             = that.$modalInner.find('#' + $(this).attr('data-icon-container')).parents('.setting-field');
       var $iconIconsmindSelect    = that.$modalInner.find('#' + $(this).attr('data-iconsmind-container')).parents('.setting-field');
+      var $iconNectarbrandsSelect = that.$modalInner.find('#' + $(this).attr('data-nectarbrands-container')).parents('.setting-field');
       var $iconCustomSelect       = that.$modalInner.find('#' + $(this).attr('data-icon-custom')).parents('.setting-field');
       var $iconCustomTextSelect   = that.$modalInner.find('#' + $(this).attr('data-icon-custom-text')).parents('.setting-field');
       var $iconCustomBorderRadius = that.$modalInner.find('#' + $(this).attr('data-icon-custom-border-radius')).parents('.setting-field');
@@ -427,6 +428,8 @@
           return;
         }
 
+        console.log($(this).val());
+
         var val = $(this).val();
 
         if( val === 'font_awesome' ) {
@@ -434,18 +437,21 @@
             $iconIconsmindSelect.hide().addClass('dep-hidden');
             $iconCustomTextSelect.hide().addClass('dep-hidden');
             $iconCustomSelect.hide().addClass('dep-hidden');
+            $iconNectarbrandsSelect.hide().addClass('dep-hidden');
             $iconCustomBorderRadius.hide().addClass('dep-hidden');
         } else if ( val === 'custom' ) {
           $iconSelect.hide().addClass('dep-hidden');
           $iconIconsmindSelect.hide().addClass('dep-hidden');
           $iconCustomTextSelect.hide().addClass('dep-hidden');
           $iconCustomSelect.show().removeClass('dep-hidden');
+          $iconNectarbrandsSelect.hide().addClass('dep-hidden');
           $iconCustomBorderRadius.show().removeClass('dep-hidden');
         }
         else if ( val === 'custom_text' ) {
           $iconSelect.hide().addClass('dep-hidden');
           $iconIconsmindSelect.hide().addClass('dep-hidden');
           $iconCustomSelect.hide().addClass('dep-hidden');
+          $iconNectarbrandsSelect.hide().addClass('dep-hidden');
           $iconCustomBorderRadius.hide().addClass('dep-hidden');
           $iconCustomTextSelect.show().removeClass('dep-hidden');
         }
@@ -453,6 +459,15 @@
           $iconSelect.hide().addClass('dep-hidden');
           $iconIconsmindSelect.show().removeClass('dep-hidden');
           $iconCustomSelect.hide().addClass('dep-hidden');
+          $iconNectarbrandsSelect.hide().addClass('dep-hidden');
+          $iconCustomBorderRadius.hide().addClass('dep-hidden');
+          $iconCustomTextSelect.hide().addClass('dep-hidden');
+        }
+        else if ( val === 'nectarbrands' ) {
+          $iconSelect.hide().addClass('dep-hidden');
+          $iconIconsmindSelect.hide().addClass('dep-hidden');
+          $iconCustomSelect.hide().addClass('dep-hidden');
+          $iconNectarbrandsSelect.show().removeClass('dep-hidden');
           $iconCustomBorderRadius.hide().addClass('dep-hidden');
           $iconCustomTextSelect.hide().addClass('dep-hidden');
         }
@@ -460,6 +475,7 @@
           $iconIconsmindSelect.hide().addClass('dep-hidden');
           $iconSelect.hide().addClass('dep-hidden');
           $iconCustomSelect.hide().addClass('dep-hidden');
+          $iconNectarbrandsSelect.hide().addClass('dep-hidden');
           $iconCustomTextSelect.hide().addClass('dep-hidden');
           $iconCustomBorderRadius.hide().addClass('dep-hidden');
         }
@@ -544,7 +560,7 @@
 
     that.$modalInner.find(".nectar-add-video-btn").on('click', function(e) {
 
-      var $that = $(this);  
+      var $that = $(this);
       var custom_file_frame = null;
 
       custom_file_frame = wp.media.frames.customHeader = wp.media({
@@ -556,20 +572,20 @@
           text: $(this).data("update")
         }
       });
-      
+
       custom_file_frame.on( "select", function() {
-        
+
         var file_attachment = custom_file_frame.state().get("selection").first();
-        
+
         $('#' + $that.attr('rel-id') ).val(file_attachment.attributes.url).trigger('change');
-        
+
         $('#_nectar_video_embed').trigger('keyup');
-        
+
         $that.parent().find('.nectar-add-video-btn').hide();
         $that.parent().find('.nectar-remove-video-btn').css('display','inline-block');
-        
+
       });
-      
+
       custom_file_frame.open();
 
     });
@@ -577,7 +593,7 @@
     that.$modalInner.find(".nectar-remove-video-btn").on('click', function(e) {
 
       e.preventDefault();
-    
+
       $('#' + $(this).attr('rel-id')).val('');
       $(this).parents('.setting-field').find('.nectar-add-video-btn').css('display','inline-block');
       $(this).css('display','none');

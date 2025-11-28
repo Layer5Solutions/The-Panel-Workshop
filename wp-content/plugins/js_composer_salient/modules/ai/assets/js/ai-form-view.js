@@ -341,7 +341,8 @@
 				var textareaId = $textareaElement.attr( 'id' );
 				if ( 'new_content' === this.contentType ) {
 					var currentTextareaValue = $textareaElement.val();
-					generatedContent = currentTextareaValue + ' ' + generatedContent;
+					var textAreaSpace = currentTextareaValue ? ' ' : '';
+					generatedContent = currentTextareaValue + textAreaSpace + generatedContent;
 				}
 
 				var tinyMCE = window.tinymce.get( textareaId );
@@ -354,7 +355,8 @@
 				if ( 'new_content' === this.contentType ) {
 					var currentInputValue = $inputElement.val();
 					if ( currentParamData.param_type !== 'textarea_ace' ) {
-						generatedContent = currentInputValue + ' ' + generatedContent;
+						var inputSpace = currentInputValue ? ' ' : '';
+						generatedContent = currentInputValue + inputSpace + generatedContent;
 					}
 				}
 				if ( currentParamData.param_type === 'textarea_ace' ) {
@@ -371,7 +373,8 @@
 				} else if ( currentParamData.element && currentParamData.element.length ) {
 					if ( 'new_content' === this.contentType ) {
 						var currentElementValue = currentParamData.element.val();
-						generatedContent = currentElementValue + ' ' + generatedContent;
+						var elementSpace = currentElementValue ? ' ' : '';
+						generatedContent = currentElementValue + elementSpace + generatedContent;
 					}
 					currentParamData.element.val( generatedContent ).trigger( 'input' ).trigger( 'change' ).trigger( 'blur' );
 				}

@@ -17,6 +17,7 @@ extract(shortcode_atts(array(
     'sticky_content' => '',
     'sticky_content_functionality' => 'js',
     'sticky_content_alignment' => 'default',
+    'sticky_column_mobile' => '',
     'enable_animation' => '',
     'animation' => '',
     'persist_animation_on_mobile' => '',
@@ -45,7 +46,9 @@ extract(shortcode_atts(array(
 		'background_image_tablet' => '',
 		'background_image_phone' => '',
     'background_image_loading' => '',
+    'background_image_preload' => '',
     'background_video_loading' => '',
+    'background_image_type' => 'default',
 		'background_image_position' => 'center center',
     'bg_image_animation' => 'none',
 		'parallax_bg' => '',
@@ -72,7 +75,7 @@ extract(shortcode_atts(array(
 	  'color_overlay_2' => '',
 	  'gradient_direction' => 'left_to_right',
     'overlay_strength' => '0.3',
-    
+
     'translate_x' => '',
     'translate_y' => '',
 
@@ -99,6 +102,7 @@ extract(shortcode_atts(array(
 ), $atts));
 
 global $post;
+global $nectar_options;
 
 $el_class         = $this->getExtraClass($el_class);
 $width            = wpb_translateColumnWidthToSpan($width);
@@ -125,20 +129,42 @@ if( $sticky_content === 'true' ) {
    // JS powered.
   if( $sticky_content_functionality == 'js' ) {
     $el_class .= ' nectar-sticky-column';
-  } 
+  }
   // CSS powered.
   else {
 
-    $sticky_open = '<div class="n-sticky">';
+    // sticky column mobile.
+		$sticky_column_mobile_class = '';
+		if( isset($atts['sticky_column_mobile']) && 'true' === $atts['sticky_column_mobile'] ) {
+			$sticky_column_mobile_class = ' nectar-sticky-column-wrap--mobile';
+		}
+
+    $sticky_open = '<div class="n-sticky'.$sticky_column_mobile_class.'">';
     $sticky_close = '</div>';
 
-    if( 'middle' === $sticky_content_alignment ) { 
+    if( 'middle' === $sticky_content_alignment ) {
       $el_class .= ' nectar-sticky-column-css--middle';
     }
     $el_class .= ' nectar-sticky-column-css';
   }
 }
 
+
+if( in_the_loop() ) {
+
+  if( !isset($GLOBALS['nectar_vc_column_count']) ) {
+    $GLOBALS['nectar_vc_column_count'] = 0;
+  }
+  $GLOBALS['nectar_vc_column_count']++;
+
+  if( !is_single() && $GLOBALS['nectar_vc_column_count'] == 1 && isset($post->ID) ) {
+    if ( $nectar_options && isset( $nectar_options['lcp-optimize-top-level-images'] ) && $nectar_options['lcp-optimize-top-level-images'] == '1' ) {
+			$background_image_preload = 'true';
+			$background_image_type = 'img';
+		}
+  }
+
+}
 
 
 $background_color_string = null;
@@ -174,19 +200,36 @@ $bg_img_arr = array(
 	'desktop' => array(
 		'src' => $background_image,
 		'in_use' => true,
-		'classes' => ''
+		'classes' => '',
+    'content' => ''
 	),
 	'tablet' => array(
 		'src' => $background_image_tablet,
 		'in_use' => false,
-		'classes' => ''
+		'classes' => '',
+    'content' => ''
 	),
 	'phone' => array(
 		'src' => $background_image_phone,
 		'in_use' => false,
-		'classes' => ''
+		'classes' => '',
+    'content' => ''
 	),
 );
+
+	// auto set the phone image to the large size.
+  if ( !$background_image_phone && preg_match('/^\d+$/', $background_image) && $background_image_type === 'img' ) {
+    $bg_img_arr['phone']['src'] = $background_image;
+  }
+
+  // if mobile, switch order of desktop and mobile  to ensure fetch priority is correct
+  if (function_exists('wp_is_mobile') && wp_is_mobile()) {
+    $desired_order = array('phone', 'desktop', 'tablet');
+    uksort($bg_img_arr, function($a, $b) use ($desired_order) {
+      return array_search($a, $desired_order) - array_search($b, $desired_order);
+    });
+  }
+
 
 foreach( $bg_img_arr as $viewport => $image ) {
 
@@ -195,7 +238,78 @@ foreach( $bg_img_arr as $viewport => $image ) {
 			$image_style = '';
 			$lazy_image_attr = '';
 
-			// Track which mobile variants are supplied.
+			// Preload image
+			if( $background_image_preload === 'true' ) {
+				$background_image_loading = 'skip-lazy-load';
+			}
+
+      $image_data = nectar_get_image_src_data( $bg_img_arr[$viewport]['src'], $background_image_loading );
+
+      if($background_image_type === 'img') {
+        $image_size = $viewport === 'phone' ? 'large' : 'full';
+        $img_classes = 'column-image-tag';
+        $is_lazy = false;
+        if(!empty($image_data['lazy_attrs'])) {
+          $is_lazy = true;
+        }
+        $object_position = '';
+        if('custom' === $background_image_position) {
+          $object_position = esc_attr(intval($background_image_position_x)) .'% '. esc_attr(intval($background_image_position_y)) .'%;';
+        } else {
+          $object_position = esc_attr($background_image_position) .';';
+        }
+
+        $fetch_priority = '';
+        if ( isset($GLOBALS['nectar_vc_column_count']) && $GLOBALS['nectar_vc_column_count'] == 1 ) {
+          $fetch_priority = 'high';
+        }
+        if($viewport === 'desktop') {
+          $bg_img_arr[$viewport]['content'] = nectar_get_row_picture_tag(
+            $bg_img_arr,
+            $image_size,
+            $img_classes,
+            $is_lazy,
+            $object_position,
+            $fetch_priority
+          );
+
+         // only output desktop, since it contains the responsive picture.
+          $bg_img_arr['phone']['src'] = '';
+          $bg_img_arr['tablet']['src'] = '';
+        } else {
+          $bg_img_arr[$viewport]['content'] = '';
+          // only output desktop, since it contains the responsive picture.
+          $bg_img_arr[$viewport]['in_use'] = false;
+        }
+      } else {
+        if(!preg_match('/^\d+$/',$bg_img_arr[$viewport]['src'])) {
+
+            if( 'lazy-load' === $background_image_loading ||
+                property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $background_image_loading ) {
+              $lazy_image_attr .= ' data-nectar-img-src="'.esc_url($bg_img_arr[$viewport]['src']).'"';
+            } else {
+              $image_style .= 'background-image: url('. esc_url($bg_img_arr[$viewport]['src']) . '); ';
+            }
+
+        } else {
+
+          $bg_image_src = wp_get_attachment_image_src($bg_img_arr[$viewport]['src'], apply_filters('nectar_default_column_background_image_size','full'));
+
+          if( isset($bg_image_src[0]) ) {
+
+            if( 'lazy-load' === $background_image_loading ||
+                property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $background_image_loading ) {
+              $lazy_image_attr .= ' data-nectar-img-src="'.esc_url($bg_image_src[0]).'"';
+            } else {
+              $image_style .= ' background-image: url(\''. esc_url($bg_image_src[0]) .'\'); ';
+            }
+
+          }
+
+        }
+      }
+
+      		// Track which mobile variants are supplied.
 			if( 'desktop' === $viewport) {
 				if( !empty($bg_img_arr['tablet']['src']) ) {
 					$bg_img_arr[$viewport]['classes'] .= ' has-tablet';
@@ -205,31 +319,6 @@ foreach( $bg_img_arr as $viewport => $image ) {
 				}
 			}
 
-	    if(!preg_match('/^\d+$/',$bg_img_arr[$viewport]['src'])) {
-
-					if( 'lazy-load' === $background_image_loading ||
-					    property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $background_image_loading ) {
-						$lazy_image_attr .= ' data-nectar-img-src="'.esc_url($bg_img_arr[$viewport]['src']).'"';
-					} else {
-						$image_style .= 'background-image: url('. esc_url($bg_img_arr[$viewport]['src']) . '); ';
-					}
-
-	    } else {
-
-	    	$bg_image_src = wp_get_attachment_image_src($bg_img_arr[$viewport]['src'], apply_filters('nectar_default_column_background_image_size','full'));
-
-				if( isset($bg_image_src[0]) ) {
-
-					if( 'lazy-load' === $background_image_loading ||
-				    	 property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $background_image_loading ) {
-						$lazy_image_attr .= ' data-nectar-img-src="'.esc_url($bg_image_src[0]).'"';
-					} else {
-						$image_style .= ' background-image: url(\''. esc_url($bg_image_src[0]) .'\'); ';
-					}
-
-				}
-
-	    }
 
 	    $using_bg_overlay = ( !empty($color_overlay) || !empty($color_overlay_2) ) ? 'true' : 'false';
 
@@ -242,7 +331,7 @@ foreach( $bg_img_arr as $viewport => $image ) {
 			}
 
 	    $image_bg_markup .= '<div class="column-image-bg-wrap column-bg-layer viewport-'.esc_attr($viewport) . esc_attr($bg_img_arr[$viewport]['classes']).'" '.$parallax_bg_attr.'data-bg-pos="'.esc_attr($background_image_position).'"'.$column_bg_overlay_wrap_attrs_escaped.' data-bg-animation="'.esc_attr($bg_image_animation).'" data-bg-overlay="'.esc_attr($using_bg_overlay).'"><div class="inner-wrap">';
-	    $image_bg_markup .= '<div class="column-image-bg'.esc_attr($parallax_class).'" style="'.$image_style.'"'.$lazy_image_attr.'></div>';
+	    $image_bg_markup .= '<div class="column-image-bg'.esc_attr($parallax_class).'" style="'.$image_style.'"'.$lazy_image_attr.'>'.$bg_img_arr[$viewport]['content'].'</div>';
 	    $image_bg_markup .= '</div></div>';
 
 	} // End using BG image
@@ -264,7 +353,7 @@ if( !empty($top_margin) ) {
     // actual margin proc
     if( strpos($top_margin,'%' ) !== false) {
         $style .= 'margin-top: '. esc_attr($top_margin) .'; ';
-    } 
+    }
     else if( strpos($top_margin,'vh' ) !== false) {
       $style .= 'margin-top: '. floatval($top_margin) .'vh; ';
     }
@@ -278,13 +367,13 @@ if( !empty($top_margin) ) {
 if( !empty($bottom_margin) ) {
     if( strpos($bottom_margin,'%' ) !== false){
         $style .= 'margin-bottom: '. esc_attr($bottom_margin) .'; ';
-    } 
+    }
     else if( strpos($bottom_margin,'vh' ) !== false){
       $style .= 'margin-bottom: '. floatval($bottom_margin) .'vh; ';
-    } 
+    }
     else if( strpos($bottom_margin,'vw' ) !== false){
       $style .= 'margin-bottom: '. floatval($bottom_margin) .'vw; ';
-    } 
+    }
     else {
         $style .= 'margin-bottom: '. intval($bottom_margin) .'px; ';
     }
@@ -298,7 +387,7 @@ if( isset($zindex) && !empty($zindex) ) {
 // Custom shadows.
 if( 'custom' === $column_shadow ) {
   if( 'true' === $mask_enable) {
-    $atts['box_shadow_method'] = 'filter'; 
+    $atts['box_shadow_method'] = 'filter';
   }
   $custom_shadow_markup = nectar_generate_shadow_css($atts);
   if( !empty($custom_shadow_markup) ) {
@@ -310,7 +399,7 @@ if( 'custom' === $column_shadow ) {
 if( !empty($translate_y) || !empty($translate_x) ) {
 
     $inner_columns_style .= 'transform: ';
-    
+
     if( !empty($translate_y) ) {
         if( strpos($translate_y,'%' ) !== false){
           $inner_columns_style .= ' translateY('. intval($translate_y) .'%)';
@@ -339,11 +428,11 @@ if( !empty($translate_y) || !empty($translate_x) ) {
 }
 
 
-if( empty($background_color) && 
-  empty($background_image) && 
-  empty($font_color) && 
-  empty($zindex) && 
-  empty($top_margin) && 
+if( empty($background_color) &&
+  empty($background_image) &&
+  empty($font_color) &&
+  empty($zindex) &&
+  empty($top_margin) &&
   empty($bottom_margin) ) {
     $style = '';
 } else {
@@ -415,7 +504,7 @@ if(!empty($background_color_string)) {
 $column_overlay_layer_style = null;
 $column_overlay_layer_markup = null;
 
-if( !empty($color_overlay) || 
+if( !empty($color_overlay) ||
     !empty($color_overlay_2) ||
     'advanced' === $gradient_type ) {
 
@@ -454,7 +543,7 @@ if( !empty($color_overlay) ||
     if( !empty($advanced_gradient) ) {
       $column_overlay_layer_style .= 'background:'.esc_attr($advanced_gradient).';';
     }
-		
+
 	}
   else if( $enable_gradient === 'true' ) {
 
@@ -554,7 +643,7 @@ if( $video_bg ) {
   }
   $video_markup .= '
   <div class="nectar-video-wrap column-video column-bg-layer"'.$column_bg_overlay_wrap_attrs_escaped.'>';
-      
+
     if( 'lazy-load' === $background_video_loading ) {
 
       $video_markup .= '<video class="nectar-video-bg nectar-lazy-video" width="1800" height="700" preload="auto" loop autoplay muted playsinline'.$video_image_poster_attr.'>';
@@ -573,7 +662,7 @@ if( $video_bg ) {
 
       $video_markup .='</video>';
     }
-     
+
 
    $video_markup .= '</div>';
 
@@ -586,7 +675,7 @@ if( $column_link_target == 'lightbox' ) {
   $column_link_target = '_self';
   $column_link_class .= ' pp';
 }
-$column_link_html = (!empty($column_link)) ? '<a class="'.$column_link_class.'" target="'.esc_attr($column_link_target).'" href="'.esc_attr($column_link).'">'.$column_link_sr_text.'</a>' : null;
+$column_link_html = (!empty($column_link)) ? '<a class="'.$column_link_class.'" target="'.esc_attr($column_link_target).'" href="'.esc_url($column_link).'">'.$column_link_sr_text.'</a>' : null;
 $css_class        = apply_filters( VC_SHORTCODE_CUSTOM_CSS_FILTER_TAG, $width . $el_class . vc_shortcode_custom_css_class( $css, ' ' ), $this->settings['base'], $atts );
 
 $column_data_attrs = ' ';
@@ -653,7 +742,7 @@ if( $animation_type == 'parallax' ) {
 if( 'scroll_pos_advanced' === $animation_type ) {
 
   $animation_atts = array_merge(
-    $atts, 
+    $atts,
     array(
       'animation_inner_selector' => ''
     )

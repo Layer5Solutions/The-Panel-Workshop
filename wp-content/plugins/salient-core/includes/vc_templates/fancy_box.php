@@ -102,14 +102,14 @@ if( !empty($icon) ) {
 		$icon_id             = 'nectar-iconsmind-icon-'.uniqid();
 		$icon_markup         = '<span class="im-icon-wrap" data-color="'.esc_attr(strtolower($color)) .'"><span>';
 		$converted_icon_name = str_replace('iconsmind-', '', $icon);
-	
+
 		require_once( SALIENT_CORE_ROOT_DIR_PATH.'includes/icons/class-nectar-icon.php' );
 
 		$nectar_icon_class = new Nectar_Icon(array(
 		  'icon_name' => $converted_icon_name,
 		  'icon_library' => 'iconsmind',
 		));
-	  
+
 		$icon_markup .= $nectar_icon_class->render_icon();
 
 		// Custom size.
@@ -154,7 +154,7 @@ if( !empty($icon) ) {
 
 		else {
 
-		
+
 
 			$icon_markup = '<i class="icon-default-style '.esc_attr($icon).'" '.$color_attr.' style="font-size: '.esc_attr($icon_size).'px!important; line-height: '.esc_attr($icon_size).'px!important;"></i>';
 
@@ -200,7 +200,7 @@ if( !empty($icon) ) {
       $min_height_with_unit = intval($min_height). $unit;
     }
   }
-  
+
 
 
 	$new_tab_markup  = ($link_new_tab == true) ? 'target="_blank"' : null;
@@ -281,7 +281,7 @@ if( !empty($icon) ) {
 	$box_link = null;
 	if(!empty($link_url)) {
 		$link_sr_text = (!empty($link_screen_reader)) ? '<span class="screen-reader-text">'.esc_html($link_screen_reader).'</span>' : '';
-		$box_link = '<a '.$new_tab_markup.' href="'.esc_attr($link_url).'" class="box-link">'.$link_sr_text.'</a>';
+		$box_link = '<a '.$new_tab_markup.' href="'.esc_url($link_url).'" class="box-link">'.$link_sr_text.'</a>';
 	}
 
 	$text_link = null;
@@ -334,7 +334,7 @@ if( !empty($icon) ) {
 			if( isset($bg_image_src[0]) ) {
 				$parallax_bg_img = $bg_image_src[0];
 			}
-			
+
 		}
 
 		$output = '<div class="nectar-fancy-box style-5 '.$using_img_class.' '.esc_attr($css_class).esc_attr($dynamic_el_styles).'" data-align="'.esc_attr($parallax_hover_box_alignment).'" data-overlay-opacity="'.esc_attr($parallax_hover_box_overlay_opacity).'" data-overlay-opacity-hover="'.esc_attr($parallax_hover_box_overlay_opacity_hover).'" data-style="'. esc_attr($box_style) .'" data-border-radius="'. esc_attr($border_radius) .'" data-animation="'.strtolower(esc_attr($parsed_animation)).'" data-delay="'.esc_attr($delay).'" data-color="'.strtolower(esc_attr($color)).'">';
@@ -355,7 +355,7 @@ if( !empty($icon) ) {
 		}
 
 		$output = '<div class="nectar-fancy-box '.$using_img_class.' '.esc_attr($css_class) . esc_attr($dynamic_el_styles).'"'.$parallax_attr.' style="min-height: '.esc_attr($min_height_with_unit).'" data-style="'. esc_attr($box_style) .'" data-border-radius="'. esc_attr($border_radius) .'" data-animation="'.strtolower(esc_attr($parsed_animation)).'" data-bg-animation="'.esc_attr($hover_desc_bg_animation).'" data-border="'.esc_attr($enable_border).'" data-delay="'.esc_attr($delay).'" data-alignment="'.esc_attr($box_alignment).'" data-color="'.strtolower($hover_color).'" '.$style2.'>';
-		
+
     /* Parallax bg */
     if( $bg_parallax === 'true' ) {
       $output .= '<div class="parallax-layer"><div class="box-bg" role="presentation" '.$style.'></div></div>';
@@ -369,9 +369,9 @@ if( !empty($icon) ) {
       $icon_markup_top = $icon_markup;
       $icon_markup = '';
     }
-    
+
     $output .=  '<div class="inner">'.$icon_markup_top.'<div class="heading-wrap">' . $icon_markup .$extra_wrap_open . wp_kses_post($content) . '</div>' . wp_kses_post($hover_only_content) . $extra_wrap_close. '</div> '.$text_link.' '.$box_link.' </div>';
-   
+
 	}
 	else if( $box_style === 'image_above_text_underline' ) {
 

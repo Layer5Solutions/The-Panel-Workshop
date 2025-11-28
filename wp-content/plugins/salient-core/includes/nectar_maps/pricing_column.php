@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -10,7 +10,7 @@ $vc_is_wp_version_3_6_more = version_compare(preg_replace('/^([\d\.]+)(\-.*$)/',
 $el_color_list = array(
     esc_html__( "Accent Color", "salient-core") => "Accent-Color",
 	esc_html__( "Extra Color 1", "salient-core") => "Extra-Color-1",
-	esc_html__( "Extra Color 2", "salient-core") => "Extra-Color-2",	
+	esc_html__( "Extra Color 2", "salient-core") => "Extra-Color-2",
 	esc_html__( "Extra Color 3", "salient-core") => "Extra-Color-3",
 );
 $custom_colors = apply_filters('nectar_additional_theme_colors', array());
@@ -19,8 +19,8 @@ $el_color_list = array_merge($el_color_list, $custom_colors);
 return array(
 	"name" => esc_html__("Pricing Column", "salient-core"),
 	"base" => "pricing_column",
-	"allowed_container_element" => 'vc_row',
-	"is_container" => true,
+	"allowed_container_element" => 'pricing_table',
+	// "is_container" => true,
 	"content_element" => false,
 	"params" => array(
 		array(

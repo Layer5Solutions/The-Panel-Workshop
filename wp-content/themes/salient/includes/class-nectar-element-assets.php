@@ -98,10 +98,10 @@ class NectarElAssets {
 
 	// Global template shortcodes.
 	preg_match_all( '/\[templatera(\s.*?)?\]/s', self::$post_content, $templatera_shortcode_match, PREG_SET_ORDER  );
-	
+
 	preg_match_all( '/\[nectar_global_section(\s.*?)?\]/s', self::$post_content, $nectar_global_section_match, PREG_SET_ORDER  );
 	preg_match_all( '/\[nectar_global_section(\s.*?)?\]/s', self::$portfolio_content, $nectar_global_section_match_portfolio, PREG_SET_ORDER  );
-	
+
 	$global_template_shortcode_match = array_merge($templatera_shortcode_match, $nectar_global_section_match, $nectar_global_section_match_portfolio);
 
     if( !empty($global_template_shortcode_match) ) {
@@ -132,29 +132,29 @@ class NectarElAssets {
       } // End global template Loop.
 
     } // End found global template shortcode.
-		
+
 
 	// Global template theme options
 	$theme_template_locations = NectarThemeManager::$global_seciton_options;
-	
+
 	$nectar_options = NectarThemeManager::$options;
-	
+
 	foreach ($theme_template_locations as $key => $location) {
-		
+
 		if( isset($nectar_options[$location]) &&
 			!empty($nectar_options[$location]) ) {
-			
+
 				$template_ID = intval($nectar_options[$location]);
 				$global_section_content_query = get_post($template_ID);
-				
-				if( isset($global_section_content_query->post_content) && 
+
+				if( isset($global_section_content_query->post_content) &&
 					!empty($global_section_content_query->post_content) ) {
-							
+
 							self::$templatera_content[] = $global_section_content_query->post_content;
 				}
-			
+
 		}
-		
+
 	}
 
 
@@ -163,26 +163,27 @@ class NectarElAssets {
 		'post_type'    => 'salient_g_sections',
 		'post_status'  => 'publish',
 		'ignore_sticky_posts' => true,
-		'no_found_rows'  => true
+		'no_found_rows'  => true,
+		'posts_per_page' => -1
 	);
-	
+
 	$global_sections_query = new WP_Query( $global_sections_query_args );
 
 	if( $global_sections_query->have_posts() ) : while( $global_sections_query->have_posts() ) : $global_sections_query->the_post();
-			
+
 		$global_section_id = get_the_ID();
 
 		// Locations.
 		$locations = get_post_meta($global_section_id, 'nectar_g_section_locations', true);
-		
+
 		if( empty( $locations ) || !is_array($locations) ) {
 			continue;
 		}
 
 		self::$global_section_locations_content[] = get_the_content();
 
-	endwhile; endif;  
-	
+	endwhile; endif;
+
 	wp_reset_query();
 
 	set_transient('salient_global_sections_asset_refresh', 'false', 0);
@@ -223,6 +224,14 @@ class NectarElAssets {
 				return true;
 			}
 		}
+
+		// 404 specific.
+		if( is_404() ) {
+			if( in_array( $string, ['[nectar_scrolling_text'] ) ) {
+				return true;
+			}
+		}
+
   	}
 
   	return false;

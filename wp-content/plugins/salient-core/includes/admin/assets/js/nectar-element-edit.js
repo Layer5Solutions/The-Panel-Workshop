@@ -24,11 +24,15 @@
 
   /* CF Repeater */
   function NectarCFRepeater(el) {
+
     this.$el = el;
     this.valueInput   = this.$el.find('.nectar-repeater-field__save_data input');
     this.data         = [];
     this.saveData     = this.valueInput.val();
     this.itemTemplate = this.$el.find('.nectar-repeater-field__template').html();
+
+    // Store reference to this instance on the element for color picker callbacks
+    this.$el.data('nectar-repeater', this);
 
     this.buildItems()
     this.events();
@@ -43,47 +47,74 @@
       return false;
     });
 
-    // Remove.
-    $('body').on('click', '.nectar-repeater-field__item__remove', function() {
+    // Remove - use event delegation but scope to this specific repeater
+    this.$el.on('click', '.nectar-repeater-field__item__remove', function() {
       $(this).parents('.nectar-repeater-field__item').remove();
       that.update();
       return false;
     });
 
-    // Update.
+        // Update.
     this.$el.on('change', ':input', this.update.bind(this));
+
+    // Handle WordPress color picker changes specifically
+    this.$el.on('change', 'input[name="color_value"]', this.update.bind(this));
+    this.$el.on('input', 'input[name="color_value"]', this.update.bind(this));
+
+    // Listen for WordPress color picker custom events
+    this.$el.on('wp-color-change', 'input[name="color_value"]', this.update.bind(this));
+    this.$el.on('wp-color-picker-change', 'input[name="color_value"]', this.update.bind(this));
   };
 
-  NectarCFRepeater.prototype.add = function() {
+    NectarCFRepeater.prototype.add = function() {
     var $item = $(this.itemTemplate);
     this.$el.find('.nectar-repeater-field__items').append($item);
     nectarFancyCheckboxes();
+
+    // Initialize color pickers for new color repeater fields
+    this.initColorPickers($item);
+
   };
 
   NectarCFRepeater.prototype.update = function() {
     var data = [];
     this.$el.find('.nectar-repeater-field__items .nectar-repeater-field__item').each(function() {
-
-      var formData = $(this).find(':input').serializeArray();
       var formObject = {};
 
-      $.each(formData, function(_, kv) {
-        formObject[kv.name] = kv.value;
-      });
+      // Handle color picker fields specially
+      if ($(this).find('input[name="color_value"]').length > 0) {
+        // For color picker fields, get the value from the color picker
+        var colorInput = $(this).find('input[name="color_value"]');
+        var colorValue = colorInput.val();
+
+        // If it's a WordPress color picker, get the value from the color picker instance
+        if (colorInput.hasClass('wp-color-picker') && colorInput.wpColorPicker) {
+          colorValue = colorInput.wpColorPicker('color');
+        }
+
+        formObject.color_value = colorValue;
+
+      } else {
+        // For regular fields, use serializeArray
+        var formData = $(this).find(':input').serializeArray();
+        $.each(formData, function(_, kv) {
+          formObject[kv.name] = kv.value;
+        });
+      }
 
       data.push(formObject);
     });
-    
+
     this.valueInput.val(encodeURIComponent(JSON.stringify(data)));
   };
 
-  
+
   NectarCFRepeater.prototype.buildItems = function() {
     var that = this;
     if ( !this.saveData ) {
       return;
     }
-  
+
     var data = JSON.parse(decodeURIComponent(this.saveData));
     if( data.length > 0 ) {
       $.each(data, function(i, item) {
@@ -99,7 +130,66 @@
             }
           }
         });
-        that.$el.find('.nectar-repeater-field__items').append($item);
+                that.$el.find('.nectar-repeater-field__items').append($item);
+
+        // For color picker fields, set the color value after initialization
+        if (that.$el.hasClass('nectar-color-repeater') && item.color_value) {
+          // Wait for color picker to be initialized, then set the value
+          setTimeout(function() {
+            var colorInput = $item.find('input[name="color_value"]');
+            if (colorInput.hasClass('wp-color-picker') && colorInput.wpColorPicker) {
+              colorInput.wpColorPicker('color', item.color_value);
+            } else {
+              colorInput.val(item.color_value);
+            }
+          }, 100);
+        }
+
+        // Initialize color pickers for existing items
+        that.initColorPickers($item);
+
+      });
+    }
+  };
+
+    NectarCFRepeater.prototype.initColorPickers = function($item) {
+
+    // Check if this is a color repeater field
+    if (this.$el.hasClass('nectar-color-repeater') ||
+        this.$el.find('.nectar-repeater-field__template input[name="color_value"]').length > 0) {
+
+
+      // Initialize color picker for color_value fields
+      $item.find('input[name="color_value"]').each(function() {
+        var repeaterInstance = this; // 'this' refers to the NectarCFRepeater instance
+
+        if (typeof $.fn.wpColorPicker !== 'undefined') {
+          // Add a small delay to ensure the DOM element is fully ready
+          var $input = $(this);
+          setTimeout(function() {
+            try {
+
+              var colorScheme = ['#27CCC0', '#f6653c', '#2ac4ea', '#ae81f9', '#FF4629', '#78cd6e'];
+              if( window.nectar_theme_colors ) {
+                window.nectar_theme_colors.forEach(function(element, index){
+                  if(element.value) {
+                    colorScheme[index] = element.value;
+                  }
+                });
+              }
+
+              $input.wpColorPicker({
+                palettes: colorScheme,
+                change: function(event, ui) {
+                  // Trigger our update method using the stored reference
+                  $input.closest('.nectar-repeater-field').data('nectar-repeater').update();
+                }
+              });
+            } catch (e) {
+              console.error('Error initializing color picker:', e);
+            }
+          }, 50);
+        }
       });
     }
   };
@@ -294,7 +384,7 @@
 
     if( el.is('[class*=padding]') || el.parents('.zero-floor').length > 0 ) {
       this.zeroFloor = true;
-    } 
+    }
 
     if( el.is('[class*=_intensity]') ) {
       //this.zeroFloor = true;
@@ -319,7 +409,7 @@
     } else {
       $parent.append('<span class="scrubber" />');
     }
-    
+
 
     this.$scrubber = this.$el.parents('.edit_form_line').find('.scrubber');
     this.$scrubber.append('<span class="inner"/>');
@@ -443,7 +533,7 @@
 
     //// Stop number from going below 0
     if( this.zeroFloor && this.calculatedVal < this.bottomFloor) {
-      
+
       this.$el.val(this.bottomFloor);
     } else {
 
@@ -486,6 +576,11 @@
 
   function createDeviceGroup($selector) {
 
+    // Check if device group is already initialized
+    if ($('.'+$selector+'-wrap').length > 0) {
+      return; // Already initialized, skip
+    }
+
     // Hide tabbed on load.
     $('body').find('.' + $selector + ':not(.desktop)').hide();
 
@@ -512,6 +607,7 @@
     var $groupHeader = $input.parents('.nectar-device-group-wrap').prev('.nectar-device-group-header');
     var inUse        = false;
     var type         = 'select';
+
 
     if( $input.is('input[type="text"]') ) {
       type = 'text';
@@ -545,6 +641,8 @@
     else if( type == 'hidden' ) {
       $input.parents('.nectar-device-group-wrap').find('.'+iconSelector+' input[type="hidden"]').each(function(){
         if( $(this).parents('.vc_wrapper-param-type-fws_image').length > 0 && $(this).val().length ) {
+          inUse = true;
+        } else if( $(this).parents('.vc_wrapper-param-type-nectar_checkbox_tab_selection').length > 0 && $(this).val().length ) {
           inUse = true;
         }
       });
@@ -581,12 +679,14 @@
 
 
   function deviceGroupEvents() {
+    // Unbind existing events before rebinding to prevent duplicates
+    $('.nectar-device-group-header i').off('click.nectar_device_groups');
+    $('.nectar-device-group-wrap input[type="text"], .nectar-device-group-wrap select, .nectar-device-group-wrap input[type="hidden"]').off('change.nectar_device_groups');
 
-    $('.nectar-device-group-header i').on('click', function() {
+    $('.nectar-device-group-header i').on('click.nectar_device_groups', function() {
 
       var filter = $(this).attr('data-filter');
       var group  = $(this).parents('.nectar-device-group-header').next('.nectar-device-group-wrap');
-
       // Already active.
       if( $(this).hasClass('active') ) {
         return;
@@ -611,11 +711,11 @@
       var $group = $(this).parents('.nectar-device-group-header').next('.nectar-device-group-wrap');
 
       // On change.
-      $group.find('input[type="text"], select, input[type="hidden"]').on('change',function(){
+      $group.find('input[type="text"], select, input[type="hidden"]').on('change.nectar_device_groups',function(){
         deviceHighlightInUse($(this));
       });
 
-      // Inital Load.
+      // Initial Load.
       $group.find('input[type="text"], select, input[type="hidden"]').each(function(){
         deviceHighlightInUse($(this));
       })
@@ -654,6 +754,16 @@
 
 
   function colorOverlayPreview(el) {
+    // Unbind existing events before rebinding to prevent duplicates
+    $('input[name="color_overlay"], input[name="color_overlay_2"]').off('change.nectar_color_overlay');
+    $('select[name="gradient_direction"], select[name="color_layer_gradient_direction"], select[name="overlay_strength"], select[name="gradient_type"], select[name="color_layer_gradient_type"]').off('change.nectar_color_overlay');
+    $('input[name="enable_gradient"]').off('change.nectar_color_overlay');
+    $('input[class*="fws_image"]').off('change.nectar_color_overlay');
+    $('input.wp-picker-clear').off('mousedown.nectar_color_overlay');
+    $('input[type="range"][name="alpha"]').off('change.nectar_color_overlay');
+
+    // Check if color preview already exists and remove it to prevent duplicates
+    $('.nectar-color-overlay-preview').remove();
 
     // Markup.
     var $tab = $('div[data-vc-shortcode-param-name="color_overlay"]').parents('.vc_edit-form-tab');
@@ -674,20 +784,20 @@
 
 
     // Events.
-    $('input[name="color_overlay"]').on('change', colorOverlayPreviewUpdate);
-    $('input[name="color_overlay_2"]').on('change', colorOverlayPreviewUpdate);
-    $('select[name="gradient_direction"]').on('change', colorOverlayPreviewUpdate);
-    $('select[name="overlay_strength"]').on('change', colorOverlayPreviewUpdate);
-    $('select[name="gradient_type"]').on('change', colorOverlayPreviewUpdate);
-    $('input[name="enable_gradient"]').on('change', colorOverlayPreviewUpdate);
+    $('input[name="color_overlay"]').on('change.nectar_color_overlay', colorOverlayPreviewUpdate);
+    $('input[name="color_overlay_2"]').on('change.nectar_color_overlay', colorOverlayPreviewUpdate);
+    $('select[name="gradient_direction"], select[name="color_layer_gradient_direction"]').on('change.nectar_color_overlay', colorOverlayPreviewUpdate);
+    $('select[name="overlay_strength"], select[name="color_layer_gradient_direction"]').on('change.nectar_color_overlay', colorOverlayPreviewUpdate);
+    $('select[name="gradient_type"] select[name="color_layer_gradient_type"]').on('change.nectar_color_overlay', colorOverlayPreviewUpdate);
+    $('input[name="enable_gradient"]').on('change.nectar_color_overlay', colorOverlayPreviewUpdate);
 
-    $('input[name="'+inputName+'"].'+inputName+'.fws_image').on('change', colorOverlayImageUpdate);
+    $('input[name="'+inputName+'"].'+inputName+'.fws_image').on('change.nectar_color_overlay', colorOverlayImageUpdate);
 
     setTimeout(function() {
-      $('div[data-vc-shortcode-param-name="color_overlay"] input.wp-picker-clear').on('mousedown', colorOverlayPreviewUpdate);
-      $('div[data-vc-shortcode-param-name="color_overlay_2"] input.wp-picker-clear').on('mousedown', colorOverlayPreviewUpdate);
-      $('div[data-vc-shortcode-param-name="color_overlay"] input[type="range"][name="alpha"]').on('change', colorOverlayPreviewUpdate);
-      $('div[data-vc-shortcode-param-name="color_overlay_2"] input[type="range"][name="alpha"]').on('change', colorOverlayPreviewUpdate);
+      $('div[data-vc-shortcode-param-name="color_overlay"] input.wp-picker-clear').on('mousedown.nectar_color_overlay', colorOverlayPreviewUpdate);
+      $('div[data-vc-shortcode-param-name="color_overlay_2"] input.wp-picker-clear').on('mousedown.nectar_color_overlay', colorOverlayPreviewUpdate);
+      $('div[data-vc-shortcode-param-name="color_overlay"] input[type="range"][name="alpha"]').on('change.nectar_color_overlay', colorOverlayPreviewUpdate);
+      $('div[data-vc-shortcode-param-name="color_overlay_2"] input[type="range"][name="alpha"]').on('change.nectar_color_overlay', colorOverlayPreviewUpdate);
     },2000);
 
     colorOverlayPreviewUpdate();
@@ -749,11 +859,11 @@
           'background-color': $color1.val()
         });
         $('.nectar-color-overlay-preview .wrap span').css('opacity', $opacity.val());
-        
-      }
-      
 
-      
+      }
+
+
+
 
     }, 150); // settimeout
 
@@ -803,15 +913,68 @@
   }
 
 
+  function nectarCheckboxTabEvents() {
+    $('body').on('change', '.nectar-radio-tab .n_radio_tab_val', function(e) {
+      var $group = $(this).closest('.nectar-radio-tab');
+      var $checkboxes = $group.find('.n_radio_tab_val');
+      var min = parseInt($group.data('min-items'), 10);
+      if (Number.isNaN(min)) min = 1;
+      var max = parseInt($group.data('max-items'), 10);
+      if (Number.isNaN(max)) max = $checkboxes.length;
+      var allowEmpty = $group.find('.nectar_radio_tab_list').data('allow-empty') === true || $group.find('.nectar_radio_tab_list').data('allow-empty') === 'true';
+      var checkedCount = $checkboxes.filter(':checked').length;
+
+      // If checking and max would be exceeded, uncheck the first checked box (not this one)
+      if ($(this).is(':checked') && checkedCount > max) {
+        // Find all checked except the one just checked
+        var $checked = $checkboxes.filter(':checked').not(this);
+        if ($checked.length) {
+          $checked.first().prop('checked', false).trigger('change');
+        }
+      }
+
+      // If unchecking and min would be violated, revert
+      if (!allowEmpty && !$(this).is(':checked') && checkedCount < min) {
+        $(this).prop('checked', true);
+        return;
+      }
+
+      // when unchecking, push empty value to hidden input
+      // if (!$(this).is(':checked')) {
+      //   $(this).parents('.wpb_el_type_nectar_checkbox_tab_selection').find('input[type="hidden"]').val('');
+      // }
+
+    });
+
+    // On page load, ensure at least min are checked (optional, for safety)
+    $('.nectar-radio-tab').each(function() {
+      var $group = $(this);
+      var $checkboxes = $group.find('.n_radio_tab_val');
+      var min = parseInt($group.data('min-items'), 10) || 1;
+      var checkedCount = $checkboxes.filter(':checked').length;
+      if (checkedCount < min) {
+        $checkboxes.slice(0, min).prop('checked', true);
+      }
+    });
+  }
+
   function nectarFancyRadioEvents() {
 
     $("body").on('change','.n_radio_html_val',function(){
-      
+
       var group_id = $(this).parents('.nectar-radio-html').data("grp-id");
       $("#nectar-radio-html-"+group_id).val($(this).val()).trigger('change');
       $('.nectar-radio-html-list li').removeClass('active');
       $(this).parents('li').addClass('active');
-      
+
+    });
+
+    $("body").on('click','.nectar-radio-html-list li',function(){
+      $(this).removeClass('clicked');
+      setTimeout(() => {
+        $(this).addClass('clicked');
+      }, 100);
+
     });
 
   }
@@ -824,7 +987,7 @@
       if ( $(this).parents('.nectar-cb-enabled').length > 0 ) {
         return;
       }
-      
+
       if( $(this).prop('checked') ) {
         var $checkboxMarkup = $('<label class="cb-enable selected"><span>On</span></label><label class="cb-disable"><span>Off</span></label>');
       } else {
@@ -867,9 +1030,9 @@
   }
 
   var graPickers = [];
-  
+
   function NectarGradientColorPickerAngle(el) {
-    
+
     this.$el = el;
     this.$input = el.find('input[type="number"]');
     this.value = this.$input.val();
@@ -879,11 +1042,11 @@
 
     this.events();
     this.update();
-   
+
   }
 
   NectarGradientColorPickerAngle.prototype.events = function() {
-    
+
     var that = this;
 
     this.$el.find('.nectar-angle-selection-input').on('mousedown', function() {
@@ -901,7 +1064,7 @@
 
     $('body').on('mouseup', function() {
       that.active = false;
-     
+
     });
 
     $(window).on('mousemove',function(e) {
@@ -911,13 +1074,13 @@
         var angle = Math.atan2(e.pageY - that.centerPointY, e.pageX - that.centerPointX);
 
         angle = angle + 1.5; // alter by 90 deg to match mouse
-        if (angle < 0) { 
-          angle += 2 * Math.PI; 
+        if (angle < 0) {
+          angle += 2 * Math.PI;
         }
         that.value = Math.floor(angle * 180 / Math.PI);
 
         that.update();
-      } 
+      }
     });
 
   };
@@ -931,15 +1094,15 @@
     } else {
       this.$input.val(this.value);
     }
-  
-    
+
+
     this.$el.find('.inner').css('transform','rotate('+this.value+'deg)');
     if( graPickers[0] && $gradientType == 'advanced' || graPickers[0] && $('.generate-color-overlay-preview').length > 0 ) {
       graPickers[0].setDirection(this.value+'deg');
     }
   };
 
- 
+
 
   function nectarGradientColorpicker() {
 
@@ -965,7 +1128,7 @@
         graPickers[i].setColorPicker(handler => {
           const el = handler.getEl().querySelector('#colorpicker');
           const $el = $(el);
-      
+
           $el.spectrum({
               color: handler.getColor(),
               showAlpha: true,
@@ -978,7 +1141,7 @@
                 handler.setColor(color.toRgbString(), 0);
               }
           });
-      
+
           // return a function in order to destroy the custom color picker
           return () => {
             $el.spectrum('destroy');
@@ -996,13 +1159,13 @@
             $('.nectar-color-overlay-preview span span')[0].style.backgroundImage = value;
             $('.nectar-color-overlay-preview span span')[0].style.opacity = '1';
           }
-          
+
           /* Dont save the default */
-          if( colorVal != '#f3f3f3 10%, #f3f3f3 10%' && 
+          if( colorVal != '#f3f3f3 10%, #f3f3f3 10%' &&
               colorVal != '#f3f3f3 10%, #f3f3f3 90%' ) {
             input.val(value);
           }
-          
+
         });
 
         if( savedColors.length > 0 ) {
@@ -1013,24 +1176,24 @@
           if(savedDisplayType) {
             graPickers[i].setType(savedDisplayType);
           }
-       
+
         } else {
           graPickers[i].addHandler(10, '#f3f3f3');
           graPickers[i].addHandler(90, '#f3f3f3');
         }
-        
+
         graPickers[i].emit('change');
-        
+
       });
 
-     
+
 
       // Gradient type.
       $('input[name="advanced_gradient_display_type"]').on('change', function(){
         var val = $(this).val();
         for( var i=0; i<graPickers.length; i++) {
           graPickers[i].setType(val);
-         
+
         }
       });
 
@@ -1059,9 +1222,9 @@
         setTimeout(function(){
           $('input[name="advanced_gradient_display_type"], select[name="advanced_gradient_radial_position"]').trigger('change');
         },300);
-       
+
       }
-      
+
     }
 
       // Angles
@@ -1073,7 +1236,7 @@
 
   function nectarBoxShadowGeneratorInit() {
     $('div.nectar-box-shadow-generator').each(function(){
-      new NectarBoxShadowGenerator($(this)); 
+      new NectarBoxShadowGenerator($(this));
     });
   }
 
@@ -1102,7 +1265,7 @@
     this.el.find('.nectar-range-slider').each(function(){
 
       var name = $(this).attr('name');
-      that.state[name] = $(this).val();      
+      that.state[name] = $(this).val();
     });
 
     this.input.val(this.parseToShortcodeAttr(this.state));
@@ -1122,23 +1285,42 @@
 
   }
 
-  
+
 
   function nectarRadioTabEvents() {
+    // Unbind existing events before rebinding to prevent duplicates
+    $("body").off('change.nectar_radio_tabs', '.vc_edit_form_elements .wpb_el_type_nectar_radio_tab_selection .n_radio_tab_val');
+    $("body").off('change.nectar_radio_tabs', '.vc_edit_form_elements .wpb_el_type_nectar_checkbox_tab_selection .n_radio_tab_val');
 
-    $("body").on('change','.vc_edit_form_elements .n_radio_tab_val',function(){
-      
+    // Radio tab selection.
+    $("body").on('change.nectar_radio_tabs','.vc_edit_form_elements .wpb_el_type_nectar_radio_tab_selection .n_radio_tab_val',function(){
+
       var group_id = $(this).parents('.nectar-radio-tab').data("grp-id");
+
       $("#nectar-radio-tab-"+group_id).val($(this).val()).trigger('change');
+      // dependent fields.
+      nectarRadioDependentFields();
+    });
+
+    // Checkbox tab selection.
+    $("body").on('change.nectar_radio_tabs','.vc_edit_form_elements .wpb_el_type_nectar_checkbox_tab_selection .n_radio_tab_val',function(){
+
+      var group_id = $(this).parents('.nectar-radio-tab').data("grp-id");
+      // account for empty values when unchecking.
+      if ($(this).prop('checked')) {
+        $("#nectar-radio-tab-"+group_id).val($(this).val()).trigger('change');
+      } else {
+        $("#nectar-radio-tab-"+group_id).val('').trigger('change');
+      }
 
       // dependent fields.
       nectarRadioDependentFields();
     });
-    
+
     // Simulate save_always..
-    $('.vc_edit_form_elements .wpb_el_type_nectar_radio_tab_selection .edit_form_line > input[type="hidden"]').each(function(){
-      
-      if( $(this).val().length == 0 ) {
+    $('.vc_edit_form_elements .wpb_el_type_nectar_radio_tab_selection .edit_form_line > input[type="hidden"], .wpb_el_type_nectar_checkbox_tab_selection .edit_form_line > input[type="hidden"]').each(function(){
+
+      if( $(this).val().length == 0 && $(this).attr('data-default-val') ) {
         $(this).val($(this).attr('data-default-val')).trigger('change');
       }
 
@@ -1152,7 +1334,7 @@
   function nectarRadioDependentFields() {
 
     $('.vc_edit_form_elements .radio_tab_dep').each(function(){
-      
+
       var classes = Array.from($(this)[0].classList);
       var depClass = classes.find(function(item){
         if( item.indexOf('dep--') > -1 ) {
@@ -1164,27 +1346,29 @@
       if( depClass ) {
         var depClassVal = depClass.split("--").pop();
         var depField = depClass.split("--")[1];
-        
+
         if( $('.vc_edit_form_elements').find('input[name="'+depField+'"]').length > 0 ) {
           var depValue = $('.vc_edit_form_elements').find('input[name="'+depField+'"]').val();
-          
+
           if( depClassVal !== depValue ) {
             $(this).addClass('dep-hidden');
           } else {
             $(this).removeClass('dep-hidden');
           }
         }
-      
+
       }
-      
+
     });
+
+    $(window).trigger('nectar_radio_tab_dependent_fields');
   }
 
   function nectarRangeSliders() {
 
     /* Single Range */
     var textContent = ('textContent' in document) ? 'textContent' : 'innerText';
-    
+
     function valueOutput(element) {
       var value = element.value;
       var output = $(element).parent().siblings('.output');
@@ -1192,7 +1376,7 @@
 
       output[textContent] = value;
     }
-    
+
     $('input[type="range"].nectar-range-slider').rangeslider({
       polyfill: false,
       onInit: function() {
@@ -1203,11 +1387,11 @@
         var min = this.$element.attr('min');
         var max = this.$element.attr('max');
 
-        // fix overflow on slider 
+        // fix overflow on slider
         if( value > (max * 0.6)) {
           $(window).trigger('resize');
         }
-        
+
       }
     });
 
@@ -1222,6 +1406,11 @@
 
       var slider = $(this)[0];
       var sliderInput = $(this).find('.wpb_vc_param_value');
+
+      // Check if slider is already initialized and destroy it
+      if (slider.noUiSlider) {
+        slider.noUiSlider.destroy();
+      }
 
       var startingValue = sliderInput.val().indexOf(',') > -1 ? sliderInput.val().split(',') : [0,100];
       var min = parseInt(sliderInput.attr('data-min'));
@@ -1245,13 +1434,16 @@
 
     });
 
-  
+
   }
 
   function nectarFancyCheckboxEvents() {
+    // Unbind existing events before rebinding to prevent duplicates
+    $('body').off('click.nectar_fancy_checkboxes', '.vc_edit_form_elements .switch-options.salient .cb-enable');
+    $('body').off('click.nectar_fancy_checkboxes', '.vc_edit_form_elements .switch-options.salient .cb-disable');
 
     // Click events.
-    $('body').on('click', '.vc_edit_form_elements .switch-options.salient .cb-enable' ,function() {
+    $('body').on('click.nectar_fancy_checkboxes', '.vc_edit_form_elements .switch-options.salient .cb-enable' ,function() {
 
       var parent = $( this ).parents( '.switch-options' );
 
@@ -1265,7 +1457,7 @@
 
     });
 
-    $('body').on('click', '.vc_edit_form_elements .switch-options.salient .cb-disable' ,function() {
+    $('body').on('click.nectar_fancy_checkboxes', '.vc_edit_form_elements .switch-options.salient .cb-disable' ,function() {
 
       var parent = $( this ).parents( '.switch-options' );
 
@@ -1290,10 +1482,10 @@
         if( el.attributes && el.attributes.shortcode && el.attributes.shortcode === 'carousel' ) {
 
           if( el.attributes.params && el.attributes.params.script && el.attributes.params.script === 'simple_slider') {
-            $('.vc_edit_form_elements .simple_slider_specific_field').show();
-          } 
+            $('.vc_edit_form_elements .simple_slider_specific_field').show().addClass('nectar-show-element');
+          }
           else if( el.attributes.params && el.attributes.params.script && el.attributes.params.script === 'flickity') {
-            $('.vc_edit_form_elements .flickity_specific_field').show();
+            $('.vc_edit_form_elements .flickity_specific_field').show().addClass('nectar-show-element');
           }
 
         }
@@ -1313,7 +1505,7 @@
     var that = this;
     this.$input.on('change', function(){
       that.source = $(this).val();
-     
+
       if( that.source.length === 0 ) {
         that.$el.find('.nectar-lottie-preview-render').hide();
       } else {
@@ -1323,18 +1515,18 @@
         } else {
           that.$el.find('.nectar-lottie-preview-render').show();
         }
-       
+
       }
 
       that.init();
 
-    }).trigger('change');   
+    }).trigger('change');
 
      // error.
      this.player.addEventListener("error", (e) => {
       that.$el.find('.error').show();
     });
-    
+
     this.player.addEventListener("play", (e) => {
       that.$el.find('.error').hide();
     });
@@ -1367,6 +1559,86 @@
 
 
   };
+
+    function nectarFlexboxLayout() {
+    // Unbind existing events before rebinding to prevent duplicates
+    $('body').off('change.nectar_flexbox', '.wpb_vc_param_value[name*="flex_layout_"]');
+    $('body').off('click.nectar_flexbox', '.flexbox-layout-device-group-header i');
+    $(window).off('nectar_radio_tab_dependent_fields.nectar_flexbox');
+
+    $('body').on('change.nectar_flexbox', '.wpb_vc_param_value[name*="flex_layout_"]', function() {
+      var selectedViewport = $('.flexbox-layout-device-group-header').find('i.active');
+      var activeDevice = selectedViewport.length > 0 ? selectedViewport.attr('data-filter') : 'desktop';
+      var layoutType = $(this).val(); // 'row' or 'column'
+      swapFlexIcons(layoutType, activeDevice);
+    });
+    $('body').on('click.nectar_flexbox', '.flexbox-layout-device-group-header i', function() {
+      // When switching devices, use the fallback logic to determine layout direction
+      setTimeout(function() {
+        setupFlexboxIconDirection();
+      }, 50);
+    });
+    setTimeout(function() {
+      setupFlexboxIconDirection();
+    }, 200);
+
+    $(window).on('nectar_radio_tab_dependent_fields.nectar_flexbox', function() {
+      setupFlexboxIconDirection();
+    });
+  }
+
+  function setupFlexboxIconDirection() {
+    var selectedViewport = $('.flexbox-layout-device-group-header').find('i.active');
+    var filter = selectedViewport.length > 0 ? selectedViewport.attr('data-filter') : 'desktop';
+
+    // Get the layout direction, with fallback logic
+    var layoutDirection = getFlexboxLayoutDirection(filter);
+    swapFlexIcons(layoutDirection, filter);
+  }
+
+  function getFlexboxLayoutDirection(activeDevice) {
+    // Hierarchy: phone -> tablet -> desktop
+    var $layoutHeader = $('.flexbox-layout-device-group-header');
+    var deviceHierarchy = ['desktop', 'tablet', 'phone'];
+    var startIndex = deviceHierarchy.indexOf(activeDevice);
+
+    // Start from the active device and work backwards to desktop
+    for (var i = startIndex; i >= 0; i--) {
+      var device = deviceHierarchy[i];
+      var $icon = $layoutHeader.find('i[data-filter="'+device+'"]');
+
+      // Check if this device has a value set (in-use class)
+      if ($icon.hasClass('in-use') || device === 'desktop') {
+        // Get the layout value for this device
+        var $layoutInput = $('.wpb_vc_param_value[name*="flex_layout_'+device+'"]');
+        if ($layoutInput.length > 0 && $layoutInput.val()) {
+          return $layoutInput.val(); // 'row' or 'column'
+        }
+      }
+    }
+
+    // Default fallback to 'row' if no value found
+    return 'row';
+  }
+
+  function swapFlexIcons(layoutType, activeDevice) {
+    // Only swap icons for the currently active viewport's controls
+    $('.vc_edit-form-tab').find('div[class*="flexbox"][class*="device-group-wrap"]').each(function() {
+      var $deviceGroup = $(this);
+
+      // Only process controls for the active viewport
+      $deviceGroup.find('> div.'+activeDevice+' img').each(function() {
+        var $img = $(this);
+        if(layoutType === 'row') {
+          // Set to horizontal icon
+          $img.attr('src', $img.data('horizontal-src'));
+        } else {
+          // Set to vertical icon
+          $img.attr('src', $img.data('vertical-src'));
+        }
+      });
+    });
+  }
 
 
   function videoAttachFields() {
@@ -1520,7 +1792,7 @@
   window.nectarPostGridFeaturedFirstItemCallback = function() {
 
     var $featuredTopItem = $(".wpb_vc_param_value[name=featured_top_item]", this.$content);
-    
+
     // Hides masory options if featured top item is checked.
     $featuredTopItem.on("change", function() {
 
@@ -1533,7 +1805,7 @@
     }).trigger('change');
 
     // Should not be available when using 1 col layout.
-    
+
 
   };
 
@@ -1593,7 +1865,7 @@
 
       var that = this;
       var gridStyleField = $(".vc_shortcode-param[data-vc-shortcode-param-name=grid_style] select", this.$content);
-  
+
       // grid
       if( $displayType.val() === 'grid' ) {
 
@@ -1609,9 +1881,9 @@
         $(".column-device-group-header", that.$content).removeClass('hidden-device-group-element');
         $(".column-device-group-header", that.$content).removeClass('hidden-device-group-element-full');
 
-      } 
+      }
       else if( $displayType.val() === 'carousel' ) {
-        
+
         stackHiddenSelectors.forEach(function(el){
           $(".vc_shortcode-param[data-vc-shortcode-param-name="+el+"]", that.$content).removeClass('hidden-element');
         });
@@ -1627,7 +1899,7 @@
         $('.column-device-group-header .device-selection [data-filter="desktop"]', that.$content).trigger('click');
 
         // Limit styles
-        if( gridStyleField.val() !== 'content_under_image' && 
+        if( gridStyleField.val() !== 'content_under_image' &&
             gridStyleField.val() !== 'content_overlaid' ) {
           $('select[name=grid_style]').val('content_overlaid');
           $('select[name=grid_style]').trigger('change');
@@ -1659,7 +1931,7 @@
         $('select[name=grid_style] option.content_under_image', that.$content).prop('disabled', true);
 
       }, 10);
-      
+
     }
 
   }).trigger('change');
@@ -1689,13 +1961,100 @@
           $('.vc_shortcode-param[data-vc-shortcode-param-name=featured_top_item]', this.$content).removeClass('hidden-element');
         }
       }
-      
+
 
   }).trigger('change');
 
- 
+
 
 }
+
+  window.nectarPostGridTextColorDependency = function() {
+
+    var $container = this.$content || $('#vc_ui-panel-edit-element');
+
+    if (!$container || !$container.length) {
+      return;
+    }
+
+    var $gridStyle = $(".wpb_vc_param_value[name=grid_style]", $container);
+
+    if (!$gridStyle.length) {
+      return;
+    }
+
+    var $textColor = $(".wpb_vc_param_value[name=text_color]", $container);
+    var $textColorHover = $(".wpb_vc_param_value[name=text_color_hover]", $container);
+    var hiddenClass = 'nectar-text-color-grid-hidden';
+
+    var fieldConfig = {
+      'light_text_color': {
+        styles: ['content_overlaid','content_under_image','content_next_to_image','mouse_follow_image'],
+        valueField: $textColor,
+        value: 'light'
+      },
+      'dark_text_color': {
+        styles: ['content_overlaid','content_under_image','content_next_to_image','mouse_follow_image'],
+        valueField: $textColor,
+        value: 'dark'
+      },
+      'light_text_color_hover': {
+        styles: ['content_overlaid'],
+        valueField: $textColorHover,
+        value: 'light'
+      },
+      'dark_text_color_hover': {
+        styles: ['content_overlaid'],
+        valueField: $textColorHover,
+        value: 'dark'
+      }
+    };
+
+    var toggleField = function(paramName, shouldShow) {
+      var $param = $('.vc_shortcode-param[data-vc-shortcode-param-name="'+paramName+'"]', $container);
+
+      if (!$param.length) {
+        return;
+      }
+
+      if (shouldShow) {
+        if ($param.hasClass(hiddenClass)) {
+          $param.removeClass(hiddenClass + ' hidden-element');
+        }
+      } else {
+        if (!$param.hasClass(hiddenClass)) {
+          $param.addClass(hiddenClass);
+        }
+        $param.addClass('hidden-element');
+      }
+    };
+
+    var runUpdate = function() {
+      $.each(fieldConfig, function(paramName, config) {
+        var gridMatches = config.styles.indexOf($gridStyle.val()) > -1;
+        var valueMatches = true;
+
+        if (config.valueField && config.valueField.length && typeof config.value !== 'undefined') {
+          valueMatches = config.valueField.val() === config.value;
+        }
+
+        toggleField(paramName, gridMatches && valueMatches);
+      });
+    };
+
+    $gridStyle.off('change.nectarPostGridTextColor').on('change.nectarPostGridTextColor', runUpdate);
+
+    if ($textColor.length) {
+      $textColor.off('change.nectarPostGridTextColor').on('change.nectarPostGridTextColor', runUpdate);
+    }
+
+    if ($textColorHover.length) {
+      $textColorHover.off('change.nectarPostGridTextColor').on('change.nectarPostGridTextColor', runUpdate);
+    }
+
+    runUpdate();
+
+  };
 
   window.nectarRecentPostsFontSizeCallback = function() {
 
@@ -1703,11 +2062,11 @@
 
     $style.on("change", function() {
 
-      if( $style.val() === 'multiple_large_featured' || 
+      if( $style.val() === 'multiple_large_featured' ||
           $style.val() === 'single_large_featured' ) {
-        $('.font-size-device-group-header, .font-size-device-group-wrap, [data-vc-shortcode-param-name="font_size_min"], [data-vc-shortcode-param-name="font_line_height"], [data-vc-shortcode-param-name="font_size_max"]').removeClass('hidden-element');
+        $('.font-size-device-group-header, .font-size-device-group-wrap, [data-vc-shortcode-param-name="font_size_min"], [data-vc-shortcode-param-name="font_line_height"], [data-vc-shortcode-param-name="font_size_max"], [data-vc-shortcode-param-name="font_text_indent"]').removeClass('hidden-element');
       } else {
-        $('.font-size-device-group-header, .font-size-device-group-wrap, [data-vc-shortcode-param-name="font_size_min"], [data-vc-shortcode-param-name="font_line_height"], [data-vc-shortcode-param-name="font_size_max"]').addClass('hidden-element');
+        $('.font-size-device-group-header, .font-size-device-group-wrap, [data-vc-shortcode-param-name="font_size_min"], [data-vc-shortcode-param-name="font_line_height"], [data-vc-shortcode-param-name="font_size_max"], [data-vc-shortcode-param-name="font_text_indent"]').addClass('hidden-element');
       }
     }).trigger('change');
     setTimeout(function(){
@@ -1720,7 +2079,7 @@
 
     $fitText.on("change", function() {
 
-      
+
       if( $fitText.prop('checked') == true ) {
         $('.font-size-device-group-header, .font-size-device-group-wrap, [data-vc-shortcode-param-name="font_size_min"], [data-vc-shortcode-param-name="font_size_max"]').addClass('hidden-element');
       } else {
@@ -1743,7 +2102,7 @@
 
       if( $post_type.val() === 'portfolio' && $grid_style.val() === 'content_under_image') {
         $('.vc_edit_form_elements .custom-portfolio-dep').show();
-      } 
+      }
       else {
         $('.vc_edit_form_elements .custom-portfolio-dep').hide();
         $overlay_secondary_image.prop('checked', false);
@@ -1751,13 +2110,13 @@
         $switchOptions.removeClass('activated');
         $switchOptions.find('.cb-enable').removeClass('selected');
       }
-      
+
     }).trigger('change');
 
     $grid_style.on("change", function() {
       if( $post_type.val() === 'portfolio' && $grid_style.val() === 'content_under_image') {
         $('.vc_edit_form_elements .custom-portfolio-dep').show();
-      } 
+      }
       else {
         $('.vc_edit_form_elements .custom-portfolio-dep').hide();
         $overlay_secondary_image.prop('checked', false);
@@ -1767,14 +2126,14 @@
       }
     }).trigger('change');
 
-    
+
   };
 
-  
+
   function elSettingsPostitionRefresh() {
 
     /* Entering the backend editor when using the sidebar el setting position on front-end */
-    if( 'admin_frontend_editor' !== window.vc_mode && 
+    if( 'admin_frontend_editor' !== window.vc_mode &&
          typeof(Storage) !== "undefined" &&
          typeof(window.setUserSetting) !== "undefined" ) {
 
@@ -1785,9 +2144,19 @@
             window.setUserSetting('edit_element_vcUIPanelLeft',Math.floor(($(window).width() - 565)/2) + 'px');
             window.setUserSetting('edit_element_vcUIPanelTop','150px');
           }
-          
+
     }
 
+  }
+
+  function createFlexboxDeviceGroups() {
+    createDeviceGroup('flexbox-layout-device-group');
+    createDeviceGroup('flexbox-justify-content-device-group');
+    createDeviceGroup('flexbox-align-items-device-group');
+    createDeviceGroup('flexbox-direction-device-group');
+    createDeviceGroup('flexbox-gap-device-group');
+    createDeviceGroup('flexbox-wrap-device-group');
+    createDeviceGroup('flexbox-reverse-device-group');
   }
 
   jQuery(document).ready(function($) {
@@ -1803,6 +2172,17 @@
     $("#vc_ui-panel-edit-element").on('vcPanel.shown',function() {
 
       var $shortcode = ( $('#vc_ui-panel-edit-element[data-vc-shortcode]').length > 0 ) ? $('#vc_ui-panel-edit-element').attr('data-vc-shortcode') : '';
+
+
+      // Section.
+      if( 'vc_section' === $shortcode ) {
+        createDeviceGroup('height-device-group');
+        createDeviceGroup('color-overlay-device-group');
+        createDeviceGroup('column-bg-img-device-group');
+        createDeviceGroup('row-padding-device-group');
+        createDeviceGroup('row-margin-device-group');
+        createFlexboxDeviceGroups();
+      }
 
       // Row.
       if( 'vc_row' === $shortcode ) {
@@ -1822,10 +2202,14 @@
         createDeviceGroup('row-bg-img-device-group');
         createDeviceGroup('clip-path-device-group');
         createDeviceGroup('clip-path-end-device-group');
+        createDeviceGroup('device-visibility-device-group');
         nectarClipPathDependency();
 
         colorOverlayPreview('row');
 
+        createDeviceGroup('height-device-group');
+
+        createDeviceGroup('row-position-display-device-group');
       } // endif row el.
 
 
@@ -1840,6 +2224,9 @@
           createDeviceGroup('row-min-width-device-group');
           createDeviceGroup('row-max-width-device-group');
           createDeviceGroup('column-direction-device-group');
+
+          createDeviceGroup('height-device-group');
+          createDeviceGroup('device-visibility-device-group');
 
       }
 
@@ -1856,7 +2243,14 @@
         createDeviceGroup('column-padding-adv-device-group');
         createDeviceGroup('column-el-direction-device-group');
         createDeviceGroup('column-text-align-device-group');
-        
+        createDeviceGroup('flexbox-layout-device-group');
+        createDeviceGroup('flexbox-justify-content-device-group');
+        createDeviceGroup('flexbox-align-items-device-group');
+        createDeviceGroup('flexbox-direction-device-group');
+        createDeviceGroup('flexbox-gap-device-group');
+        createDeviceGroup('flexbox-wrap-device-group');
+        createDeviceGroup('flexbox-reverse-device-group');
+        createDeviceGroup('height-device-group');
         columnDeviceGroupHeaderToggles();
 
         if( 'vc_column' === $shortcode ) {
@@ -1866,14 +2260,14 @@
         colorOverlayPreview('column');
       }
 
-     
-      
-      if( 'vc_column' !== $shortcode && 
-          'vc_column_inner' !== $shortcode && 
+
+
+      if( 'vc_column' !== $shortcode &&
+          'vc_column_inner' !== $shortcode &&
           'vc_row' !== $shortcode ) {
           colorOverlayPreview('general');
       }
-      
+
       if( 'nectar_global_section' === $shortcode ) {
         new SalientGlobalSections($('#vc_ui-panel-edit-element .wpb_el_type_nectar_global_section_select .edit_form_line'));
       }
@@ -1896,6 +2290,14 @@
 
       }
 
+            if( 'nectar_content_trail' === $shortcode ) {
+        createDeviceGroup('position-device-group');
+        createDeviceGroup('position-display-device-group');
+        createDeviceGroup('transform-device-group');
+        createDeviceGroup('size-device-group');
+        createDeviceGroup('image-width-device-group');
+      }
+
       if( 'nectar_icon' === $shortcode ) {
         createDeviceGroup('position-device-group');
         createDeviceGroup('position-display-device-group');
@@ -1910,6 +2312,7 @@
         createDeviceGroup('alignment-device-group');
         createDeviceGroup('display-device-group');
         createDeviceGroup('font-size-device-group');
+        createDeviceGroup('font-text-indent-device-group');
         createDeviceGroup('position-display-device-group');
         createDeviceGroup('position-device-group');
         createDeviceGroup('transform-device-group');
@@ -1922,11 +2325,13 @@
       if( 'split_line_heading' === $shortcode ||
           'testimonial_slider' === $shortcode ) {
         createDeviceGroup('font-size-device-group');
+        createDeviceGroup('font-text-indent-device-group');
       }
 
       if( 'nectar_text_inline_images' === $shortcode ) {
         createDeviceGroup('margin-device-group');
         createDeviceGroup('font-size-device-group');
+        createDeviceGroup('font-text-indent-device-group');
       }
 
       if( 'fancy_box' === $shortcode ) {
@@ -1935,10 +2340,18 @@
 
       if('fancy-ul' === $shortcode) {
         createDeviceGroup('font-size-device-group');
+        createDeviceGroup('font-text-indent-device-group');
       }
 
       if( 'item' === $shortcode ) {
         simpleSliderFields();
+        createFlexboxDeviceGroups();
+      }
+
+      if( 'nectar_sticky_media_sections' === $shortcode ) {
+        createDeviceGroup('max-height-device-group');
+        createDeviceGroup('layered-card-reveal-width-device-group');
+        createDeviceGroup('overlap-amount-device-group');
       }
 
       if( 'nectar_video_player_self_hosted' === $shortcode ) {
@@ -1955,41 +2368,47 @@
       if( 'nectar_circle_images' === $shortcode ) {
         createDeviceGroup('circle-images-alignment-device-group');
       }
-      
+
       if( 'nectar_badge' === $shortcode ) {
         createDeviceGroup('position-device-group');
         createDeviceGroup('position-display-device-group');
         createDeviceGroup('transform-device-group');
+        createDeviceGroup('font-size-device-group');
+        createDeviceGroup('font-text-indent-device-group');
       }
 
       if( 'nectar_highlighted_text' === $shortcode ) {
         createDeviceGroup('font-size-device-group');
+        createDeviceGroup('font-text-indent-device-group');
       }
 
       if( 'nectar_price_typography' === $shortcode ) {
         createDeviceGroup('font-size-device-group');
+        createDeviceGroup('font-text-indent-device-group');
       }
 
       if ( 'nectar_post_grid' === $shortcode ) {
         createDeviceGroup('font-size-device-group');
+        createDeviceGroup('font-text-indent-device-group');
         createDeviceGroup('padding-device-group');
         createDeviceGroup('column-device-group');
-
-        // repeater CF
-        new NectarCFRepeater($('#vc_ui-panel-edit-element .nectar-repeater-field'));
       }
+
 
 
       if( 'recent_posts' === $shortcode ) {
         createDeviceGroup('font-size-device-group');
+        createDeviceGroup('font-text-indent-device-group');
       }
 
       if( 'nectar_responsive_text' === $shortcode ) {
         createDeviceGroup('font-size-device-group');
+        createDeviceGroup('font-text-indent-device-group');
       }
 
       if( 'nectar_icon_list_item' === $shortcode ) {
         createDeviceGroup('font-size-device-group');
+        createDeviceGroup('font-text-indent-device-group');
       }
 
 
@@ -2005,8 +2424,18 @@
         $('.vc_edit_form_elements .nectar-lottie-preview').each(function(){
           new NectarLottiePreview($(this));
         });
-        
+
       }
+
+      // Initialize all repeater fields for any shortcode (must be after all shortcode-specific code)
+      var repeaterFields = $('.vc_edit_form_elements .nectar-repeater-field');
+
+      repeaterFields.each(function(index){
+
+        new NectarCFRepeater($(this));
+      });
+
+
 
 
       // Device Group Events.
@@ -2014,10 +2443,12 @@
       'vc_column_inner' === $shortcode ||
       'vc_row_inner' === $shortcode ||
       'vc_row' === $shortcode ||
+      'vc_section' === $shortcode ||
       'image_with_animation' === $shortcode ||
       'divider' === $shortcode ||
       'fancy_box' === $shortcode ||
       'nectar_cta' === $shortcode ||
+      'nectar_content_trail' === $shortcode ||
       'split_line_heading' === $shortcode ||
       'nectar_text_inline_images' === $shortcode ||
       'testimonial_slider' === $shortcode ||
@@ -2034,7 +2465,10 @@
       'fancy-ul' === $shortcode ||
       'nectar_circle_images' === $shortcode ||
       'nectar_post_grid' === $shortcode ||
-      'recent_posts' === $shortcode ) {
+      'recent_posts' === $shortcode ||
+      'nectar_flexbox' === $shortcode ||
+      'nectar_sticky_media_sections' === $shortcode ||
+      'item' === $shortcode ) {
         deviceGroupEvents();
       }
 
@@ -2055,6 +2489,9 @@
 
       // Video field.
       videoAttachFields();
+
+      // Flexbox layout.
+      nectarFlexboxLayout();
 
       // When full screen rows is active, do not create numerical inputs for disabled params
       if($('._nectar_full_screen_rows label[for="nectar_meta_on"].ui-state-active').length > 0 && 'vc_row' === $shortcode ) {
@@ -2087,6 +2524,9 @@
 
     // Custom radio parms
     nectarFancyRadioEvents();
+
+    // Checkbox tab events.
+    nectarCheckboxTabEvents();
 
     // Dynamic el styling - front end page builder
     $(window).on('load', function() {
@@ -2127,7 +2567,7 @@
                 }
 
                 window.vc.frame_window.jQuery("body").append(style);
-               
+
                 setTimeout(function() {
                   window.vc.frame_window.jQuery("body").trigger("vc_reload");
                   window.vc.frame_window.jQuery("body").trigger("resize");

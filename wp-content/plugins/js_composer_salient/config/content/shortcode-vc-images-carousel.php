@@ -67,7 +67,7 @@ return [
 				'element' => 'onclick',
 				'value' => [ 'custom_link' ],
 			],
-			'value' => vc_target_param_list(),
+			'value' => vc_get_shared( 'target param list' ),
 		],
 		[
 			'type' => 'dropdown',

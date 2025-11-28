@@ -22,7 +22,8 @@ class Vc_Navbar {
 		'save_backend',
 		'preview',
 		'frontend',
-		'custom_css',
+		'post_settings',
+		'custom_code',
 		'fullscreen',
 		'windowed',
 		'more',
@@ -140,26 +141,42 @@ class Vc_Navbar {
 	}
 
 	/**
-	 * Renders the custom CSS control if the user has the necessary access.
+	 * Renders the post settings control if the user has the necessary access.
 	 *
 	 * @return string
 	 * @throws \Exception
 	 */
-	public function getControlCustomCss() {
-		$has_tabs = ( vc_modules_manager()->is_module_on( [ 'vc-custom-js', 'vc-custom-css', 'vc-post-custom-layout' ] ) || vc_is_frontend_editor() );
-
-		if ( ! vc_user_access()->part( 'post_settings' )->can()->get() || ( ! $has_tabs ) ) {
+	public function getControlPostSettings() {
+		$has_post_settings_access = vc_user_access()->part( 'post_settings' )->can()->get();
+		if ( ! $has_post_settings_access ) {
 			return '';
 		}
-		return '<li class="vc_pull-right vc_hide-mobile vc_hide-desktop-more">
-					<a id="vc_post-settings-button" href="javascript:;" class="vc_icon-btn vc_post-settings" title="' . esc_attr__( 'Page settings', 'js_composer' ) . '">
-						<div class="vc_post-settings-icon">
-							<i class="vc-composer-icon vc-c-icon-cog"></i>
-							<span id="vc_post-settings-badge" class="vc_badge vc_badge-custom-css" style="display: none;"></span>
-						</div>
-						<p class="vc_hide-desktop">' . __( 'Settings', 'js_composer' ) . '</p>
-					</a>
-				</li>';
+
+		$has_layout_module = vc_modules_manager()->is_module_on( [ 'vc-post-custom-layout' ] );
+
+		// Backend editor: only show if layout module is enabled.
+		// Frontend editor: show if post settings access OR layout module is enabled.
+		$should_show = vc_is_frontend_editor() ? ( $has_post_settings_access || $has_layout_module ) : $has_layout_module;
+
+		if ( ! $should_show ) {
+			return '';
+		}
+
+		return vc_get_template( 'editors/navbar/vc_control-post-settings.php' );
+	}
+
+	/**
+	 * Renders the custom CSS/JS control if at least one custom code module is enabled.
+	 *
+	 * @return string
+	 */
+	public function getControlCustomCode() {
+		// Only show if at least one of the custom code modules is enabled.
+		if ( ! vc_modules_manager()->is_module_on( [ 'vc-custom-js', 'vc-custom-css' ] ) ) {
+			return '';
+		}
+
+		return vc_get_template( 'editors/navbar/vc_control-custom-code.php' );
 	}
 
 	/**
@@ -188,7 +205,8 @@ class Vc_Navbar {
 	 */
 	public function getControlAddElement() {
 		if ( vc_user_access()->part( 'shortcodes' )->checkStateAny( true, 'custom', null )->get() && vc_user_access_check_shortcode_all( 'vc_row' ) && vc_user_access_check_shortcode_all( 'vc_column' ) ) {
-			return '<li class="vc_show-mobile">	<a href="javascript:;" class="vc_icon-btn vc_element-button" data-model-id="vc_element" id="vc_add-new-element" title="' . esc_attr__( 'Add new element', 'js_composer' ) . '">    <i class="vc-composer-icon vc-c-icon-add_element"></i>	</a></li>';
+			$title = esc_attr( wpb_get_title_with_shortcut( 'Add new element' ) );
+			return '<li class="vc_show-mobile">	<a href="javascript:;" class="vc_icon-btn vc_element-button" data-model-id="vc_element" id="vc_add-new-element" title="' . $title . '">    <i class="vc-composer-icon vc-c-icon-add_element"></i>	</a></li>';
 		}
 
 		return '';
@@ -304,7 +322,8 @@ class Vc_Navbar {
 	 * @since 8.0
 	 */
 	public function outputIndividualControlElements() {
-		echo wp_kses_post( $this->getControlCustomCss() );
+		echo wp_kses_post( $this->getControlPostSettings() );
+		echo wp_kses_post( $this->getControlCustomCode() );
 		echo wp_kses_post( $this->getControlSaveBackend( true ) );
 	}
 }

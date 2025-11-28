@@ -6,13 +6,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 return array(
-	"name" => esc_html__("Sticky Media Section", "salient-core"),
+	"name" => esc_html__("Sticky Content Section", "salient-core"),
 	"base" => "nectar_sticky_media_section",
     "icon" => "icon-wpb-recent-projects",
     "content_element" => true,
     "is_container" => true,
     "js_view" => 'VcColumnView',
-    "as_child" => array('only' => 'nectar_sticky_media_sections'), 
+    "as_child" => array('only' => 'nectar_sticky_media_sections'),
 	"category" => esc_html__('Content', 'salient-core'),
 	"description" => esc_html__('Sticky Videos and Images', 'salient-core'),
 	"params" => array(
@@ -24,8 +24,8 @@ return array(
             'save_always' => true,
             "value" => array(
               esc_html__( "Image", "salient-core") => "image",
-              esc_html__( "Video", "salient-core") => "video", 
-              esc_html__( "Color", "salient-core") => "color",  
+              esc_html__( "Video", "salient-core") => "video",
+              esc_html__( "Color", "salient-core") => "color",
             ),
             "description" => esc_html__("Select what type of media to display for this section.", "salient-core")
           ),
@@ -40,17 +40,17 @@ return array(
         "description" => esc_html__("Specify the image to display for this section.", "salient-core")
       ),
 
-      array(
-        'type' => 'colorpicker',
-        'heading' => __( 'Section Color', 'salient-core' ),
-        'value' => '',
-        'save_always' => true,
-        'param_name' => 'section_color',
-        'dependency' => array( 'element' => 'section_type', 'value' => array( 'color' ) ),
-        'description' => esc_html__( 'Choose a background color for your section.', 'salient-core' ),
+
+      ...SalientWPbakeryParamGroups::theme_color_or_custom_group(
+        '',
+        'section_color',
+        'Section Color',
+        array('element' => 'section_type', 'value' => array('color')),
+        true,
+        esc_html__( 'Section Color', 'salient-core' ),
+        'section_color_source'
       ),
 
-          
 
         array(
             "type" => "nectar_attach_video",
@@ -81,7 +81,7 @@ return array(
             "dependency" => Array('element' => "section_type", 'value' => array('video')),
             "value" => array(
               esc_html__( "Loop Video", "salient-core") => "loop",
-              esc_html__( "Do Not Loop Video", "salient-core") => "no-loop",     
+              esc_html__( "Do Not Loop Video", "salient-core") => "no-loop",
             ),
             "description" => esc_html__("Determines how your video will playback.", "salient-core")
           ),
@@ -94,11 +94,11 @@ return array(
             "dependency" => Array('element' => "section_type", 'value' => array('video')),
             "value" => array(
               esc_html__( "Cover", "salient-core") => "cover",
-              esc_html__( "Contain", "salient-core") => "contain",      
+              esc_html__( "Contain", "salient-core") => "contain",
             ),
             "description" => esc_html__("Cover will crop the video to fit the media area, where as contain will ensure the full video always displays. ", "salient-core")
           ),
-  
+
           array(
             "type" => "dropdown",
             "heading" => esc_html__("Video Alignment", "salient-core"),
@@ -115,10 +115,26 @@ return array(
               esc_html__("Center Bottom", "salient-core" ) => "center-bottom",
               esc_html__("Right Top", "salient-core" ) => "right-top",
               esc_html__("Right Center", "salient-core" ) => "right-center",
-              esc_html__("Right Bottom", "salient-core" ) => "right-bottom"   
+              esc_html__("Right Bottom", "salient-core" ) => "right-bottom"
             ),
             "description" => esc_html__("Select your desired video alignment.", "salient-core")
           ),
+
+
+        //   array(
+        //     'type' => 'nectar_range_slider',
+        //     'heading' => esc_html__('Section Width', 'salient-core'),
+        //     'param_name' => 'horizontal_section_width',
+        //     'value' => '75',
+        //     'options' => array(
+        //         'min' => '25',
+        //         'max' => '100',
+        //         'step' => '1',
+        //         'suffix' => '%'
+        //     ),
+        //     'description' => esc_html__('Set the width of the section. This is only applicable when horizontal scrolling is active on desktop views.', 'salient-core')
+        // ),
+
 
           array(
             "type" => "textfield",
@@ -179,8 +195,8 @@ return array(
             "description" => esc_html__("The text that will be displayed on your link indicator button.", "salient-core")
           ),
 
-        
-		
+
+
 	)
 );
 

@@ -403,7 +403,11 @@ if ( !function_exists( 'nectar_page_header' ) ) {
 				// BG markup.
 				if( !empty($bg) && $bg !== 'none' ) { ?>
 					<div class="page-header-bg-image-wrap" id="nectar-page-header-p-wrap"<?php if(!empty($page_header_bg_attrs) ) { echo ' ' . $page_header_bg_attrs; } ?> data-parallax-speed="fast">
-						<div class="page-header-bg-image<?php if(!empty($page_header_classes)) { echo ' ' . esc_attr($page_header_classes); } ?>" style="background-image: url(<?php echo esc_attr( nectar_options_img($bg) ); ?>);"></div>
+						<div class="page-header-bg-image<?php if(!empty($page_header_classes)) { echo ' ' . esc_attr($page_header_classes); } ?>">
+							<?php
+							echo nectar_options_img_tag($bg, 'full');
+							?>
+						</div>
 					</div> <?php }
 
 				// Overlay Markup.
@@ -444,10 +448,6 @@ if ( !function_exists( 'nectar_page_header' ) ) {
 				// Blog Single header.
 				elseif( $post->ID != 0 && in_array($post->post_type, $blog_post_type_list) && is_single() ) {
 
-
-					if( $social_img_src !== 'none' ) {
-						echo '<img loading="lazy" class="hidden-social-img" src="'.esc_url($social_img_src).'" alt="'.get_the_title().'" style="display: none;" />';
-					}
 
 					$remove_single_post_date           = (!empty($nectar_options['blog_remove_single_date'])) ? $nectar_options['blog_remove_single_date'] : '0';
 					$remove_single_post_author         = (!empty($nectar_options['blog_remove_single_author'])) ? $nectar_options['blog_remove_single_author'] : '0';
@@ -920,7 +920,9 @@ else if( is_category() || is_tag() || is_date() || is_author() || apply_filters(
 
 		<div id="page-header-wrap" data-animate-in-effect="<?php echo esc_attr( $animate_in_effect ); ?>" data-midnight="light" class="blog-archive-header">
 			<div id="page-header-bg" data-animate-in-effect="<?php echo esc_attr( $animate_in_effect ); ?>" data-text-effect="" data-bg-pos="center" data-alignment="<?php echo esc_attr( $archive_header_text_align ); ?>" data-alignment-v="middle" data-parallax="0" data-height="400">
-				<div class="page-header-bg-image" style="background-image: url(<?php echo esc_url( $bg_img ); ?>);"></div>
+				<div class="page-header-bg-image">
+					<?php echo nectar_options_img_tag($bg_img, 'full'); ?>
+				</div>
 				<div class="container">
 					<div class="row">
 						<div class="col span_6">
@@ -1026,7 +1028,7 @@ if( !function_exists('nectar_responsive_page_header_css_output') ) {
 		} // is single / page
 	}
 }
-add_action('wp_enqueue_scripts', 'nectar_responsive_page_header_css_output', 20);
+// add_action('wp_enqueue_scripts', 'nectar_responsive_page_header_css_output', 20);
 
 /**
  * Swaps the background image as needed for each device viewport
@@ -1342,7 +1344,7 @@ add_filter('nectar_activate_transparent_header', 'nectar_transparent_contained_h
 
 
 /**
- * Check if a Nectar Slider is the first element on the page.
+ * Check if a Nectar Slider/full width row is the first element on the page.
  *
  * @since 3.0
  */
@@ -1361,6 +1363,7 @@ if ( !function_exists( 'nectar_using_full_width_top_level_row' ) ) {
 
 					if( strpos($matches[0],'vc_row type="full_width_background"') !== false ||
 						strpos($matches[0],'vc_row type="full_width_content"') !== false ||
+						strpos($matches[0],'vc_section type="full_width_background"') !== false ||
 						strpos($matches[0],'[nectar_global_section') !== false ) {
 
 						return true;

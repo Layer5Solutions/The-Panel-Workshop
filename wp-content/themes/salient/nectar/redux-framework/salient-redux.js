@@ -3,7 +3,7 @@
     "use strict";
 
     function SalientReduxOptions() {
-        
+
         this.container = $('.redux-container')
         this.events();
     }
@@ -30,7 +30,7 @@
          if( $('#header-size-select').length > 0 ) {
           this.headerSize($('#header-size-select').val());
         }
-        
+
     };
 
     SalientReduxOptions.prototype.colorGrid = function(val) {
@@ -45,7 +45,6 @@
 
     SalientReduxOptions.prototype.headerSize = function(val) {
       if( val === 'contained' ) {
-        console.log('c');
         $('.salient-header-nav-transparency, .salient-header-nav-transparency + table').addClass('inactive');
       } else {
         $('.salient-header-nav-transparency, .salient-header-nav-transparency + table').removeClass('inactive');

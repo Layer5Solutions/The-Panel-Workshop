@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 if( ! function_exists('salient_get_default_portfolio_options') ) {
 	function salient_get_default_portfolio_options() {
-		
+
 		$default_options = array(
 			'main_portfolio_layout' 			  => '3',
 			'main_portfolio_project_style'  => '7',
@@ -38,7 +38,7 @@ if( ! function_exists('salient_get_default_portfolio_options') ) {
 			'portfolio_date' 								=> 1,
 			'portfolio_single_nav' 					=> 'after_project_2'
 		);
-		
+
 		return $default_options;
 	}
 }
@@ -63,7 +63,7 @@ if ( ! function_exists( 'nectar_remove_lazy_load_functionality' ) ) {
  * @since 1.0
  */
 if( ! function_exists('nectar_ssl_check') ) {
-	
+
 	function nectar_ssl_check( $src ) {
 
 		$nectar_is_ssl = is_ssl();
@@ -75,7 +75,7 @@ if( ! function_exists('nectar_ssl_check') ) {
 			return $src;
 		}
 	}
-	
+
 }
 
 
@@ -86,7 +86,7 @@ if( ! function_exists('nectar_ssl_check') ) {
  */
 if ( ! function_exists( 'nectar_get_page_by_title_search' ) ) {
 	function nectar_get_page_by_title_search( $string ) {
-		
+
 		global $wpdb;
 
 		$string = sanitize_text_field( $string );
@@ -94,14 +94,14 @@ if ( ! function_exists( 'nectar_get_page_by_title_search' ) ) {
 		if ( ! $title ) {
 			return;
 		}
-		
-		$query_prepared = $wpdb->prepare( 
+
+		$query_prepared = $wpdb->prepare(
 			"SELECT * FROM {$wpdb->posts} WHERE post_title LIKE %s AND post_type = 'page' AND post_status = 'publish' LIMIT 1",
 			'%' . $wpdb->esc_like($title) . '%'
 		);
-		
+
 		$page = $wpdb->get_results($query_prepared);
-				
+
 		return $page;
 	}
 }
@@ -114,7 +114,7 @@ if ( ! function_exists( 'nectar_get_page_by_title_search' ) ) {
  * @since 1.0
  */
 function nectar_default_portfolio_img_sizer( $thumb_size, $title = 'no image added yet.' ) {
-	
+
 	switch($thumb_size) {
 		case 'wide_photography':
 			$no_image_size = 'no-portfolio-item-photography-wide.jpg';
@@ -141,9 +141,9 @@ function nectar_default_portfolio_img_sizer( $thumb_size, $title = 'no image add
 			$no_image_size = 'no-portfolio-item-small.jpg';
 			break;
 	}
-	
+
 	echo '<img class="no-img" src="' . SALIENT_PORTFOLIO_PLUGIN_PATH . '/img/' . esc_attr( $no_image_size ) . '" alt="'. esc_attr( $title ) .'" />';
-	
+
 }
 
 
@@ -159,20 +159,20 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 
 			global $nectar_options;
 			global $post;
-			
+
 			if( ! defined('NECTAR_THEME_NAME') ) {
 				$nectar_options = array(
 					'portfolio_single_nav' => 'after_project_2'
 				);
 			}
-			
+
 			$back_to_all_override = get_post_meta( $post->ID, 'nectar-metabox-portfolio-parent-override', true );
 			if ( empty( $back_to_all_override ) ) {
 				$back_to_all_override = 'default';
 			}
 
 			// attempt to find parent portfolio page - if unsuccessful default to main portfolio page
-			$terms          = get_the_terms( $post->id, 'project-type' );
+			$terms          = get_the_terms( $post->ID, 'project-type' );
 			$project_cat    = null;
 			$portfolio_link = null;
 			$single_nav_pos = ( ! empty( $nectar_options['portfolio_single_nav'] ) ) ? $nectar_options['portfolio_single_nav'] : 'in_header';
@@ -192,7 +192,7 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 			}
 
 			$page = nectar_get_page_by_title_search( $project_cat );
-			
+
 			if ( empty( $page ) ) {
 				$page = array( '0' => (object) array( 'ID' => 'nothing' ) );
 			}
@@ -201,43 +201,43 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 
 			 // if a page has been found for the category
 			if ( ! empty( $page_link ) && $back_to_all_override === 'default' && !in_array($single_nav_pos ,array('after_project_next_only','after_project_2')) ) {
-				
+
 				$portfolio_link = $page_link;
 
 				?>
-				 
+
 				 <div id="portfolio-nav">
 					<?php if ( !in_array($single_nav_pos ,array('after_project_next_only','after_project_2')) ) { ?>
 						 <ul>
-							 <li id="all-items"><a href="<?php echo esc_url( $portfolio_link ); ?>"><i class="icon-salient-back-to-all"></i></a></li>               
+							 <li id="all-items"><a href="<?php echo esc_url( $portfolio_link ); ?>"><i class="icon-salient-back-to-all"></i></a></li>
 						 </ul>
 					<?php } ?>
-					<ul class="controls">                                 
+					<ul class="controls">
 				   <?php if ( $single_nav_pos === 'after_project' ) { ?>
 
 							<?php if( 'default' === $navigation_order ) { ?>
 								<li id="prev-link"><?php be_next_post_link( '%link', '<i class="fa fa-angle-left"></i> <span>' . esc_html__( 'Previous Project', 'salient-portfolio' ) . '</span>', true, null, 'project-type' ); ?></li>
-								<li id="next-link"><?php be_previous_post_link( '%link', '<span>' . esc_html__( 'Next Project', 'salient-portfolio' ) . '</span><i class="fa fa-angle-right"></i>', true, null, 'project-type' ); ?></li> 
+								<li id="next-link"><?php be_previous_post_link( '%link', '<span>' . esc_html__( 'Next Project', 'salient-portfolio' ) . '</span><i class="fa fa-angle-right"></i>', true, null, 'project-type' ); ?></li>
 							<?php } else { ?>
 								<li id="prev-link"><?php be_previous_post_link( '%link', '<span>' . esc_html__( 'Next Project', 'salient-portfolio' ) . '</span><i class="fa fa-angle-right"></i>', true, null, 'project-type' ); ?></li>
-								<li id="next-link"><?php be_next_post_link( '%link', '<i class="fa fa-angle-left"></i> <span>' . esc_html__( 'Previous Project', 'salient-portfolio' ) . '</span>', true, null, 'project-type' ); ?></li> 
+								<li id="next-link"><?php be_next_post_link( '%link', '<i class="fa fa-angle-left"></i> <span>' . esc_html__( 'Previous Project', 'salient-portfolio' ) . '</span>', true, null, 'project-type' ); ?></li>
 							<?php } ?>
-					
-						<?php } else { 
+
+						<?php } else {
 
 							if( 'default' === $navigation_order ) { ?>
 								<li id="prev-link"><?php be_next_post_link( '%link', '<i class="icon-salient-left-arrow-thin"></i>', true, null, 'project-type' ); ?></li>
-								<li id="next-link"><?php be_previous_post_link( '%link', '<i class="icon-salient-right-arrow-thin"></i>', true, null, 'project-type' ); ?></li> 
+								<li id="next-link"><?php be_previous_post_link( '%link', '<i class="icon-salient-right-arrow-thin"></i>', true, null, 'project-type' ); ?></li>
 							<?php } else { ?>
 								<li id="prev-link"><?php be_previous_post_link( '%link', '<i class="icon-salient-right-arrow-thin"></i>', true, null, 'project-type' ); ?></li>
-								<li id="next-link"><?php be_next_post_link( '%link', '<i class="icon-salient-left-arrow-thin"></i>', true, null, 'project-type' ); ?></li> 
+								<li id="next-link"><?php be_next_post_link( '%link', '<i class="icon-salient-left-arrow-thin"></i>', true, null, 'project-type' ); ?></li>
 							<?php } ?>
 
 						<?php } ?>
-						
+
 					</ul>
 				</div>
-				 
+
 			<?php
 		}
 
@@ -265,17 +265,17 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 				<div id="portfolio-nav"<?php echo $portfolio_nav_attrs; ?>>
 					<?php if ( !in_array($single_nav_pos ,array('after_project_next_only','after_project_2')) ) { ?>
 						<ul>
-							<li id="all-items"><a href="<?php echo esc_url( $portfolio_link ); ?>" title="<?php echo esc_attr__( 'Back to all projects', 'salient-portfolio' ); ?>"><i class="icon-salient-back-to-all"></i></a></li>  
+							<li id="all-items"><a href="<?php echo esc_url( $portfolio_link ); ?>" title="<?php echo esc_attr__( 'Back to all projects', 'salient-portfolio' ); ?>"><i class="icon-salient-back-to-all"></i></a></li>
 						</ul>
 					<?php } ?>
 
-					<ul class="controls">    
+					<ul class="controls">
 				   <?php
 					 // limited to same cat.
 					if ( ! empty( $nectar_options['portfolio_same_category_single_nav'] ) && $nectar_options['portfolio_same_category_single_nav'] === '1' ) {
 
 							// get_posts in same custom taxonomy
-							$terms       = get_the_terms( $post->id, 'project-type' );
+							$terms       = get_the_terms( $post->ID, 'project-type' );
 							$project_cat = null;
 
 						if ( empty( $terms ) ) {
@@ -293,7 +293,8 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 
 							$postlist_args = array(
 								'posts_per_page' => -1,
-								'orderby'        => 'menu_order date',
+								'post_status'    => 'publish',
+								'orderby'        => apply_filters( 'salient_portfolio_single_nav_orderby', 'menu_order date' ),
 								'order'          => 'ASC',
 								'post_type'      => 'portfolio',
 								'project-type'   => $project_cat,
@@ -316,7 +317,7 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 								$nextid = ( isset( $ids[ $thisindex + 1 ] ) ) ? $ids[ $thisindex + 1 ] : null;
 								$previd = ( isset( $ids[ $thisindex - 1 ] ) ) ? $ids[ $thisindex - 1 ] : null;
 							}
-							
+
 
 
 						if ( ! empty( $previd ) ) {
@@ -335,7 +336,7 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 
 									if ( ! empty( $bg ) ) {
 										// page header
-										
+
 										if( function_exists('nectar_options_img') ) {
 											$bg = nectar_options_img($bg);
 										}
@@ -395,21 +396,21 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 								echo '<li id="next-link" class="from-sing"><a href="' . esc_url( get_permalink( $nextid ) ) . '"><i class="icon-salient-right-arrow-thin"></i></a></li>';
 							}
 						}
-					} 
-					
+					}
+
 					// Not limited to same cat.
 					else {
-						
-			
-						if ( $single_nav_pos === 'after_project' ) { 
+
+
+						if ( $single_nav_pos === 'after_project' ) {
 							if( 'default' === $navigation_order ) { ?>
 								<li id="prev-link"><?php next_post_link( '%link', '<i class="fa fa-angle-left"></i><span>' . esc_html__( 'Previous Project', 'salient-portfolio' ) . '</span>' ); ?></li>
-								<li id="next-link"><?php previous_post_link( '%link', '<span>' . esc_html__( 'Next Project', 'salient-portfolio' ) . '</span><i class="fa fa-angle-right"></i>' ); ?></li> 
+								<li id="next-link"><?php previous_post_link( '%link', '<span>' . esc_html__( 'Next Project', 'salient-portfolio' ) . '</span><i class="fa fa-angle-right"></i>' ); ?></li>
 							<?php } else { ?>
 								<li id="prev-link"><?php previous_post_link( '%link', '<i class="fa fa-angle-left"></i><span>' . esc_html__( 'Previous Project', 'salient-portfolio' ) . '</span>' ); ?></li>
-								<li id="next-link"><?php next_post_link( '%link', '<span>' . esc_html__( 'Next Project', 'salient-portfolio' ) . '</span><i class="fa fa-angle-right"></i>' ); ?></li> 
+								<li id="next-link"><?php next_post_link( '%link', '<span>' . esc_html__( 'Next Project', 'salient-portfolio' ) . '</span><i class="fa fa-angle-right"></i>' ); ?></li>
 							<?php }
-						} 
+						}
 						elseif ( in_array($single_nav_pos ,array('after_project_next_only','after_project_2')) ) {
 
 							if( 'default' === $navigation_order ) {
@@ -422,23 +423,23 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 
 							$hidden_class  = ( empty( $previous_post ) ) ? 'hidden' : null;
 							$only_class    = ( empty( $next_post ) ) ? ' only' : null;
-							
+
 							$use_project_header_img = true;
 							if( has_filter('salient_portfolio_pagination_use_header_img') ) {
 								$use_project_header_img = apply_filters('salient_portfolio_pagination_use_header_img', $use_project_header_img);
 							}
 
 							// Circular Loop for Next only.
-							if( isset($nectar_options['after_project_next_only_last_link']) && 
-								'first_project' === $nectar_options['after_project_next_only_last_link'] && 
+							if( isset($nectar_options['after_project_next_only_last_link']) &&
+								'first_project' === $nectar_options['after_project_next_only_last_link'] &&
 								empty($next_post) ) {
-								
+
 									global $post;
 
 									if( 'default' === $navigation_order ) {
 										$args = array(
-											'numberposts' => 1, 
-											'post_type' => $post->post_type, 
+											'numberposts' => 1,
+											'post_type' => $post->post_type,
 											'post_status' => 'publish'
 										);
 										$recent = wp_get_recent_posts( $args, OBJECT );
@@ -449,8 +450,8 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 
 									} else {
 										$args = array(
-											'numberposts' => 1000, 
-											'post_type' => $post->post_type, 
+											'numberposts' => 1000,
+											'post_type' => $post->post_type,
 											'post_status' => 'publish'
 										);
 										$recent = wp_get_recent_posts( $args, OBJECT );
@@ -460,11 +461,11 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 										}
 
 									}
-									
-									
-								
+
+
+
 							}
-							
+
 							echo '<li class="previous-project ' . $hidden_class . $only_class . '">';
 
 							if ( ! empty( $previous_post ) ) {
@@ -510,26 +511,26 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 									$post_thumbnail_url = wp_get_attachment_url( $post_thumbnail_id );
 									echo $portfolio_nav_img_wrap_o.'<div class="proj-bg-img" style="background-image: url(' . esc_url($post_thumbnail_url) . ');"></div>'.$portfolio_nav_img_wrap_c;
 								}
-								
+
 								echo '<a href="' . esc_url( get_permalink( $next_post_id ) ) . '"></a><h3><span>' . esc_html__( 'Next Project', 'salient-portfolio' ) . '</span><span class="text">' . wp_kses_post($next_post->post_title) . '
 												<svg class="next-arrow" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 39 12"><line class="top" x1="23" y1="-0.5" x2="29.5" y2="6.5" stroke="#ffffff;"></line><line class="bottom" x1="23" y1="12.5" x2="29.5" y2="5.5" stroke="#ffffff;"></line></svg><span class="line"></span></span></h3>';
 								echo '</li>';
-														
+
 							}
 
-						} 
+						}
 
 						else {
 							?>
 								<li id="prev-link">
 									<?php
 										if( 'default' === $navigation_order ) {
-											next_post_link( '%link', '<i class="icon-salient-left-arrow-thin"></i>' ); 
-										} 
+											next_post_link( '%link', '<i class="icon-salient-left-arrow-thin"></i>' );
+										}
 										else {
 											previous_post_link( '%link', '<i class="icon-salient-left-arrow-thin"></i>' );
 										}
-										
+
 										if ( $single_nav_pos === 'after_project' ) {
 											echo esc_html__( 'Previous Project', 'salient-portfolio' );}
 										?>
@@ -540,24 +541,24 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
 										echo esc_html__( 'Next Project', 'salient-portfolio' );
 									}
 									if( 'default' === $navigation_order ) {
-										previous_post_link( '%link', '<i class="icon-salient-right-arrow-thin"></i>' ); 
+										previous_post_link( '%link', '<i class="icon-salient-right-arrow-thin"></i>' );
 									} else {
-										next_post_link( '%link', '<i class="icon-salient-right-arrow-thin"></i>' ); 
+										next_post_link( '%link', '<i class="icon-salient-right-arrow-thin"></i>' );
 									}
 
 									?>
-								</li> 
-							<?php 
-						} 
+								</li>
+							<?php
+						}
 
 					} // end if not limitied to same cat.
-					
-					?>   
-					                             
+
+					?>
+
 				</ul>
-				
+
 			</div>
-				
+
 			<?php
 		}
 	}
@@ -571,56 +572,56 @@ if ( ! function_exists( 'nectar_project_single_controls' ) ) {
  * @since 1.0
  */
  if ( ! is_admin() ) {
-	 
+
 	 add_filter( 'get_previous_post_where', 'so16495117_mod_adjacent_bis' );
 	 add_filter( 'get_next_post_where', 'so16495117_mod_adjacent_bis' );
-	 
+
 	 if( ! function_exists('so16495117_mod_adjacent_bis') ) {
 		 function so16495117_mod_adjacent_bis( $where ) {
-			 
+
 			 global $wpdb;
 			 global $post;
-			 
+
 			 // if not on project exit early
 			 if ( ! is_singular( 'portfolio' ) ) {
 				 return $where; }
-				 
+
 				 $excluded_projects        = array();
 				 $exlcuded_projects_string = '';
-				 
+
 				 $portfolio = array(
 					 'post_type'      => 'portfolio',
 					 'posts_per_page' => '-1',
 				 );
 				 $the_query = new WP_Query( $portfolio );
-				 
+
 				 if ( $the_query->have_posts() ) {
 					 while ( $the_query->have_posts() ) {
-						 
+
 						 $the_query->the_post();
-						 
+
 						 $custom_project_link    = get_post_meta( $post->ID, '_nectar_external_project_url', true );
 						 $custom_content_project = get_post_meta( $post->ID, '_nectar_portfolio_custom_grid_item', true );
 						 $lightbox_only_item     = get_post_meta( $post->ID, '_nectar_portfolio_lightbox_only_grid_item', true);
-						 
-						 if ( ! empty( $custom_project_link ) || 
+
+						 if ( ! empty( $custom_project_link ) ||
 						 ! empty( $custom_content_project ) && $custom_content_project === 'on' ||
 					   ! empty( $lightbox_only_item ) && $lightbox_only_item === 'on' ) {
 							 $excluded_projects[] = $post->ID;
 						 }
 					 }
-					 
+
 					 $exlcuded_projects_string = implode( ',', $excluded_projects );
-					 
+
 					 wp_reset_postdata();
-					 
+
 					 if ( ! empty( $exlcuded_projects_string ) ) {
 						 return $where . " AND p.ID NOT IN ($exlcuded_projects_string)";
 					 } else {
 						 return $where;
 					 }
 				 }
-				 
+
 			 }
 		 }
 	 }
@@ -701,17 +702,17 @@ if ( ! function_exists( 'fjarrett_get_attachment_id_from_url' ) ) {
  */
 if ( ! function_exists( 'get_portfolio_page_link' ) ) {
 	function get_portfolio_page_link( $post_id ) {
-		
+
 		global $wpdb;
 
 		$post_id = sanitize_text_field( $post_id );
-		
-		$query_prepared = $wpdb->prepare( 
+
+		$query_prepared = $wpdb->prepare(
 			"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key='_wp_page_template' AND meta_value = %s", 'template-portfolio.php'
 		);
-		
+
 		$results = $wpdb->get_results($query_prepared);
-		
+
 		// safety net
 		$page_id = null;
 
@@ -731,23 +732,23 @@ if ( ! function_exists( 'get_portfolio_page_link' ) ) {
  */
 if ( ! function_exists( 'verify_portfolio_page' ) ) {
 	function verify_portfolio_page( $post_id ) {
-		
+
 		global $wpdb;
 
 		$post_id = sanitize_text_field( $post_id );
-		
-		$query_prepared = $wpdb->prepare( 
+
+		$query_prepared = $wpdb->prepare(
 			"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key='_wp_page_template' AND meta_value='template-portfolio.php' AND post_id = %s LIMIT 1",
 			$post_id
 		);
 		$result = $wpdb->get_results($query_prepared);
-	
+
 		if ( ! empty( $result ) ) {
 			return get_page_link( $result[0]->post_id );
 		} else {
 			return null;
 		}
-		
+
 	}
 }
 
@@ -802,7 +803,7 @@ if ( ! function_exists( 'nectar_portfolio_video_popup_link' ) ) {
 					$iframe_src = $iframe_src_match[1];
 
 					$parsed_iframe_src = parse_url($iframe_src);
-					
+
 					if( isset($parsed_iframe_src['query']) && $parsed_iframe_src['query'] !== null ) {
 						$query_args = '&' . $parsed_iframe_src['query'];
 					}
@@ -835,22 +836,22 @@ if ( ! function_exists( 'nectar_portfolio_video_popup_link' ) ) {
 			$video_output .= ']';
 
 			$video_markup = '<div id="video-popup-' . $post->ID . '" class="mfp-figure mfp-with-anim mfp-iframe-scaler"><div class="video">' . do_shortcode( $video_output ) . '</div></div>';
-			
+
 			// fancyBox3 uses raw browser player.
 			if( !empty( $video_m4v ) ) {
-				  
+
 				if( $using_fancybox === true ) {
 					$project_video_link = $video_m4v;
 					$video_markup = null;
 				}
 			}
-			
+
 		}
 
 		$popup_link_text = ( $project_style == '1' ) ? esc_html__( 'Watch Video', 'salient-portfolio' ) : '';
 
 		 return $video_markup . '<a href="' . esc_url($project_video_link) . '" class="pretty_photo default-link" >' . $popup_link_text . '</a>';
-		 
+
 	}
 }
 
@@ -864,13 +865,13 @@ if ( ! function_exists( 'nectar_portfolio_video_popup_link' ) ) {
 add_filter( 'body_class','salient_portfolio_single_remove_dh_bodyclass' );
 
 function salient_portfolio_single_remove_dh_bodyclass( $classes ) {
-	
-	if( is_singular( 'portfolio' ) && 
-	class_exists('Salient_Portfolio_Single_Layout') && 
+
+	if( is_singular( 'portfolio' ) &&
+	class_exists('Salient_Portfolio_Single_Layout') &&
 	false === Salient_Portfolio_Single_Layout::$default_header ) {
 		$classes[] = 'remove-default-project-header';
-	} 
-	
+	}
+
 	return $classes;
 }
 

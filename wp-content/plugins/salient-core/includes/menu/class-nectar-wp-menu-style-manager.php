@@ -77,7 +77,7 @@
 
        //// General transient trigger.
        add_action( 'wp', array( $this, 'check_transient' ) );
-       
+
 
 
      }
@@ -148,7 +148,7 @@
 
               // Video.
               $video_layer = '';
-							if( isset($menu_item_options['menu_item_link_bg_img_video']) && 
+							if( isset($menu_item_options['menu_item_link_bg_img_video']) &&
               !empty($menu_item_options['menu_item_link_bg_img_video']) ) {
 
                 $video_src_type = 'mp4';
@@ -165,15 +165,15 @@
               // Button
               $button = '';
               $button_class = '';
-              if( isset($menu_item_options['menu_item_link_button_cta']) && 
+              if( isset($menu_item_options['menu_item_link_button_cta']) &&
                   'on' === $menu_item_options['menu_item_link_button_cta'] ) {
 
                     $button_class = ' has-button';
                     $button_text = ( isset($menu_item_options['menu_item_link_cta_text']) ) ? $menu_item_options['menu_item_link_cta_text'] : '';
                     $button_bg_color = ( isset($menu_item_options['menu_item_link_cta_button_bg_color']) ) ? $menu_item_options['menu_item_link_cta_button_bg_color'] : false;
                     $button_text_color = ( isset($menu_item_options['menu_item_link_cta_button_text_color']) ) ? $menu_item_options['menu_item_link_cta_button_text_color'] : false;
-                    $button_style = ( isset($menu_item_options['menu_item_link_cta_button_style']) ) ? $menu_item_options['menu_item_link_cta_button_style'] : 'button_solid'; 
-                    
+                    $button_style = ( isset($menu_item_options['menu_item_link_cta_button_style']) ) ? $menu_item_options['menu_item_link_cta_button_style'] : 'button_solid';
+
                     $button_css = '';
                     $cta_padding_right = 0;
                     $cta_padding_left = 0;
@@ -186,7 +186,7 @@
                       $cta_padding_top = '0.8em';
                       $cta_padding_bottom = '0.8em';
                     }
-                    
+
                     $button_shortcode = do_shortcode('[nectar_cta bypass_link="true" btn_style="'.esc_attr($button_style).'" heading_tag="span" text_color="'.esc_attr($button_text_color).'" button_color="'.esc_attr($button_bg_color).'" link_type="regular" alignment="left" display="block" link_text="'.esc_attr($button_text).'" padding_top="'.esc_attr($cta_padding_top).'" padding_bottom="'.esc_attr($cta_padding_bottom).'" padding_left="'.esc_attr($cta_padding_left).'" padding_right="'.esc_attr($cta_padding_right).'"]');
 
                     $button = $button_css.'<span class="nectar-ext-menu-item__button nectar-inherit-btn-type '.$button_style.'">';
@@ -599,7 +599,7 @@
                     color: '.esc_attr($p_text_color) .';
                     transition: color 0.25s ease;
                   }
-                  
+
                   #header-outer:not(.transparent) .menu-item-'.esc_attr($item->ID) .'[class*="menu-item-btn-style-button-border"] > a,
                   #header-outer .menu-item-'.esc_attr($item->ID) .'[class*="menu-item-btn-style"]:not([class*="menu-item-btn-style-button-border"]) > a,
                   #header-outer #top .sf-menu .menu-item-'.esc_attr($item->ID) .'[class*="menu-item-btn-style"]:not([class*="menu-item-btn-style-button-border"]) > a,
@@ -632,7 +632,7 @@
                   #header-outer:not(.transparent) li.menu-item-'.esc_attr($item->ID) .'[class*="current"] > a > .menu-title-text {
                     color: '.esc_attr($p_text_hover_color) .'!important;
                   }
-                  
+
                   #header-outer .menu-item-'.esc_attr($item->ID) .'[class*="menu-item-btn-style-button"] > a:hover,
                   #header-outer #top nav .sf-menu li.menu-item.menu-item-'.esc_attr($item->ID) .'[class*="menu-item-btn-style-button"] > a:hover,
                   #header-outer #top nav .sf-menu li.menu-item.sfHover:not(#social-in-menu).menu-item-'.esc_attr($item->ID) .'[class*="menu-item-btn-style-button"] > a:hover,
@@ -643,10 +643,10 @@
 
                 }
 
-                // Button effect BG 
+                // Button effect BG
                 if( isset($nectar_options['header-hover-effect']) &&
                       'button_bg' === $nectar_options['header-hover-effect'] ) {
-                  
+
                   $menu_item_css .= '
                   #header-outer.transparent li.menu-item-'.esc_attr($item->ID) .' > a:hover > .menu-title-text,
                   #header-outer.transparent #top li.menu-item-'.esc_attr($item->ID) .' > a:hover > .sf-sub-indicator i,
@@ -666,17 +666,17 @@
                   // button active
                   if( $button_effect_active ) {
                     $menu_item_css .= 'body #top .sf-menu > li[class*="current"].menu-item-'.esc_attr($item->ID) .' > a .menu-title-text:before {
-                      background-color: '.$button_effect_active.'!important;	
+                      background-color: '.$button_effect_active.'!important;
                     }';
                   }
                   // button active text
                   if( $button_effect_active_text ) {
                     $menu_item_css .= 'body #top .sf-menu > li[class*="current"].menu-item-'.esc_attr($item->ID) .' > a .menu-title-text,
                     body #header-outer #top .sf-menu > li[class*="current"].menu-item-'.esc_attr($item->ID) .' > a > .sf-sub-indicator i {
-                      color: '.$button_effect_active_text.'!important;	
+                      color: '.$button_effect_active_text.'!important;
                     }';
                   }
-                  
+
                 }
 
               }
@@ -696,7 +696,31 @@
               if( isset($menu_item_options['menu_item_link_link_style']) && 'default' !== $menu_item_options['menu_item_link_link_style']) {
 
                 $mobile_logo_height	= (!empty($nectar_options['use-logo']) && !empty($nectar_options['mobile-logo-height'])) ? intval($nectar_options['mobile-logo-height']) : 24;
-                $mobile_padding_mod = ( $mobile_logo_height < 38 ) ? 10 : 0;
+                // Using image based logo.
+                if( isset($nectar_options['use-logo']) && ! empty( $nectar_options['use-logo'] ) ) {
+                   // skip.
+                }
+                // Using text logo.
+                else {
+                    // Custom size from typography logo line height option.
+                    if( isset($nectar_options['logo_font_family']['line-height']) && !empty($nectar_options['logo_font_family']['line-height']) ) {
+                      $logo_height = intval(substr($nectar_options['logo_font_family']['line-height'],0,-2));
+                      if ( $logo_height < 24 ) {
+                        $mobile_logo_height	= $logo_height;
+                      }
+                    }
+                    // Custom size from typography logo font size option.
+                    else if( isset($nectar_options['logo_font_family']['font-size']) && !empty($nectar_options['logo_font_family']['font-size']) ) {
+                      $logo_height = intval(substr($nectar_options['logo_font_family']['font-size'],0,-2));
+                      if ( $logo_height < 24 ) {
+                        $mobile_logo_height	= $logo_height;
+                      }
+                    }
+
+                }
+
+
+                $mobile_padding_mod = ( $mobile_logo_height < 38 ) ? 8 : 0;
 
                 $underscore_pos = strrpos($menu_item_options['menu_item_link_link_style'], "_");
 
@@ -719,11 +743,11 @@
                       $button_coloring = 'linear-gradient(90deg, ' . $button_coloring['to'] . ', '. $button_coloring['from'] . ')';
                     }
 
- 
+
                   }
 
                 }
-               
+
                 // Button Core.
                 $button_padding = '24px';
                 $button_padding_w = '48px';
@@ -745,9 +769,9 @@
                   position: relative;
                    margin: '.esc_attr($mobile_padding_mod).'px 0;
                   }
-            
+
                   body #header-space {
-                    height: '. (intval($mobile_logo_height) + 24 + ($mobile_padding_mod*2)) .'px;
+                    height: calc('. (intval($mobile_logo_height) + 24 + ($mobile_padding_mod*2)) .'px + var(--nectar_hook_before_nav_content_height, 0px));
                   }
 
                   body[data-button-style^="rounded"] #header-outer .menu-item-'.esc_attr($item->ID) .' > a {
@@ -770,7 +794,7 @@
                     border-left: 12px solid transparent;
                     border-right: 12px solid transparent;
                   }
-               
+
                   body #header-outer .menu-item-'.esc_attr($item->ID) .' > a:before,
                   body #header-outer .menu-item-'.esc_attr($item->ID) .' > a:after {
                     left: -'.$button_padding.';
@@ -790,8 +814,8 @@
                   opacity: 1!important;
                 }
 
-               
- 
+
+
                 #header-outer #header-secondary-outer .menu-item-'.esc_attr($item->ID) .' > a {
                   border-top: 0;
                   border-bottom: 0;
@@ -800,7 +824,7 @@
                 #header-outer #top li.menu-item-'.esc_attr($item->ID) .' > a .nectar-menu-icon {
                   transition: none;
                 }
-                
+
                 body #header-outer[data-has-menu][data-format] header#top nav ul.sf-menu li.menu-item.menu-item-'.esc_attr($item->ID) .'[class*="menu-item-btn-style"] > a *:not(.char),
                 body #header-outer[data-has-menu][data-format] header#top nav ul.sf-menu li.menu-item.menu-item-'.esc_attr($item->ID) .'[class*="menu-item-btn-style"] > a:hover *:not(.char) {
                   color: inherit!important;
@@ -830,7 +854,7 @@
                       color: #fff!important;
                     }';
                   }
-                
+
 
                   $menu_item_css .= '
                     #header-outer[data-has-menu="true"].transparent #top nav ul.sf-menu li.menu-item-'.esc_attr($item->ID) .' > a:hover .nectar-menu-icon {
@@ -894,14 +918,14 @@
                         background-position: 1300% 50%;
                       }
                     }
-                    
+
                     #header-outer .menu-item-'.esc_attr($item->ID) .' > a:before {
                       background-size: 1300%;
                       animation: nectarBtnGradientScroll 40s linear infinite;
                     }
                     ';
                   }
-                  
+
                } else if( 'bordered' === $button_type ) {
 
                 $menu_item_css .= '
@@ -946,7 +970,7 @@
                         background-position: 1300% 50%;
                       }
                     }
-                    
+
                     #header-outer .menu-item-'.esc_attr($item->ID) .' > a:after {
                       background-size: 1300%;
                       animation: nectarBtnGradientScroll 30s linear infinite;
@@ -954,7 +978,7 @@
                   }
 
                }
-               
+
               }
 
            }
@@ -994,7 +1018,6 @@
                        }';
                  }
 
-                 // Icon Alignment.
                  $icon_margin_target = 'right';
 
                  if( isset($menu_item_options['menu_item_icon_position']) &&
@@ -1473,16 +1496,16 @@
                     }';
               }
 
-              // Menu Menu EXT item CTA button 
-              if( isset($menu_item_options['menu_item_link_button_cta']) && 
+              // Menu Menu EXT item CTA button
+              if( isset($menu_item_options['menu_item_link_button_cta']) &&
                   'on' === $menu_item_options['menu_item_link_button_cta']  ) {
-                  
-                    // Base button styles 
+
+                    // Base button styles
                     $content_alignment = isset($menu_item_options['menu_item_link_content_alignment']) ? $menu_item_options['menu_item_link_content_alignment'] : 'top-left';
                     if( in_array($content_alignment, array('top-left', 'top-center', 'top-right')) ) {
 
                       $flex_align_items = 'flex-start';
-                      
+
                       if( 'top-center' === $content_alignment ) {
                         $flex_align_items = 'center';
                       } else if( 'top-right' === $content_alignment ) {
@@ -1718,18 +1741,18 @@
         if ( empty($wp_filesystem) ) {
           require_once( ABSPATH . 'wp-admin/includes/file.php' );
         }
-        
+
         $wp_upload_dir = wp_upload_dir( null, false );
         $upload_dir = $wp_upload_dir['basedir'];
-    
+
         if ( ! function_exists( 'WP_Filesystem' ) ) {
           return false;
         }
 
         WP_Filesystem();
-    
+
         $writable = WP_Filesystem( false, $upload_dir );
-    
+
         return ( $writable && 'direct' === $wp_filesystem->method );
      }
 
@@ -1764,10 +1787,15 @@
           Ext writing also need to be disabled when WPML is active,
           due to the menu ID manipulation.
        */
- 
+
        $inline_css = apply_filters('nectar_menu_options_compatibility_mode', false);
-       
-       if ( true === self::fs_access() && !class_exists( 'SitePress' ) && ! $inline_css ) {
+
+       $using_multiple_languages = false;
+       // WPML or Polylang is active.
+       if ( class_exists( 'SitePress' ) || defined('POLYLANG_VERSION') ) {
+        $using_multiple_languages = true;
+       }
+       if ( true === self::fs_access() && ! $using_multiple_languages && ! $inline_css ) {
 
            $stylesheet_url = self::$upload_url . 'menu-dynamic.css';
 

@@ -35,14 +35,19 @@ class Vc_Gutenberg_Param {
 	 */
 	public function initialize() {
 		global $pagenow, $wp_version;
-		if ( version_compare( $wp_version, '4.9.8', '>' ) && 'post-new.php' === $pagenow && vc_user_access()->wpAll( 'edit_posts' )->get() && vc_request_param( 'post_type' ) === $this->postTypeSlug ) {
+
+		if ( version_compare( $wp_version, '4.9.8', '>' ) ) {
+			// Always register the post type to avoid capability check errors.
 			$this->registerGutenbergAttributeType();
-			add_filter( 'use_block_editor_for_post_type', '__return_true', 11, 2 );
-			// @see Vc_Gutenberg_Param::removeAdminUi
-			add_action( 'admin_enqueue_scripts', [
-				$this,
-				'removeAdminUI',
-			] );
+			$use_block_editor = 'post-new.php' === $pagenow && vc_user_access()->wpAll( 'edit_posts' )->get() && vc_request_param( 'post_type' ) === $this->postTypeSlug;
+			if ( $use_block_editor ) {
+				add_filter( 'use_block_editor_for_post_type', '__return_true', 11, 2 );
+				// @see Vc_Gutenberg_Param::removeAdminUi
+				add_action('admin_enqueue_scripts', [
+					$this,
+					'removeAdminUI',
+				]);
+			}
 		}
 	}
 

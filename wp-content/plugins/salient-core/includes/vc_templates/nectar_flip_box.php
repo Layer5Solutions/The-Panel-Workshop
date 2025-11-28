@@ -40,11 +40,11 @@ $front_lazy_escaped = '';
 $back_lazy_escaped = '';
 
 if( !empty($image_url_1) ) {
-	
+
 	if( !preg_match('/^\d+$/',$image_url_1) ) {
 		if( 'lazy-load' === $image_loading || property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active ) {
 			$front_lazy_escaped .= 'data-nectar-img-src="'.esc_url($image_url_1).'"';
-		} else {          
+		} else {
 	    $style .= 'background-image: url('.esc_url($image_url_1) . '); ';
 		}
   } else  {
@@ -57,9 +57,9 @@ if( !empty($image_url_1) ) {
 				$style .= 'background-image: url(\''.esc_url($bg_image_src[0]).'\'); ';
 			}
 		}
-		
+
 	}
-	
+
 }
 
 if( !empty($image_url_2) ) {
@@ -67,10 +67,10 @@ if( !empty($image_url_2) ) {
 	if(!preg_match('/^\d+$/',$image_url_2)) {
 		if( 'lazy-load' === $image_loading || property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active) {
 			$back_lazy_escaped .= 'data-nectar-img-src="'.esc_url($image_url_2).'"';
-		} else {              
+		} else {
 	    $style2 .= 'background-image: url('.esc_url($image_url_2) . '); ';
 		}
-		
+
   } else {
 		$bg_image_src_2 = wp_get_attachment_image_src($image_url_2, apply_filters('nectar_default_flip_box_image_size','full'));
 
@@ -81,7 +81,7 @@ if( !empty($image_url_2) ) {
 				$style2 .= 'background-image: url(\''.esc_url($bg_image_src_2[0]).'\'); ';
 			}
 		}
-		
+
 	}
 }
 
@@ -100,7 +100,7 @@ if( !empty($min_height) ) {
 
 $box_link = null;
 if( !empty($link_url) ) {
-	$box_link = '<a '.$new_tab_markup.' href="'.esc_attr($link_url).'" class="box-link"></a>';
+	$box_link = '<a '.$new_tab_markup.' href="'.esc_url($link_url).'" class="box-link"></a>';
 }
 
 $text_link = null;
@@ -132,71 +132,71 @@ switch( $icon_family ) {
 		break;
 }
 
-if( $icon_family === 'linea' ) { 
-	wp_enqueue_style('linea'); 
+if( $icon_family === 'linea' ) {
+	wp_enqueue_style('linea');
 }
 
 if( !empty($icon) ) {
-	
+
 	if( $icon_family === 'iconsmind' ) {
-		
+
 		// SVG iconsmind.
 		$icon_id        = 'nectar-iconsmind-icon-'.uniqid();
 		$icon_markup    = '<span class="im-icon-wrap" data-color="'.esc_attr(strtolower($icon_color)) .'"><span>';
 		$converted_icon = str_replace('iconsmind-', '', $icon);
-	
+
 		require_once( SALIENT_CORE_ROOT_DIR_PATH.'includes/icons/class-nectar-icon.php' );
 
 		$nectar_icon_class = new Nectar_Icon(array(
 		'icon_name' => $converted_icon,
 		'icon_library' => 'iconsmind',
 		));
-	
+
 		$icon_markup .= $nectar_icon_class->render_icon();
-		
+
 		// Custom size.
 		$icon_markup = preg_replace(
 	   array('/width="\d+"/i', '/height="\d+"/i'),
 	   array('width="'.esc_attr($icon_size).'"', 'height="'.esc_attr($icon_size).'"'),
 	   $icon_markup);
-		
+
 		// Handle gradients.
 		if( strtolower($icon_color) === 'extra-color-gradient-1' || strtolower($icon_color) === 'extra-color-gradient-2') {
-				
+
 				$nectar_options = get_nectar_theme_options();
-				
+
 				if( strtolower($icon_color) === 'extra-color-gradient-1' && isset($nectar_options["extra-color-gradient"]['from']) ) {
-					
+
 					$accent_gradient_from = $nectar_options["extra-color-gradient"]['from'];
 					$accent_gradient_to   = $nectar_options["extra-color-gradient"]['to'];
-					
+
 				} else if( strtolower($icon_color) === 'extra-color-gradient-2' && isset($nectar_options["extra-color-gradient-2"]['from']) ) {
-					
+
 					$accent_gradient_from = $nectar_options["extra-color-gradient-2"]['from'];
 					$accent_gradient_to   = $nectar_options["extra-color-gradient-2"]['to'];
-					
+
 				}
-				
-				
+
+
 			  $icon_markup =  preg_replace('/(<svg\b[^><]*)>/i', '$1 fill="url(#'.$icon_id.')">', $icon_markup);
-				
+
 			  $icon_markup .= '<svg style="height:0;width:0;position:absolute;" aria-hidden="true" focusable="false">
 				  <linearGradient id="'.$icon_id.'" x2="1" y2="1">
 				    <stop offset="0%" stop-color="'.esc_attr($accent_gradient_to).'" />
 				    <stop offset="100%" stop-color="'.esc_attr($accent_gradient_from).'" />
 				  </linearGradient>
 				</svg>';
-		} 
-		 
-		
+		}
+
+
 		$icon_markup .= '</span></span>';
 	}
 	else {
-		
-		
+
+
 		$icon_markup = '<i class="icon-default-style '.esc_attr($icon).'" data-color="'.esc_attr(strtolower($icon_color)).'" style="font-size: '.esc_attr($icon_size).'px!important; line-height: '.esc_attr($icon_size).'px!important;"></i>';
 	}
-	
+
 }
 
 echo '<div class="nectar-flip-box" data-min-height="'.esc_attr($min_height).'" data-flip-direction="'.esc_attr($flip_direction).'" data-h_text_align="'.esc_attr($h_text_align).'" data-v_text_align="'.esc_attr($v_text_align).'">';

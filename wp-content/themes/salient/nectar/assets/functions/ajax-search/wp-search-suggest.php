@@ -34,7 +34,7 @@ function nectar_autocomplete_search_form() {
 
 function nectar_autocomplete_suggestions() {
 
-	$search_term = sanitize_text_field( $_REQUEST['term'] );
+	$search_term = isset( $_REQUEST['term'] ) ? sanitize_text_field( $_REQUEST['term'] ) : '';
 	$search_term = apply_filters( 'get_search_query', $search_term );
 
 	$nectar_options  = get_nectar_theme_options();

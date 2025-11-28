@@ -54,8 +54,7 @@ $class_to_filter = 'wpb_gmaps_widget ' . esc_attr( $element_class ) . ( '' === $
 $class_to_filter .= vc_shortcode_custom_css_class( $css, ' ' ) . $this->getExtraClass( $el_class ) . $this->getCSSAnimation( $css_animation );
 $css_class = apply_filters( VC_SHORTCODE_CUSTOM_CSS_FILTER_TAG, $class_to_filter, $this->settings['base'], $atts );
 
-$output = '';
-$output .= '<div class="' . esc_attr( $css_class ) . '"' . ( ! empty( $el_id ) ? ' id="' . esc_attr( $el_id ) . '"' : '' ) . '>';
+$output = '<div class="' . esc_attr( $css_class ) . '"' . ( ! empty( $el_id ) ? ' id="' . esc_attr( $el_id ) . '"' : '' ) . '>';
 $output .= wpb_widget_title( [
 	'title' => $title,
 	'extraclass' => 'wpb_map_heading',

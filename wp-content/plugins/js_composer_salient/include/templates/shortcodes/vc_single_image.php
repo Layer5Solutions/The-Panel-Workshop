@@ -103,9 +103,14 @@ switch ( $source ) {
 		$hwstring = $dimensions ? image_hwstring( $dimensions[0], $dimensions[1] ) : '';
 
 		$custom_src = $custom_src ? $custom_src : $default_src;
+		$attributes = [
+			'src' => esc_url( $custom_src ),
+			'class' => 'vc_single_image-img',
+		];
+		$attributes = vc_add_lazy_loading_attribute( $attributes );
 
 		$img = [
-			'thumbnail' => '<img class="vc_single_image-img" ' . $hwstring . ' src="' . esc_url( $custom_src ) . '" />',
+			'thumbnail' => '<img ' . $hwstring . ' ' . vc_stringify_attributes( $attributes ) . '" />',
 		];
 		break;
 
@@ -150,7 +155,9 @@ switch ( $onclick ) {
 			$link = $custom_src;
 		} else {
 			$link = wp_get_attachment_image_src( $img_id, 'large' );
-			$link = $link[0];
+			if ( isset( $link[0] ) ) {
+				$link = $link[0];
+			}
 		}
 
 		break;
@@ -227,7 +234,7 @@ if ( in_array( $source, [ 'media_library', 'featured_image' ], true ) && 'yes' =
 }
 
 if ( 'yes' === $add_caption && '' !== $caption ) {
-	$html .= '<figcaption class="vc_figure-caption">' . $caption . '</figcaption>';
+	$html .= '<figcaption class="vc_figure-caption">' . wp_kses_post( $caption ) . '</figcaption>';
 }
 $wrapper_attributes = [];
 if ( ! empty( $el_id ) ) {

@@ -54,7 +54,7 @@ $items = [];
 if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
 	$body = wp_remote_retrieve_body( $response );
 	$data = json_decode( trim( $body ), true );
-	$num = 0;
+	$num = 1;
 	foreach ( $data['items'] as $item ) {
 		if ( $num > $count ) {
 			break;

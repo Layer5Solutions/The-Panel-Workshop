@@ -51,7 +51,7 @@ $size = ( '' !== $size && 'wpb_regularsize' !== $size ) ? ' wpb_' . $size : ' ' 
 $a_class = '';
 
 if ( '' !== $href ) {
-	$button = '<span class="wpb_button ' . esc_attr( $color . $size . $icon ) . '">' . $title . $i_icon . '</span>';
+	$button = '<span class="wpb_button ' . esc_attr( $color . $size . $icon ) . '">' . esc_html( $title ) . $i_icon . '</span>';
 	$button = '<a class="wpb_button_a' . esc_attr( $a_class ) . '" href="' . esc_url( $href ) . '"' . $target . '>' . $button . '</a>';
 } else {
 	$button = '';

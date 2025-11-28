@@ -213,7 +213,7 @@ class Vc_Edit_Form_Fields {
 			'vc_edit_form_elements',
 		], $this->atts, $params );
 		$deprecated = $this->setting( 'deprecated' );
-		require_once vc_path_dir( 'AUTOLOAD_DIR', 'class-vc-settings-presets.php' );
+		require_once vc_path_dir( 'CORE_DIR', 'presets/class-vc-settings-presets.php' );
 		$show_settings = false;
 
 		$save_as_template_elements = apply_filters( 'vc_popup_save_as_template_elements', [

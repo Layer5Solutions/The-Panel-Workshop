@@ -67,5 +67,6 @@ function addCssBanner ( done ) {
 }
 
 module.exports = {
+	// eslint-disable-next-line object-shorthand
 	addCssBanner
 };

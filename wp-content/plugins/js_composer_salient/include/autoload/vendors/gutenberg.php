@@ -67,7 +67,7 @@ function vc_gutenberg_check_disabled( $result, $post_type ) {
 	global $pagenow;
 	if ( 'post.php' === $pagenow || 'post-new.php' === $pagenow ) {
 		// we are in single post type editing.
-		if ( isset( $_GET['classic-editor'] ) && ! isset( $_GET['classic-editor__forget'] ) ) {
+		if ( isset( $_GET['wpb-classic-editor'] ) && ! isset( $_GET['classic-editor__forget'] ) ) {
 			return false;
 		}
 		if ( isset( $_GET['wpb-backend-editor'] ) ) {
@@ -79,7 +79,7 @@ function vc_gutenberg_check_disabled( $result, $post_type ) {
 		if ( 'wpb_gutenberg_param' === $post_type ) {
 			return true;
 		}
-		if ( ! isset( $_GET['vcv-gutenberg-editor'] ) && ( get_option( 'wpb_js_gutenberg_disable' ) || vc_is_wpb_content() || isset( $_GET['classic-editor'] ) ) ) {
+		if ( ! isset( $_GET['vcv-gutenberg-editor'] ) && ( get_option( 'wpb_js_gutenberg_disable' ) || vc_is_wpb_content() || isset( $_GET['wpb-classic-editor'] ) ) ) {
 			return false;
 		}
 	}
@@ -99,7 +99,7 @@ function vc_gutenberg_check_disabled_regular( $editors, $post_type ) {
 		$editors['gutenberg_editor'] = false;
 	}
     // phpcs:ignore:WordPress.Security.NonceVerification.Recommended
-	if ( ! isset( $_GET['vcv-gutenberg-editor'] ) && ( get_option( 'wpb_js_gutenberg_disable' ) || vc_is_wpb_content() || isset( $_GET['classic-editor'] ) ) ) {
+	if ( ! isset( $_GET['vcv-gutenberg-editor'] ) && ( get_option( 'wpb_js_gutenberg_disable' ) || vc_is_wpb_content() || isset( $_GET['wpb-classic-editor'] ) ) ) {
 		$editors['gutenberg_editor'] = false;
 		$editors['classic_editor'] = false;
 	}
@@ -149,7 +149,7 @@ function vc_is_wpb_content() {
 function vc_gutenberg_map() {
 	global $wp_version;
 	if ( function_exists( 'the_gutenberg_project' ) || version_compare( $wp_version, '4.9.8', '>' ) ) {
-		vc_lean_map( 'vc_gutenberg', null, __DIR__ . '/shortcode-vc-gutenberg.php' );
+		vc_lean_map( 'vc_gutenberg', null, vc_path_dir( 'CONFIG_DIR', 'content/shortcode-vc-gutenberg.php' ) );
 	}
 }
 

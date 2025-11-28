@@ -33,9 +33,7 @@ $block_id_attr = (!empty($el_id)) ? ' id="'.esc_attr($el_id).'"': '';
 ?>
 
 <div class="<?php echo esc_attr( $css_class ); ?>" <?php if( !empty($max_width) ) { echo 'style=" max-width: '.intval($max_width).'px; display: inline-block;"'; }; echo $block_id_attr; ?>>
-	<div class="wpb_wrapper">
-		<?php echo wpb_js_remove_wpautop( $content, true ); ?>
-	</div>
+	<?php echo wpb_js_remove_wpautop( $content, true ); ?>
 </div>
 
 

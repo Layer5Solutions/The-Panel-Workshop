@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -9,7 +9,7 @@ $el_color_list = array(
     esc_html__( "Default (inherit from row Text Color)", "salient-core") => "Default",
 	esc_html__( "Accent Color", "salient-core") => "Accent-Color",
 	esc_html__( "Extra Color 1", "salient-core") => "Extra-Color-1",
-	esc_html__( "Extra Color 2", "salient-core") => "Extra-Color-2",	
+	esc_html__( "Extra Color 2", "salient-core") => "Extra-Color-2",
 	esc_html__( "Extra Color 3", "salient-core") => "Extra-Color-3",
 );
 $custom_colors = apply_filters('nectar_additional_theme_colors', array());
@@ -85,7 +85,7 @@ return array(
 			'save_always' => true,
 			"description" => esc_html__("Please select amount of padding you would like your subject to have", "salient-core")
 		),
-		
+
 		array(
 			"type" => "dropdown",
 			"heading" => esc_html__("Color", "salient-core"),
@@ -94,14 +94,15 @@ return array(
 			'save_always' => true,
 			'description' => esc_html__('Choose a color from your','salient-core') . ' <a target="_blank" href="'. esc_url(NectarThemeInfo::global_colors_tab_url()) .'"> ' . esc_html__('globally defined color scheme','salient-core') . '</a>',
 		),
-		
+
 		array(
 			"type" => "dropdown",
 			"heading" => esc_html__("Animation Effect", "salient-core"),
 			"param_name" => "effect",
 			"value" => array(
 				esc_html__( "Count To Value", "salient-core") => "count",
-				esc_html__( "Motion Blur Slide In", "salient-core") => "motion_blur"
+				esc_html__( "Motion Blur Slide In", "salient-core") => "motion_blur",
+				esc_html__( "None", "salient-core") => "none"
 			),
 			'save_always' => true,
 			"description" => esc_html__("Please select the animation you would like your milestone to have", "salient-core")
@@ -141,7 +142,7 @@ return array(
 			"description" => esc_html__("Please select the alignment you desire for your symbol.", "salient-core"),
 			"dependency" => Array('element' => "symbol", 'not_empty' => true)
 		),
-		
+
 		array(
 			"type" => "dropdown",
 			"heading" => esc_html__("Milestone Text Alignment", "salient-core"),
@@ -154,7 +155,7 @@ return array(
 			'save_always' => true,
 			"description" => esc_html__("Please select the alignment for your overall milestone.", "salient-core"),
 		)
-		
+
 	)
 );
 

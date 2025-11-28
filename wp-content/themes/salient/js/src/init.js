@@ -139,20 +139,29 @@
 			},
 			bindEvents: function() {
 
-				if (!nectarDOMInfo.usingMobileBrowser) {
+			if (!nectarDOMInfo.usingMobileBrowser) {
 
 
-					if (!usingSmoothScroll) {
-						$window.on('scroll', function() {
-							nectarDOMInfo.scrollTop = nectarDOMInfo.scrollPosMouse();
-						});
-					}
-					document.addEventListener("mousemove", function(e) {
-						nectarDOMInfo.clientX = e.clientX;
-						nectarDOMInfo.clientY = e.clientY;
+				if (!usingSmoothScroll) {
+					$window.on('scroll', function() {
+						nectarDOMInfo.scrollTop = nectarDOMInfo.scrollPosMouse();
 					});
-
 				}
+
+				// Function to update mouse position
+				var updateMousePosition = function(e) {
+					nectarDOMInfo.clientX = e.clientX;
+					nectarDOMInfo.clientY = e.clientY;
+				};
+
+				// Capture initial mouse position as early as possible
+				document.addEventListener("mouseenter", updateMousePosition, { once: true });
+				document.addEventListener("mouseover", updateMousePosition, { once: true });
+
+				// Continue tracking mouse movement
+				document.addEventListener("mousemove", updateMousePosition);
+
+			}
 
 				$window.on('resize', nectarDOMInfo.getWindowSize);
 				window.addEventListener("orientationchange", nectarDOMInfo.getWindowSize);
@@ -302,23 +311,23 @@
 
 		function NectarIconMouseFollow($el, iconType) {
 
-			this.lastX = nectarDOMInfo.clientX;
-			this.lastY = nectarDOMInfo.clientY;
-			this.$el = $el;
-			this.iconType = iconType;
+		this.lastX = nectarDOMInfo.clientX;
+		this.lastY = nectarDOMInfo.clientY;
+		this.$el = $el;
+		this.iconType = iconType;
 			this.timeout = false;
 			this.overEl = false;
 			this.initialCalc = false;
 			this.styleType = 'default';
 			this.bgElSelector = '';
 			this.$dragEl = '';
-			this.$innerParallaxEl = '';
-			this.parallaxLastX = 0;
-			this.parallaxLastY = 0;
-			this.$viewEl = '';
-			this.$closeEl = '';
-			this.lerpDamp = 0.18;
-			this.parallaxLerp = true;
+		this.$innerParallaxEl = '';
+		this.parallaxLastX = 0;
+		this.parallaxLastY = 0;
+		this.$viewEl = '';
+		this.$closeEl = '';
+		this.lerpDamp = 0.18;
+		this.parallaxLerp = true;
 
 			this.arrowMarkup = '<i class="fa fa-angle-left" role="none"></i><i class="fa fa-angle-right" role="none"></i>';
 
@@ -330,12 +339,12 @@
 
 		NectarIconMouseFollow.prototype.setup = function() {
 
-			if( this.iconType === 'post-grid-images' ||
-				this.iconType === 'horizontal-movement' ||
-				this.iconType === 'link-indicator' ||
-				this.iconType === 'view-indicator') {
-				  this.viewportTracking();
-			}
+		if( this.iconType === 'post-grid-images' ||
+			this.iconType === 'horizontal-movement' ||
+			this.iconType === 'link-indicator' ||
+			this.iconType === 'view-indicator') {
+			  this.viewportTracking();
+		}
 
 		};
 
@@ -442,13 +451,12 @@
 
 					// initial calc.
 					setTimeout(function(){
-
 						that.lastY = nectarDOMInfo.clientY;
 						that.lastX = nectarDOMInfo.clientX;
 
 						that.viewRAF();
 
-					},100);
+				},100);
 
 				} else {
 					this.$viewEl = $('.nectar-view-indicator');
@@ -477,6 +485,10 @@
 				this.activeViewRAF = true;
 
 				this.bgElSelector = (!this.$el.hasClass('nectar-category-grid')) ? '.nectar-post-grid-item-bg-wrap' : '.nectar-category-grid-item-bg';
+
+				if ( this.$el.hasClass('vert_list_hover_effect_featured_image_follow') ) {
+					this.bgElSelector = '.nectar-post-grid-item-bg__media';
+				}
 
 				if( !this.$el.hasClass('mouse-move-bound') ) {
 					this.$viewEl = this.$el.find( this.bgElSelector );
@@ -702,9 +714,17 @@
 		};
 
 		NectarIconMouseFollow.prototype.updatePos = function() {
-			this.lastY = linearInterpolate(this.lastY, nectarDOMInfo.clientY, this.lerpDamp);
+			if (this.$el && this.$el.hasClass('vert_list_hover_effect_featured_image_follow') ) {
+				this.lerpDamp = 0.1;
+				const mappedX = (1/2) * nectarDOMInfo.winW + (nectarDOMInfo.clientX / nectarDOMInfo.winW) * (nectarDOMInfo.winW / 2);
+			this.lastX = linearInterpolate(this.lastX, mappedX, this.lerpDamp);
+		} else {
 			this.lastX = linearInterpolate(this.lastX, nectarDOMInfo.clientX, this.lerpDamp);
 		}
+
+		this.lastY = linearInterpolate(this.lastY, nectarDOMInfo.clientY, this.lerpDamp);
+
+	}
 
 		NectarIconMouseFollow.prototype.parallaxIcon = function() {
 
@@ -934,7 +954,7 @@
 				var tickerDirection = ( this.$el.is('[data-ticker-direction]') ) ? this.$el.attr('data-ticker-direction') : 'default';
 
 				if( 'slow' === tickerSpeed ) {
-					this.tickerSpeed = 0.4;
+					this.tickerSpeed = 0.5;
 				}
 				else if( 'medium' === tickerSpeed ) {
 					this.tickerSpeed = 1.2;
@@ -946,6 +966,10 @@
 				if ( tickerDirection === 'reverse' ) {
 					this.tickerSpeed = this.tickerSpeed * -1;
 				}
+
+				// Optional per-instance multiplier for fine-tuning speed (e.g., data-ticker-mult="1.25")
+				this.tickerSpeed = this.tickerSpeed * 1;
+
 
 				this.$wrapAround = true;
 				this.$paginationBool = false;
@@ -1060,7 +1084,7 @@
 			var inHiddenSection = ( this.$el.parents('.toggle').length > 0 ) ? true : false;
 
 			// Markup.
-			if (typeof window.nectarFlickityActive === 'undefined' ) {
+			if (typeof window.nectarFlickityActive === 'undefined' && typeof Flickity != 'undefined' ) {
 				// Third-party flickity plugin in use, remove extra markup.
 				var $viewport = this.$el.find('.flickity-viewport');
 				var $slider = $viewport.find('.flickity-slider');
@@ -1093,7 +1117,7 @@
 			this.observer = new IntersectionObserver(function(entries) {
 
 				entries.forEach(function(entry){
-				  if (entry.isIntersecting) {
+				  if (entry.isIntersecting && typeof Flickity != 'undefined' ) {
 					that.init();
 					that.observer.unobserve(entry.target);
 				  }
@@ -1134,7 +1158,10 @@
 				accessibility: false,
 				fade: this.fadeBool,
 				dragThreshold: nectarDOMInfo.usingMobileBrowser ? 25 : 3,
-				arrowShape: this.$arrowShape
+				arrowShape: this.$arrowShape,
+				// perf knobs for ticker
+				scrollEventThrottle: (this.ticker) ? 80 : 0,
+				alwaysUse3dTransforms: (this.ticker) ? true : false
 			});
 
 			// Initialize events.
@@ -1149,14 +1176,28 @@
 				entries.forEach(function(entry){
 				  if (entry.isIntersecting) {
 					that.inView = true;
+					// Restart ticker loop when entering view if not running and not paused
+					if (that.ticker && !that._tickerRafId && !that.tickerPaused) {
+						that.tickerRotate();
+					}
 				  } else {
 					that.inView = false;
+					// Clear compositor hint and stop loop when out of view
+					if (that.instance && that.instance.slider) {
+						that.instance.slider.style.willChange = '';
+					}
+					if (that._tickerRafId) {
+						cancelAnimationFrame(that._tickerRafId);
+						that._tickerRafId = null;
+					}
+					// Reset timestamp so there is no jump on resume
+					that._tickerLastTs = null;
 				  }
 				});
 
 			  }, {
 					root: (isSafari()) ? null : document,
-				rootMargin: '200px 0px 200px 0px',
+				rootMargin: '100px 0px 100px 0px',
 				threshold: 0
 			});
 
@@ -1169,7 +1210,7 @@
 				 this.$el.parents('.wpb_column:not(.vc_col-sm-12)').length == 0 ) {
 
 					// Regular non full width rows
-					if( this.$el.parents('.wpb_row:not(.nectar-overflow-hidden):not(.full-width-content):not(.inner_row):not(.has-global-section)').length > 0 ) {
+					if( this.$el.parents('.wpb_row:not(.nectar-overflow-hidden):not(.full-width-content):not(.inner_row):not(.has-global-section):not(.nectar_section)').length > 0 ) {
 						this.$el.wrap('<div class="wpb_row vc_row-fluid vc_row full-width-content nectar-overflow-hidden carousel-dynamic-wrapper"><div class="normal-container container"></div></div>');
 					} else if( this.$el.parents('.wpb_row.full-width-content:not(.nectar-overflow-hidden)').length > 0 ) {
 						// parent is already full width and just needs a hidden overflow
@@ -1218,6 +1259,13 @@
 					this.trackView();
 				}
 
+				// Guard against duplicate ticker loops when re-initializing
+				// Increment a per-element generation token and bind it to this instance
+				this._tickerLastTs = null;
+				var currentGen = (this.$el.data('tickerGen') || 0) + 1;
+				this.$el.data('tickerGen', currentGen);
+				this._tickerGen = currentGen;
+
 				this.tickerRotate();
 
 				this.instance.on('dragStart', function() {
@@ -1226,11 +1274,22 @@
 
 				this.$el[0].addEventListener('mouseleave', function(){
 					this.tickerPaused = false;
+					// Restart ticker loop if it was canceled during hover
+					if (!this._tickerRafId && this.ticker && this.inView == true) {
+						this.tickerRotate();
+					}
 				}.bind(this));
 
 				if (this.$el.is('[data-pause-on-hover="true"]') || this.$nextPrevArrowBool || nectarDOMInfo.usingFrontEndEditor ) {
 					this.$el[0].addEventListener('mouseenter', function(){
 						this.tickerPaused = true;
+						// Fully stop RAF while hovered to prevent unnecessary processing
+						if (this._tickerRafId) {
+							cancelAnimationFrame(this._tickerRafId);
+							this._tickerRafId = null;
+						}
+						// Reset timestamp so there is no jump on resume
+						this._tickerLastTs = null;
 					}.bind(this));
 				}
 			}
@@ -1333,16 +1392,70 @@
 			}
 	};
 
-	NectarFlickity.prototype.tickerRotate = function() {
+	NectarFlickity.prototype.tickerRotate = function(now) {
+
+			// Stop early if paused or not in view; do not keep scheduling rAF
+			if (this.tickerPaused || this.inView != true) {
+				if (this.instance && this.instance.slider) {
+					this.instance.slider.style.willChange = '';
+				}
+				this._tickerRafId = null;
+				return;
+			}
+
+		// Stop if a newer ticker generation exists for this element (prevents duplicates)
+		if (this.$el && this._tickerGen !== undefined && this._tickerGen !== this.$el.data('tickerGen')) {
+			if (this._tickerRafId) {
+				cancelAnimationFrame(this._tickerRafId);
+			}
+			return;
+		}
+		// Use time-based delta so speed remains constant under varying frame rates
+		var perfNow = (window.performance && performance.now) ? performance.now() : Date.now();
+		now = (typeof now === 'number') ? now : perfNow;
+		if (!this._tickerLastTs) this._tickerLastTs = now;
+		var dt = (now - this._tickerLastTs) / 1000; // seconds
+		// Clamp extreme gaps (tab switch) to avoid giant jumps
+		if (dt <= 0 || dt > 0.25) dt = 1/60;
+		this._tickerLastTs = now;
+
+		// Calibrate baseline FPS to preserve previous per-frame feel on high refresh displays
+		if (!this._tickerFpsBase && !this._tickerCalibrate) {
+			this._tickerCalibrate = { frames: 0, duration: 0 };
+		}
+		if (!this._tickerFpsBase && this._tickerCalibrate) {
+			this._tickerCalibrate.frames++;
+			this._tickerCalibrate.duration += dt;
+			if (this._tickerCalibrate.frames >= 12) {
+				var fps = this._tickerCalibrate.frames / this._tickerCalibrate.duration;
+				// Clamp to reasonable range
+				this._tickerFpsBase = Math.max(50, Math.min(144, Math.round(fps)));
+				this._tickerCalibrate = null;
+			}
+		}
+		var fpsBase = this._tickerFpsBase || 60;
+
 		if (!this.tickerPaused && this.inView == true) {
+			// ensure compositor path while auto-rotating
+			if (this.instance && this.instance.slider) {
+				this.instance.slider.style.willChange = 'transform';
+			}
 			if (this.instance.slides) {
-				this.instance.x = (this.instance.x - this.tickerSpeed) % this.instance.slideableWidth;
+				// Convert per-frame speed to per-second using calibrated baseline
+				var step = this.tickerSpeed * (fpsBase * dt);
+				this.instance.x = (this.instance.x - step) % this.instance.slideableWidth;
 				this.instance.selectedIndex = this.instance.dragEndRestingSelect();
 				//this.instance.updateSelectedSlide();
 				this.instance.settle(this.instance.x);
 			}
 		}
-		window.requestAnimationFrame(this.tickerRotate.bind(this));
+		else {
+			// remove hint when paused or out of view
+			if (this.instance && this.instance.slider) {
+				this.instance.slider.style.willChange = '';
+			}
+		}
+		this._tickerRafId = window.requestAnimationFrame(this.tickerRotate.bind(this));
 	};
 
 	NectarFlickity.prototype.imageCaptionWidth = function() {
@@ -1819,10 +1932,10 @@
 			var $tallestSlideCol = 0;
 
 			$slider_instance
-				.find('.flickity-slider > .cell')
+				.find('.flickity-slider > .cell, .flickity-slider > .vc_element.vc_item > .cell')
 				.css('height', 'auto');
 
-			$slider_instance.find('.flickity-slider > .cell').each(function () {
+			$slider_instance.find('.flickity-slider > .cell, .flickity-slider > .vc_element.vc_item > .cell').each(function () {
 
 				if( $(this).height() > $tallestSlideCol ) {
 					$tallestSlideCol = $(this).height();
@@ -1836,7 +1949,7 @@
 
 			//set even height
 			$slider_instance
-				.find('.flickity-slider > .cell')
+				.find('.flickity-slider > .cell, .flickity-slider > .vc_element.vc_item > .cell')
 				.css('height', $tallestSlideCol + 'px');
 
 		}
@@ -3641,15 +3754,18 @@
 			*
 			* @since 9.0
 			*/
-			function nectar_scrollToY(scrollTargetY, speed, easing) {
+			function nectar_scrollToY(scrollTargetY, speed, easing, callback) {
 
 				var scrollY = window.scrollY || document.documentElement.scrollTop,
 				scrollTargetY = scrollTargetY || 0,
 				speed = 1300,
-				easing = easing || 'easeOutSine',
+				easing = 'easeInOutQuint',
 				currentTime = 0;
 
-				var time = Math.max(0.1, Math.min(Math.abs(scrollY - scrollTargetY) / speed, 1.3));
+				var distance = Math.abs(scrollY - scrollTargetY);
+				var additionalDurationMs = Math.max(0, Math.floor(distance / 1000)) * 300;
+				var durationMs = speed + Math.min(additionalDurationMs, 1500);
+				var time = Math.max(0.001, durationMs / 1000);
 
 				var easingEquations = {
 					easeInOutQuint: function (pos) {
@@ -3657,14 +3773,27 @@
 							return 0.5 * Math.pow(pos, 5);
 						}
 						return 0.5 * (Math.pow((pos - 2), 5) + 2);
+					},
+					easeOutQuad: function(pos) {
+						return -pos * (pos - 2);
+					},
+					easeInOutQuart: function(pos) {
+						if ((pos /= 0.5) < 1) {
+							return 0.5 * Math.pow(pos, 4);
+						}
+						return -0.5 * (Math.pow((pos - 2), 4) - 2);
 					}
 				};
+
+				var easingFunction = easingEquations[easing] || easingEquations.easeInOutQuart;
+
+				nectarState.animatedScrolling = true;
 
 				function tick() {
 					currentTime += 1 / 60;
 
 					var p = currentTime / time;
-					var t = easingEquations[easing](p);
+					var t = easingFunction(p);
 
 					if (p < 1) {
 						requestAnimationFrame(tick);
@@ -3672,11 +3801,31 @@
 						window.scrollTo(0, scrollY + ((scrollTargetY - scrollY) * t));
 					} else {
 						window.scrollTo(0, scrollTargetY);
+						nectarState.animatedScrolling = false;
+						if (typeof callback === 'function') {
+							callback();
+						}
 					}
 				}
 
 				tick();
 		}
+
+
+		// Disable wheel/touch scrolling during animated scrolling
+		$body.on('wheel mousewheel DOMMouseScroll touchmove', function (e) {
+			if ( nectarState.animatedScrolling === true ) {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				return false;
+			}
+		});
+
+		window.addEventListener('touchmove', function(e){
+			if ( nectarState.animatedScrolling === true ) {
+				e.preventDefault();
+			}
+		}, { passive: false });
 
 
 		/*
@@ -3749,7 +3898,7 @@
 			},
 			s.prototype.process = function () {
 
-				if( nectarState.preventScroll ) {
+				if( nectarState.preventScroll || nectarState.materialOffCanvasOpen ) {
 					return true;
 				}
 
@@ -4851,16 +5000,25 @@
 					}
 
 					var $symbol_size;
+					var $symbolSizeAttr = $(this).attr('data-symbol-size');
+					var $numberSizeAttr = $(this).find('.number').attr('data-number-size');
+    			var $symbolAlignment = $(this).attr('data-symbol-alignment');
 
-					if ($(this).attr('data-symbol-size') == $(this).find('.number').attr('data-number-size') && $(this).attr('data-symbol-alignment') == 'superscript') {
-						$symbol_size = 32;
+					if ($symbolSizeAttr == $numberSizeAttr && $symbolAlignment == 'superscript') {
+						$symbol_size = '32px';
 					} else {
-						$symbol_size = parseInt($(this).attr('data-symbol-size'));
+							// Check if the size has vw, vh, or px units
+							if (/^\d+(px|vw|vh)$/.test($symbolSizeAttr)) {
+									$symbol_size = $symbolSizeAttr;
+							} else {
+									// Default fallback if no valid unit is found
+									$symbol_size = parseInt($symbolSizeAttr) + 'px';
+							}
 					}
 
 					$(this).find('.symbol-wrap').css({
-						'font-size': $symbol_size + 'px',
-						'line-height': $symbol_size + 'px'
+						'font-size': $symbol_size,
+						'line-height': $symbol_size
 					});
 				}
 
@@ -5014,26 +5172,29 @@
 
 						setTimeout(function(){
 
-							if (!$that.hasClass('motion_blur')) {
+							var $effect = $that.is('[data-effect]') ? $that.attr('data-effect') : 'default';
 
-								var countOptions = {
-									easingFn: easeOutCubic
-								};
+							if ($effect !== 'none') {
+								if (!$that.hasClass('motion_blur')) {
+
+									var countOptions = {
+										easingFn: easeOutCubic
+									};
 
 
-								var $countEle = $that.find('.number span:not(.symbol)')[0];
-								var numAnim 	= new CountUp($countEle, 0, $endNum, decimalPlaces, 2.2, countOptions);
-								numAnim.start();
+									var $countEle = $that.find('.number span:not(.symbol)')[0];
+									var numAnim 	= new CountUp($countEle, 0, $endNum, decimalPlaces, 2.2, countOptions);
+									numAnim.start();
 
-							} else {
-								$that.find('span').each(function (i) {
-									var $that = $(this);
-									setTimeout(function () {
-										$that.addClass('in-sight');
-									}, 200 * i);
-								});
+								} else {
+									$that.find('span').each(function (i) {
+										var $that = $(this);
+										setTimeout(function () {
+											$that.addClass('in-sight');
+										}, 200 * i);
+									});
+								}
 							}
-
 							$that.addClass('animated-in');
 
 						}, $animationDelay);
@@ -6153,7 +6314,8 @@
 					if (e.originalEvent !== undefined &&
 						  nectarDOMInfo.winW < 1000 &&
 							$parentToggles.find('.toggle.open').length > 0 &&
-						  $nectarFullPage.$usingFullScreenRows == false) {
+						  $nectarFullPage.$usingFullScreenRows == false &&
+						  !$parentToggles.is('[data-style="animated_circle"]')) {
 
 						var $openToggle = $parentToggles.find('.toggle.open');
 
@@ -6257,7 +6419,13 @@
 
 		NectarStickyEl.prototype.init = function() {
 			this.resizeEvent();
-			$window.on('resize', this.resizeEvent.bind(this));
+			if ( nectarDOMInfo.usingMobileBrowser ) {
+				const mediaQuery = window.matchMedia('(orientation: portrait)');
+				mediaQuery.addEventListener('change', this.resizeEvent.bind(this));
+			} else {
+					$(window).on('resize', this.resizeEvent.bind(this));
+			}
+
 		}
 
 		NectarStickyEl.prototype.lazyInit = function() {
@@ -6295,7 +6463,7 @@
 
 		NectarStickyEl.prototype.resizeEvent = function() {
 
-			if( nectarDOMInfo.winW > 1000 ) {
+			if( nectarDOMInfo.winW > 1000 || (nectarDOMInfo.winW < 1000 && this.$el.find('.nectar-sticky-column-wrap--mobile').length > 0) ) {
 
 				this.calcTopOffset();
 
@@ -6468,6 +6636,13 @@
 				/* General animated underline */
 				$('.nectar-link-underline-effect a').on('mouseenter',function(){
 					$(this).addClass('accessed');
+				});
+
+				$('.nectar-underline-target-paragraph').each(function(){
+					var firstParagraph = $(this).find('p').first();
+					if( firstParagraph.length > 0 ) {
+						firstParagraph.addClass('nectar-underline-target-paragraph__target');
+					}
 				});
 
 
@@ -7753,6 +7928,7 @@
 					this.lerp          = ( el.data('scroll-animation-lerp') ) ? parseFloat(el.data('scroll-animation-lerp')) : 0.28;
 					this.intensity     = ( el.data('scroll-animation-intensity') ) ? Math.max(Math.min(parseFloat(el.data('scroll-animation-intensity')), 8), -8) : 3;
 
+					this.isSticky = ( el.data('scroll-animation-sticky') ) ? true : false;
 					this.intensity = this.intensity/10;
 					this.storedWinH = nectarDOMInfo.winH;
 
@@ -7874,7 +8050,9 @@
 
 				NectarScrollPosAnimations.prototype.animate = function() {
 
-					if( nectarState.materialOffCanvasOpen == true ) {
+					if( nectarState.materialOffCanvasOpen == true ||
+						window.nectarPreventParallax === true
+					 ) {
 						window.requestAnimationFrame(this.animate.bind(this));
 						return;
 					}
@@ -7924,31 +8102,41 @@
 
 
 
-				/**
-				* Parallax BG Scrolling
-				*
-				* @since 13.0
-				*/
-				function NectarParallaxScroll(el, parallaxElClass, speed, type) {
+			function NectarParallaxScroll(el, parallaxElClass, speed, type) {
 
-					this.$el            = el;
-					this.$parallaxEl    = this.$el.find(parallaxElClass);
-					this.firstSection   = false;
-					this.nestedParallax = false;
-					this.type           = type;
-					this.speed          = speed;
-					this.storedWinH     = nectarDOMInfo.winH;
+				this.$el            = el;
+				this.$parallaxEl    = this.$el.find(parallaxElClass);
+				this.firstSection   = false;
+				this.nestedParallax = false;
+				this.type           = type;
+				this.speed          = speed;
+				this.storedWinH     = nectarDOMInfo.winH;
 
-					if( el.parents('.nectar-sticky-tabs').length > 0 ||
-						el.parents('.nectar-sticky-column-css').length > 0 ||
-						el.parents('.nectar-global-section-megamenu').length > 0 ) {
-						return;
-					}
+				// Sticky detection props (computed once)
+				this.hasCSSSticky  = false;
+				this.stickyActive  = false;
+				this.$stickyTarget = null;
+				this.stickyTop     = 0;
 
-					this.setup();
-					this.update();
+			// Performance optimization: RAF management
+			this.rafId          = null;
+			this.isActive       = false;
+			this.boundUpdate    = this.update.bind(this);
 
+			// Cache last progress value to avoid redundant CSS variable updates
+			this.lastProgress   = null;
+
+				if( el.parents('.nectar-sticky-tabs').length > 0 ||
+					el.parents('.nectar-sticky-column-css').length > 0 ||
+					el.parents('.nectar-global-section-megamenu').length > 0 ) {
+					return;
 				}
+
+				this.setup();
+				this.detectSticky(); // one-time CSS sticky detection
+				this.startRAF();
+
+			}
 
 				NectarParallaxScroll.prototype.setup = function() {
 
@@ -7956,7 +8144,7 @@
 
 					// Page Header.
 					if( this.$el.parents('#page-header-bg').length > 0 ||
-	 					this.$el.parents('.featured-media-under-header').length > 0 ) {
+						 this.$el.parents('.featured-media-under-header').length > 0 ) {
 						this.type = 'page-header';
 					}
 
@@ -7994,22 +8182,34 @@
 					}
 
 
-					// Init class.
-					this.$parallaxEl.addClass('translate');
+				// Init class.
+				this.$parallaxEl.addClass('translate');
 
-					// Need to periodically check height/offset.
-					this.nestedParallax = ( this.$parallaxEl.parents('[data-scroll-animation="true"]').length > 0 ) ? true : false;
-					if( !this.nestedParallax ) {
-						setInterval(function() {
+				// Need to periodically check height/offset - Optimized to only run when necessary.
+				this.nestedParallax = ( this.$parallaxEl.parents('[data-scroll-animation="true"]').length > 0 ) ? true : false;
 
+				// Cache native element references for better performance
+				this.nativeEl = this.$el[0];
+				this.nativeParallaxEls = [];
+				for(var i = 0; i < this.$parallaxEl.length; i++) {
+					this.nativeParallaxEls.push(this.$parallaxEl[i]);
+				}
+
+				// Only poll for non-nested parallax, but less frequently and with IntersectionObserver optimization
+				if( !this.nestedParallax ) {
+					// Use a longer interval since we also update on scroll events
+					this.pollInterval = setInterval(function() {
 						if( nectarState.materialOffCanvasOpen != true &&
-							nectarState.ocmAnimating != true ) {
-							that.offsetTop = that.$el.offset().top;
-							that.height    = that.$el.outerHeight(true);
+							nectarState.ocmAnimating != true &&
+							that.isActive ) {
+							// Use native methods for better performance
+							var rect = that.nativeEl.getBoundingClientRect();
+							that.offsetTop = rect.top + window.pageYOffset;
+							that.height    = rect.height;
+							that.updateProgressConstants();
 						}
-
-						}, 800);
-					}
+					}, 800);
+				}
 
 					// Bind events.
 					$(window).on('nectar-column-animation-start',this.checkColumnAnimation.bind(this));
@@ -8020,9 +8220,80 @@
 						}, 110);
 					});
 
-					// Initial calc.
-					this.offsetTop = this.$el.offset().top;
-					this.height = this.$el.outerHeight(true);
+				// Initial calc using native methods for better performance.
+				var rect = this.nativeEl.getBoundingClientRect();
+				this.offsetTop = rect.top + window.pageYOffset;
+				this.height = rect.height;
+				this.updateProgressConstants();
+
+			};
+
+			NectarParallaxScroll.prototype.startRAF = function() {
+				if (!this.isActive) {
+					this.isActive = true;
+					this.rafId = requestAnimationFrame(this.boundUpdate);
+				}
+			};
+
+			NectarParallaxScroll.prototype.stopRAF = function() {
+				if (this.rafId) {
+					cancelAnimationFrame(this.rafId);
+					this.rafId = null;
+				}
+				this.isActive = false;
+			};
+
+			NectarParallaxScroll.prototype.destroy = function() {
+				// Cleanup method to prevent memory leaks
+				this.stopRAF();
+
+				// Clear the polling interval
+				if (this.pollInterval) {
+					clearInterval(this.pollInterval);
+					this.pollInterval = null;
+				}
+
+				// Remove event listeners
+				$(window).off('nectar-column-animation-start', this.checkColumnAnimation);
+				$(window).off('resize load', this.resize);
+
+				// Clear references
+				this.nativeParallaxEls = null;
+				this.nativeEl = null;
+				this.$parallaxEl = null;
+				this.$el = null;
+			};
+
+			NectarParallaxScroll.prototype.detectSticky = function() {
+
+					var boundary = this.$el.closest('.vc_row:not(.inner_row)')[0] || null;
+					var node = this.$el[0];
+
+					function getStickyData(n) {
+						if(!n) return { isSticky: false, top: 0 };
+						var cs = window.getComputedStyle(n);
+						var pos = cs.position;
+						if(pos === 'sticky' || pos === '-webkit-sticky') {
+							var t = cs.top;
+							var topVal = (t && t !== 'auto') ? parseFloat(t) : 0;
+							return { isSticky: true, top: isNaN(topVal) ? 0 : topVal };
+						}
+						return { isSticky: false, top: 0 };
+					}
+
+					while (node && node.nodeType === 1) {
+						if (boundary && node === boundary) break;
+
+						var data = getStickyData(node);
+						if (data.isSticky) {
+							this.hasCSSSticky  = true;
+							this.$stickyTarget = $(node);
+							this.stickyTop     = data.top;
+							break;
+						}
+
+						node = node.parentElement;
+					}
 
 				};
 
@@ -8032,84 +8303,152 @@
 					}
 				};
 
-				NectarParallaxScroll.prototype.realtimeOffsetUpdate = function() {
-					// Triggered when a column animation is active.
-					var that = this;
+			NectarParallaxScroll.prototype.realtimeOffsetUpdate = function() {
+				// Triggered when a column animation is active - optimized with native methods.
+				var that = this;
 
-					var realTimeOffset = setInterval(function() {
-						if( nectarState.materialOffCanvasOpen != true ) {
-							that.offsetTop = that.$el.offset().top;
-							that.height    = that.$el.outerHeight(true);
-						}
-					},30);
+				var realTimeOffset = setInterval(function() {
+					if( nectarState.materialOffCanvasOpen != true ) {
+						var rect = that.nativeEl.getBoundingClientRect();
+						that.offsetTop = rect.top + window.pageYOffset;
+						that.height = rect.height;
+						that.updateProgressConstants();
+					}
+				},30);
 
-					setTimeout(function(){
-						clearInterval(realTimeOffset);
-					},2000);
+				setTimeout(function(){
+					clearInterval(realTimeOffset);
+				},2000);
 
+			}
+
+			NectarParallaxScroll.prototype.resize = function() {
+
+				// Use native methods for better performance
+				var rect = this.nativeEl.getBoundingClientRect();
+
+				// not on mobile.
+				if( !nectarDOMInfo.usingMobileBrowser ) {
+					this.storedWinH = nectarDOMInfo.winH;
+					this.offsetTop = rect.top + window.pageYOffset;
+					this.height = rect.height;
+					this.updateProgressConstants();
+				}
+				else {
+					// on mobile, only recalc when item is not in a nested parallax setup.
+					if( !this.nestedParallax ) {
+						this.offsetTop = rect.top + window.pageYOffset;
+						this.height = rect.height;
+						this.updateProgressConstants();
+					}
 				}
 
-				NectarParallaxScroll.prototype.resize = function() {
+			};
 
-					// not on mobile.
-					if( !nectarDOMInfo.usingMobileBrowser ) {
-						this.storedWinH = nectarDOMInfo.winH;
-						this.offsetTop = this.$el.offset().top;
-						this.height = this.$el.outerHeight(true);
-					}
-					else {
-						// on mobile, only recalc when item is not in a nested parallax setup.
-						if( !this.nestedParallax ) {
-						this.offsetTop = this.$el.offset().top;
-						this.height = this.$el.outerHeight(true);
-						}
-					}
-
+				NectarParallaxScroll.prototype.updateProgressConstants = function() {
+					// Pre-calculate constants for progress calculation
+					this.elementBottom = this.offsetTop + this.height;
+					this.totalScrollDistance = this.storedWinH + this.height;
+					this.progressDenominator = this.totalScrollDistance;
+					this.scrollDistance = this.height + this.storedWinH;
 				};
 
-				NectarParallaxScroll.prototype.orientationChange = function() {
+			NectarParallaxScroll.prototype.orientationChange = function() {
 
-					if( nectarDOMInfo.usingMobileBrowser ) {
-						this.offsetTop = this.$el.offset().top;
-						this.height = this.$el.outerHeight(true);
-						this.storedWinH = nectarDOMInfo.winH;
+				if( nectarDOMInfo.usingMobileBrowser ) {
+					// Use native methods for better performance
+					var rect = this.nativeEl.getBoundingClientRect();
+					this.offsetTop = rect.top + window.pageYOffset;
+					this.height = rect.height;
+					this.storedWinH = nectarDOMInfo.winH;
+					this.updateProgressConstants();
+				}
+
+			};
+
+
+			NectarParallaxScroll.prototype.update = function() {
+
+				// Outside of viewport - STOP RAF loop instead of continuing
+				if(this.offsetTop + 150 + this.height < nectarDOMInfo.scrollTop ||
+					 this.offsetTop - 150 > nectarDOMInfo.scrollTop + this.storedWinH ||
+					 nectarState.materialOffCanvasOpen == true ||
+					 window.nectarPreventParallax === true
+				) {
+
+					 // Set willChange to auto for inactive elements
+					 for(var i = 0; i < this.nativeParallaxEls.length; i++) {
+						 this.nativeParallaxEls[i].style.willChange = 'auto';
+					 }
+
+					 // STOP RAF loop completely - major performance improvement
+					 this.stopRAF();
+					 return;
+				}
+
+				// Restart RAF if we were stopped
+				if (!this.isActive) {
+					this.startRAF();
+					return;
+				}
+
+
+				// Sticky activation watch
+				if( this.hasCSSSticky && this.$stickyTarget && this.$stickyTarget.length ) {
+
+					this.stickyActive = (this.$stickyTarget[0].classList.contains('is-pinned'));
+					if ( this.stickyActive ) {
+						this.rafId = requestAnimationFrame(this.boundUpdate);
+						return;
 					}
+				}
 
-				};
+				// High-performance progress calculation using pre-calculated values
+				var progress = 0;
+				var viewportTop = nectarDOMInfo.scrollTop;
+				var viewportBottom = viewportTop + this.storedWinH;
+
+				// Quick visibility check using pre-calculated elementBottom
+				if (viewportTop < this.elementBottom && viewportBottom > this.offsetTop) {
+					// Calculate progress from 0 to 1 as element scrolls out of viewport
+					// Progress starts when element top reaches viewport top (about to scroll out)
+					var elementTopRelativeToViewport = this.offsetTop - viewportTop;
+
+					// Progress is 0 when element top is at viewport top, 1 when element bottom is at viewport top
+					progress = Math.max(0, Math.min(1, -elementTopRelativeToViewport / this.height));
+				}
+
+			// Calculate transform value once
+			var transformY;
+			if( this.firstSection === true ) {
+				transformY = nectarDOMInfo.scrollTop * this.speed;
+			}
+			else {
+				transformY = (this.storedWinH + nectarDOMInfo.scrollTop - this.offsetTop) * this.speed;
+			}
+
+			// Apply transforms using cached native element references
+			for(var i = 0; i < this.nativeParallaxEls.length; i++) {
+				if( this.firstSection === true ) {
+					this.nativeParallaxEls[i].style.transform = 'translate3d(0,' + transformY + 'px,0)';
+				}
+				else {
+					this.nativeParallaxEls[i].style.transform = 'translate3d(0,' + transformY + 'px,0) scale(1.005)';
+				}
+				this.nativeParallaxEls[i].style.willChange = 'transform';
+			}
+
+				// Set progress CSS variable only once per frame (not inside loop)
+				if (this.lastProgress === null || Math.abs(progress - this.lastProgress) > 0.01) {
+					this.lastProgress = progress;
+					this.nativeEl.style.setProperty('--scroll-progress', progress);
+				}
+
+				// Use bound function to avoid creating new functions every frame
+				this.rafId = requestAnimationFrame(this.boundUpdate);
+			};
 
 
-				NectarParallaxScroll.prototype.update = function() {
-
-					// Outside of viewport.
-
-					if(this.offsetTop + 150 + this.height < nectarDOMInfo.scrollTop ||
-						 this.offsetTop - 150 > nectarDOMInfo.scrollTop + this.storedWinH ||
-						 nectarState.materialOffCanvasOpen == true) {
-
-						 for(var i = 0; i < this.$parallaxEl.length; i++) {
-							 this.$parallaxEl[i].style.willChange = 'auto';
-						 }
-
-						 requestAnimationFrame(this.update.bind(this));
-						 return;
-					}
-
-
-
-					for(var i = 0; i < this.$parallaxEl.length; i++) {
-
-						if( this.firstSection === true ) {
-							this.$parallaxEl[i].style.transform = 'translate3d(0, ' + nectarDOMInfo.scrollTop * this.speed + 'px, 0)';
-						}
-						else {
-
-							this.$parallaxEl[i].style.transform = 'translate3d(0, ' + ((this.storedWinH + nectarDOMInfo.scrollTop - this.offsetTop) * this.speed) + 'px, 0) scale(1.005)';
-						}
-						this.$parallaxEl[i].style.willChange = 'transform';
-					}
-
-					requestAnimationFrame(this.update.bind(this));
-				};
 
 
 			/**
@@ -8140,6 +8479,15 @@
 
 					Waypoint.refreshAll();
 
+				}
+
+				$(window).on('salient-parallax-minimal-refresh', nectarParallaxMinimalRefresh);
+				function nectarParallaxMinimalRefresh() {
+					for( var i = 0; i < parallaxItemsArr.length; i++) {
+						if ( parallaxItemsArr[i] ) {
+							parallaxItemsArr[i].resize();
+						}
+					}
 				}
 
 
@@ -8542,16 +8890,64 @@
 
 						}
 
-						$(this).addClass('nectar-parallax-enabled');
+					$(this).addClass('nectar-parallax-enabled');
 
-					});
+				});
 
-					$('.woocommerce-tabs .wc-tabs li').on('click', function(){
-						setTimeout(parallaxRowsBGCals,100);
-					});
+				// Global visibility checker to restart RAF loops for elements entering viewport
+				// Runs on scroll with throttling for performance
+				var lastScrollCheck = 0;
+				var scrollCheckThrottle = 100; // ms
+				var scrollCheckTimeout = null;
 
+				function runParallaxVisibilityCheck() {
+					var viewportTop = nectarDOMInfo.scrollTop;
+					var viewportBottom = viewportTop + nectarDOMInfo.winH;
+					var buffer = 450; // Start RAF slightly before element enters viewport
 
+					for(var i = 0; i < parallaxItemsArr.length; i++) {
+						if (parallaxItemsArr[i] && !parallaxItemsArr[i].isActive) {
+							// Check if element is about to enter viewport
+							var elementTop = parallaxItemsArr[i].offsetTop - buffer;
+							var elementBottom = parallaxItemsArr[i].offsetTop + parallaxItemsArr[i].height + buffer;
+
+							if (elementBottom > viewportTop && elementTop < viewportBottom) {
+								parallaxItemsArr[i].startRAF();
+							}
+						}
+					}
 				}
+
+				function throttledParallaxVisibilityCheck() {
+					var now = Date.now();
+					var timeSinceLast = now - lastScrollCheck;
+
+					if (timeSinceLast >= scrollCheckThrottle) {
+						if (scrollCheckTimeout) {
+							clearTimeout(scrollCheckTimeout);
+							scrollCheckTimeout = null;
+						}
+						lastScrollCheck = now;
+						runParallaxVisibilityCheck();
+					}
+					else if (!scrollCheckTimeout) {
+						scrollCheckTimeout = setTimeout(function(){
+							lastScrollCheck = Date.now();
+							scrollCheckTimeout = null;
+							runParallaxVisibilityCheck();
+						}, scrollCheckThrottle - timeSinceLast);
+					}
+				}
+
+				$(window).on('scroll.parallaxVisibility', throttledParallaxVisibilityCheck);
+				runParallaxVisibilityCheck();
+
+				$('.woocommerce-tabs .wc-tabs li').on('click', function(){
+					setTimeout(parallaxRowsBGCals,100);
+				});
+
+
+			}
 
 
 
@@ -10069,7 +10465,8 @@
 											if( $that.is('[data-m-rm-animation="true"]') && nectarDOMInfo.winW < 1000 ) {
 												$that.find('> * > span .inner').css({
 													'transform' : 'translateY(0)',
-													'opacity' : '1'
+													'opacity' : '1',
+													'filter': 'none'
 												});
 											}
 											else {
@@ -10078,7 +10475,8 @@
 													if( stagger == 0 ) {
 														$(this).find('> .inner').delay(i * stagger).transition({
 															'y': '0px',
-															'opacity' : '1'
+															'opacity' : '1',
+															'filter': 'none'
 														}, $animationDurationCap, $animationEasing);
 													}
 													else {
@@ -10087,6 +10485,7 @@
 														setTimeout(function(){
 															$innerEl[0].style.transform = 'translateY(0em)';
 															$innerEl[0].style.opacity = '1';
+															$innerEl[0].style.filter = 'none';
 														}, i * stagger);
 
 													}
@@ -10104,7 +10503,38 @@
 
                       var spans = $that.find('> * > span span');
 
-                      var animationArr = ($that.is('[data-text-effect="letter-reveal-top"]')) ? ['-1.3em','0em'] : ['1.3em','0em'];
+											var animationObj = {};
+											if ( $that.is('[data-text-effect="letter-reveal-blur-bottom"]') ) {
+												animationObj = {
+													opacity: [0, 1],
+													filter: ['blur(10px)', 'blur(0px)'],
+													translateY: ['0.25em','0em']
+												};
+											} else if ( $that.is('[data-text-effect="letter-reveal-blur-top"]') ) {
+												animationObj = {
+													opacity: [0, 1],
+													filter: ['blur(10px)', 'blur(0px)'],
+													translateY: ['-0.25em','0em']
+												};
+											} else if ( $that.is('[data-text-effect="letter-reveal-top"]') ) {
+												animationObj = {
+													translateY: ['-1.3em','0em']
+												};
+											} else if ( $that.is('[data-text-effect="letter-reveal-bottom"]') ) {
+												animationObj = {
+													translateY: ['1.3em','0em']
+												};
+											} else if ( $that.is('[data-text-effect="letter-reveal-fade-top"]') ) {
+												animationObj = {
+													opacity: [0, 1],
+													translateY: ['-0.5em','0em']
+												};
+											}  else if ( $that.is('[data-text-effect="letter-reveal-fade-bottom"]') ) {
+												animationObj = {
+													opacity: [0, 1],
+													translateY: ['0.5em','0em']
+												};
+											}
 
 											stagger = 400 / spans.length;
 											stagger = Math.min(Math.max(stagger, 20), 35); // Clamp val
@@ -10112,7 +10542,7 @@
 											if( spans.length > 0 ) {
 												animeAnimations.push(anime({
 													targets: $that.find('> * > span span').toArray(),
-													translateY: animationArr,
+													...animationObj,
 													delay: anime.stagger(stagger),
 													duration: 1200,
 													easing: 'cubicBezier(0.25,1,0.5,1)'
@@ -10968,6 +11398,7 @@
 				function nectarLazyImageLoading() {
 
 					var lazyItems = [].slice.call(document.querySelectorAll('[data-nectar-img-src]'));
+					var lazyPosterItems = [].slice.call(document.querySelectorAll('[data-nectar-poster]'));
 					var lazyVideoItems = [].slice.call(document.querySelectorAll('.nectar-lazy-video'));
 					var lazyMenuVideoItems = [].slice.call(document.querySelectorAll('#header-outer .nectar-lazy-video'));
 
@@ -10999,8 +11430,26 @@
 
 						}, options);
 
+						var lazyPosterObserver = new IntersectionObserver(function (entries) {
+							entries.forEach(function (entry) {
+								if (entry.isIntersecting) {
+									var lazyPoster = entry.target;
+									var posterSrc = lazyPoster.getAttribute('data-nectar-poster');
+									if (posterSrc) {
+										lazyPoster.poster = posterSrc;
+										lazyPoster.removeAttribute('data-nectar-poster');
+										lazyPosterObserver.unobserve(lazyPoster);
+									}
+								}
+							});
+						}, options);
+
 						lazyItems.forEach(function (lazyItem) {
 							lazyItemObserver.observe(lazyItem);
+						});
+
+						lazyPosterItems.forEach(function (lazyPoster) {
+							lazyPosterObserver.observe(lazyPoster);
 						});
 
 						// Videos.
@@ -11157,6 +11606,10 @@
 					});
 
 					$('.nectar-post-grid-wrap[data-style="mouse_follow_image"] .nectar-post-grid').each(function(i) {
+						postGridImgMouseFollowArr[i] = new NectarIconMouseFollow($(this), 'post-grid-images');
+					});
+
+					$('.nectar-post-grid-wrap[data-style="vertical_list"] .nectar-post-grid.vert_list_hover_effect_featured_image_follow').each(function(i) {
 						postGridImgMouseFollowArr[i] = new NectarIconMouseFollow($(this), 'post-grid-images');
 					});
 
@@ -11385,6 +11838,7 @@
 								display_categories: settingsData.display_categories,
 								display_estimated_reading_time: settingsData.display_estimated_reading_time,
 								display_excerpt: settingsData.display_excerpt,
+								content_next_to_image_excerpt_pos: settingsData.content_next_to_image_excerpt_pos,
 								excerpt_length: settingsData.excerpt_length,
 								display_date: settingsData.display_date,
 								display_author: settingsData.display_author,
@@ -11400,9 +11854,11 @@
 								post_title_overlay: settingsData.post_title_overlay,
 								category_style: settingsData.category_style,
 								enable_gallery_lightbox: settingsData.enable_gallery_lightbox,
+								remove_links: settingsData.remove_links,
 								overlay_secondary_project_image: settingsData.overlay_secondary_project_image,
 								vertical_list_hover_effect: settingsData.vertical_list_hover_effect,
 								vertical_list_read_more: settingsData.vertical_list_read_more,
+								vertical_list_read_more_style: settingsData.vertical_list_read_more_style,
 								read_more_button: settingsData.read_more_button,
 								custom_fields: settingsData.custom_fields,
 								custom_fields_location: settingsData.custom_fields_location,
@@ -11563,6 +12019,10 @@
 					var postGridOffsetPos = ($fullscreenMarkupBool == true) ? '200%' : '75%';
 
 					$($fullscreenSelector + '.nectar-post-grid-wrap').each(function () {
+
+						if ( $(this).find('.nectar-post-grid[data-columns="1"]').length > 0 ) {
+							postGridOffsetPos = '85%';
+						}
 
 						if ( delayJS && $(this).hasClass('delay-js-loaded') && $nectarFullPage.$usingFullScreenRows == false) {
 							return;
@@ -13057,10 +13517,13 @@
 
 					var conditionalShow = false;
 					if( alignmentPosition !== 'left' && headerOCMButtonPos !== 'left' ) {
+
 						conditionalShow = (e.clientX < $windowWidth - parseInt($ocmHoverWidth) - $bodyBorderWidth);
 					} else {
 						conditionalShow = (e.clientX > parseInt($ocmHoverWidth) + $bodyBorderWidth);
 					}
+
+
 
 
 					if (conditionalShow && $offCanvasEl.hasClass('mouse-accessed')) {
@@ -13733,7 +14196,6 @@
 
 							$('body[data-hhun="1"] #header-secondary-outer.hidden').removeClass('hidden');
 
-
 							nectarState.materialOffCanvasOpen = false;
 
               $(window).trigger('nectar-material-ocm-close');
@@ -13797,7 +14259,13 @@
 
 					// Remove box shadow incase at the top of the page with nectar box roll above
 					$('.container-wrap').addClass('no-shadow');
-					$headerOuterEl.stop(true).css('transform', 'translateY(0)');
+
+						// Set translateY to 0 in all cases
+						if ( nectarDOMInfo.secondaryHeaderHeight > 0 && ($headerOuterEl.hasClass('hidden-secondary') || $headerSecondaryEl.hasClass('hide-up')) ) {
+							// skip
+						} else {
+							$headerOuterEl.stop(true).css('transform', 'translateY(0)');
+						}
 
 					setTimeout(function () {
 
@@ -14114,7 +14582,11 @@
 					}
 
 					// Set translateY to 0 in all cases
-					$headerOuterEl.stop(true).css('transform', 'translateY(0)');
+					if ( nectarDOMInfo.secondaryHeaderHeight > 0 && ($headerOuterEl.hasClass('hidden-secondary') || $headerSecondaryEl.hasClass('hide-up')) ) {
+						// skip
+					} else {
+						$headerOuterEl.stop(true).css('transform', 'translateY(0)');
+					}
 
 					if ($window.width() > 1000 &&
 					$('#header-outer[data-format="centered-menu-bottom-bar"].fixed-menu').length == 0 &&
@@ -15686,11 +16158,6 @@
 				}
 
 
-
-
-
-
-
 				/**
 				* Permanent transparent header effect.
 				*
@@ -15715,7 +16182,7 @@
 							$(this).attr('data-midnight') == 'dark' && $(this).parents('.pum-content').length == 0) {
 
 								if( ($(this).is('#page-header-bg') && $(this).parents('#page-header-wrap[data-midnight]').length > 0) ||
-										$(this).parents('#slide-out-widget-area').length > 0 ) {
+										$(this).parents('#slide-out-widget-area').length > 0 || $(this).parents('#header-outer').length > 0 ) {
 									// skip.
 								} else {
 									$midnightCompatArr.push($(this));
@@ -17755,7 +18222,9 @@
 					// Set mobile header height.
 					if (nectarDOMInfo.usingMobileBrowser && $('#header-outer[data-mobile-fixed="1"]').length > 0 &&
 					$('#header-outer[data-transparent-header="true"]').length == 0) {
-						$('#header-space').css('height', $headerOuterEl.outerHeight()).addClass('calculated');
+						if ( Math.abs($headerOuterEl.outerHeight() - $('#header-space').height()) > 7 ) {
+							$('#header-space').css('height', $headerOuterEl.outerHeight()).addClass('calculated');
+						}
 					}
 
 					// Header nav entrance animation.
@@ -17843,6 +18312,19 @@
 
 							}
 
+							// still consider the at-top class
+							if ( nectarState.animatedScrolling == true ) {
+								var $topDetachNum = ($headerSecondaryEl.length > 0) ? 32 : 0;
+								if ( usingSmoothScroll ) {
+									$topDetachNum += 10;
+								}
+								if ( currentScroll <= $topDetachNum ) {
+									$headerOuterEl.addClass('at-top');
+								}
+								else {
+									$headerOuterEl.removeClass('at-top');
+								}
+							}
 							hhunState.raf = requestAnimationFrame(hhunCalcs);
 							return;
 
@@ -17915,6 +18397,7 @@
 
 
 									if (currentScroll > previousScroll) {
+
 
 										// Hide menu
 										if (!$headerOuterEl.hasClass('invisible')) {
@@ -18661,7 +19144,9 @@
 								$('#header-space').css('height', $headerOuterEl.outerHeight()).addClass('calculated');
 							}
 						} else {
-							$('#header-space').css('height', $headerOuterEl.outerHeight()).addClass('calculated');
+							if ( Math.abs($headerOuterEl.outerHeight() - $('#header-space').height()) > 7 ) {
+								$('#header-space').css('height', $headerOuterEl.outerHeight()).addClass('calculated');
+							}
 						}
 
 					} else {
@@ -19779,7 +20264,17 @@
 							return true;
 						}
 
-						var animatedStyle = ( $(this).hasClass('animated-in') ) ? ' style="transform: none;"' : '';
+						var animatedStyle = '';
+
+						if ( $(this).hasClass('animated-in') ) {
+							if ( $(this).is('[data-text-effect*="letter-reveal-blur"]') ) {
+								animatedStyle = ' style="transform: none; opacity: 1; filter: none;"';
+							} else if ( $(this).is('[data-text-effect*="letter-reveal-fade"]') ) {
+								animatedStyle = ' style="transform: none; opacity: 1;"';
+							} else {
+								animatedStyle = ' style="transform: none;"';
+							}
+						}
 
 						$(this).find('> *').each(function () {
 
@@ -20023,6 +20518,10 @@
 				function recentPostSliderParallax() {
 
 					$('.nectar-recent-posts-slider').each(function () {
+
+						if( $(this).find('.flickity-slider').length === 0 ) {
+							return;
+						}
 
 						var $offset        = parseInt($(this).find('.flickity-slider').position().left),
 						$slides            = $(this).find('.nectar-recent-post-slide'),
@@ -21229,9 +21728,7 @@
 
 					// Scroll up click event
 					$body.on('click', '#to-top, a[href="#top"]', function () {
-						$('body,html').stop().animate({
-							scrollTop: 0
-						}, 800, 'easeOutQuad', function () {
+						nectar_scrollToY(0, 800, 'easeOutQuad', function () {
 							if ($('.nectar-box-roll').length > 0) {
 								$body.trigger('mousewheel', [1, 0, 0]);
 							}
@@ -21524,11 +22021,6 @@
 
 							nectar_scrollToY($scrollTopDistance - $pageSubMenu + $headerSecondary, 700, 'easeInOutQuint');
 
-							nectarState.animatedScrolling = true;
-							setTimeout(function () {
-								nectarState.animatedScrolling = false;
-							}, 1100);
-
 						}, $timeoutVar);
 					}
 				}
@@ -21591,9 +22083,7 @@
 
 						setTimeout(scrollSpyInit, 100);
 
-						var $animatedScrollingTimeout;
-
-						$body.on('click', '#header-outer nav .sf-menu a:not([href="#slide-out-widget-area"]), #header-outer .mobile-header .sf-menu a, #footer-outer .nectar-button, #footer-outer .widget_nav_menu a, #footer-widgets .textwidget a, #mobile-menu li a, .nectar-scrolling-tabs:not(.navigation_func_active_link_only) .scrolling-tab-nav a, .container-wrap a:not(.wpb_tabs_nav a):not(.navigation_func_active_link_only .scrolling-tab-nav a):not(.comment-wrap .navigation a):not(.woocommerce-checkout a):not(.um-woo-view-order):not(.magnific):not([data-fancybox]):not(.woocommerce-tabs .tabs a):not(.slider-prev):not(.slider-next):not(.testimonial-next-prev a):not(.page-numbers), .swiper-slide .button a, #slide-out-widget-area a, #slide-out-widget-area .inner div a', function (e) {
+						$body.on('click', '#header-outer nav .sf-menu a:not([href="#slide-out-widget-area"]), #header-outer .mobile-header .sf-menu a, #footer-outer .nectar-button, #footer-outer .widget_nav_menu a, #footer-widgets .textwidget a, #mobile-menu li a, .nectar-scrolling-tabs:not(.navigation_func_active_link_only) .scrolling-tab-nav a, .nectar-global-section a:not(.wpb_tabs_nav a), .container-wrap a:not(.wpb_tabs_nav a):not(.navigation_func_active_link_only .scrolling-tab-nav a):not(.comment-wrap .navigation a):not(.woocommerce-checkout a):not(.um-woo-view-order):not(.magnific):not([data-fancybox]):not(.woocommerce-tabs .tabs a):not(.slider-prev):not(.slider-next):not(.testimonial-next-prev a):not(.page-numbers), .swiper-slide .button a, #slide-out-widget-area a, #slide-out-widget-area .inner div a', function (e) {
 
 							var triggerAnimatedScroll = true;
 							var $hash = $(this).prop("hash");
@@ -21602,15 +22092,7 @@
 								!$(this).hasClass('nectar-next-section') &&
 							    $(this).parents('.slide-out-widget-area-toggle').length == 0 ) {
 								$body.addClass('animated-scrolling');
-								nectarState.animatedScrolling = true;
 							}
-
-							clearTimeout($animatedScrollingTimeout);
-
-							$animatedScrollingTimeout = setTimeout(function () {
-								$body.removeClass('animated-scrolling');
-								nectarState.animatedScrolling = false;
-							}, 1100);
 
 							var $headerNavSpace = ($('body[data-header-format="left-header"]').length > 0 && $window.width() > 1000) ? 0 : $('#header-space').outerHeight();
 
@@ -21812,7 +22294,13 @@
 
 
 									if( triggerAnimatedScroll ) {
-										nectar_scrollToY($scrollTopDistance - $pageSubMenu + $headerSecondary, 700, 'easeInOutQuint');
+										nectar_scrollToY($scrollTopDistance - $pageSubMenu + $headerSecondary, 700, 'easeInOutQuint', function(){
+											$body.removeClass('animated-scrolling');
+										});
+										// fallback
+										setTimeout(function(){
+											$body.removeClass('animated-scrolling');
+										}, 1200);
 									}
 
 
@@ -22206,7 +22694,21 @@
 					});
 
 					// Javascript powered.
-					if (!$().theiaStickySidebar || nectarDOMInfo.usingMobileBrowser && nectarDOMInfo.winW < 1000 ) {
+					stickySidebarInitJS(stickyOffset);
+
+
+				}
+
+
+				function stickySidebarInitJS(stickyOffset) {
+
+					// If the plugin isn't ready yet, try again shortly.
+					if (!$().theiaStickySidebar) {
+						setTimeout(function(){ stickySidebarInitJS(stickyOffset); }, 300);
+						return;
+					}
+
+					if (nectarDOMInfo.usingMobileBrowser && nectarDOMInfo.winW < 1000) {
 						return;
 					}
 
@@ -22247,7 +22749,6 @@
 						}
 
 					});
-
 
 				}
 
@@ -22698,7 +23199,13 @@
 
 				}
 
-
+				function formHooks() {
+					jQuery(".fluentform").on("submit", function() {
+						setTimeout(function() {
+							$(window).trigger('salient-parallax-bg-recalculate');
+						}, 60);
+					});
+				}
 
 
 
@@ -23530,6 +24037,7 @@
 				// Third party.
 				wooCommerceEvents();
 				fancySelectStyling();
+				formHooks();
 
 				// Scrolling
 				updatePerspectiveOriginInit();

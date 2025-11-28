@@ -38,10 +38,12 @@ class Vc_Navbar_Undoredo {
 	 * @return array
 	 */
 	public function addControls( $controls ) {
+		$undo_title = wpb_get_title_with_shortcut( 'Undo' );
+		$redo_title = wpb_get_title_with_shortcut( 'Redo' );
 		$controls[] = [
 			'undo',
 			'<li class="vc_hide-mobile vc_hide-desktop-more">
-				<a id="vc_navbar-undo" class="vc_icon-btn vc_undo-redo vc_undo-button vc_hide-mobile" disabled title="' . esc_attr__( 'Undo', 'js_composer' ) . '">
+				<a id="vc_navbar-undo" class="vc_icon-btn vc_undo-redo vc_undo-button vc_hide-mobile" disabled title="' . esc_attr( $undo_title ) . '">
 					<i class="vc-composer-icon vc-c-icon-undo"></i>
 					<p class="vc_hide-desktop">' . __( 'Undo', 'js_composer' ) . '</p>
 				</a>
@@ -50,7 +52,7 @@ class Vc_Navbar_Undoredo {
 		$controls[] = [
 			'redo',
 			'<li class="vc_hide-mobile vc_hide-desktop-more">
-				<a id="vc_navbar-redo" class="vc_icon-btn vc_undo-redo vc_redo-button vc_hide-mobile" disabled title="' . esc_attr__( 'Redo', 'js_composer' ) . '">
+				<a id="vc_navbar-redo" class="vc_icon-btn vc_undo-redo vc_redo-button vc_hide-mobile" disabled title="' . esc_attr( $redo_title ) . '">
 					<i class="vc-composer-icon vc-c-icon-redo"></i>
 					<p class="vc_hide-desktop">' . __( 'Redo', 'js_composer' ) . '</p>
 				</a>

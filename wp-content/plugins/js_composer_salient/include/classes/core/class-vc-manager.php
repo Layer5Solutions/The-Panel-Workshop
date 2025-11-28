@@ -187,7 +187,7 @@ class Vc_Manager {
 		require_once $this->path( 'HELPERS_DIR', 'helpers_api.php' );
 		require_once $this->path( 'DEPRECATED_DIR', 'helpers_deprecated.php' );
 		require_once $this->path( 'PARAMS_DIR', 'params.php' );
-		require_once $this->path( 'AUTOLOAD_DIR', 'vc-shortcode-autoloader.php' );
+		require_once $this->path( 'CORE_DIR', 'class-vc-shortcode-autoloader.php' );
 		require_once $this->path( 'SHORTCODES_DIR', 'core/class-vc-shortcodes-manager.php' );
 		require_once $this->path( 'CORE_DIR', 'class-vc-modifications.php' );
 		// Add hooks.
@@ -276,6 +276,10 @@ class Vc_Manager {
 		//! vc_is_updater_disabled() && vc_updater()->init();
 		/* nectar addition end */ 
 		/**
+		 * Load plugin modules.
+		 */
+		vc_modules_manager()->load();
+		/**
 		 * Init default hooks and options to load.
 		 */
 		$this->vc()->init();
@@ -359,15 +363,13 @@ class Vc_Manager {
 
 	/**
 	 * Load required components to enable useful functionality.
-	 * We load here autoload plugin functionality that mostly working with wp hooks system.
-	 * And load modules - independent plugin functionality that can be enabled/disabled.
+	 * We load here autoload plugin functionality that mostly works with wp hooks system.
 	 *
 	 * @access public
 	 * @since 4.4
 	 */
 	public function loadComponents() {
 		vc_autoload_manager()->load();
-		vc_modules_manager()->load();
 	}
 
 	/**
@@ -404,24 +406,12 @@ class Vc_Manager {
 		 * 2. admin_backend_editor - set by editor or request param
 		 * 3. admin_frontend_editor_ajax - set by request param
 		 * 4. admin_backend_editor_ajax - set by request param
-		 * 5. admin_updater - by vc_action
-		 * 6. page_editable - by vc_action or transient with vc_action param
+		 * 5. admin_updater - set by vc_action
+		 * 6. page_editable - set by vc_action or transient with vc_action param
 		 */
 		if ( is_admin() ) {
-			if ( 'vc_inline' === vc_action() ) {
-				vc_user_access()->wpAny( [
-					'edit_post',
-					(int) vc_request_param( 'post_id' ),
-				] )->validateDie()->part( 'frontend_editor' )->can()->validateDie();
-				$this->mode = 'admin_frontend_editor';
-			} elseif ( ( vc_user_access()->wpAny( 'edit_posts', 'edit_pages' )->get() ) && ( 'vc_upgrade' === vc_action() || ( 'update-selected' === vc_get_param( 'action' ) && $this->pluginName() === vc_get_param( 'plugins' ) ) ) ) {
-				$this->mode = 'admin_updater';
-			} elseif ( vc_user_access()->wpAny( 'manage_options' )->get() && array_key_exists( vc_get_param( 'page' ), vc_settings()->getTabs() ) ) {
-				$this->mode = 'admin_settings_page';
-			} else {
-				$this->mode = 'admin_page';
-			}
-		} elseif ( 'true' === vc_get_param( 'vc_editable' ) ) {
+			$this->mode = $this->getAdminMode();
+		} elseif ( 'true' === vc_get_param( 'vc_editable' ) && vc_get_param( '_vcnonce' ) ) {
 				vc_user_access()->checkAdminNonce()->validateDie()->wpAny([
 					'edit_post',
 					(int) vc_request_param( 'vc_post_id' ),
@@ -437,6 +427,29 @@ class Vc_Manager {
 		} else {
 			$this->mode = 'page';
 		}
+	}
+
+	/**
+	 * Get admin VC mode.
+	 *
+	 * @return string
+	 */
+	public function getAdminMode() {
+		if ( 'vc_inline' === vc_action() ) {
+			vc_user_access()->wpAny( [
+				'edit_post',
+				(int) vc_request_param( 'post_id' ),
+			] )->validateDie()->part( 'frontend_editor' )->can()->validateDie();
+			$mode = 'admin_frontend_editor';
+		} elseif ( ( vc_user_access()->wpAny( 'edit_posts', 'edit_pages' )->get() ) && ( 'vc_upgrade' === vc_action() || ( 'update-selected' === vc_get_param( 'action' ) && $this->pluginName() === vc_get_param( 'plugins' ) ) ) ) {
+			$mode = 'admin_updater';
+		} elseif ( vc_user_access()->wpAny( 'manage_options' )->get() && array_key_exists( vc_get_param( 'page' ), vc_settings()->getTabs() ) ) {
+			$mode = 'admin_settings_page';
+		} else {
+			$mode = 'admin_page';
+		}
+
+		return $mode;
 	}
 
 	/**
@@ -525,7 +538,7 @@ class Vc_Manager {
 	}
 
 	/**
-	 * Get post types where VC editors are enabled.
+	 * Get post types where WPBakery Page Builder editors are enabled.
 	 *
 	 * @return array
 	 * @throws \Exception
@@ -672,7 +685,6 @@ class Vc_Manager {
 	}
 
 	/**
-	 *
 	 * Get shortcodes template dir.
 	 *
 	 * @param string $template

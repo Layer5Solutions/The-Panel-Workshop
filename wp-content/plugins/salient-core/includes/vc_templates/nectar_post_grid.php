@@ -30,6 +30,7 @@ $el_settings = array(
 	'display_categories' => esc_attr($display_categories),
 	'display_excerpt' => esc_attr($display_excerpt),
 	'excerpt_length' => esc_attr($excerpt_length),
+	'content_next_to_image_excerpt_pos' => esc_attr($content_next_to_image_excerpt_pos),
 	'display_date' => esc_attr($display_date),
 	'display_estimated_reading_time' => esc_attr($display_estimated_reading_time),
 	'display_author' => esc_attr($display_author),
@@ -45,10 +46,12 @@ $el_settings = array(
 	'heading_tag' => esc_attr($heading_tag),
 	'heading_tag_render' => esc_attr($heading_tag_render),
 	'enable_gallery_lightbox' => esc_attr($enable_gallery_lightbox),
+	'remove_links' => esc_attr($remove_links),
 	'category_style' => esc_attr($category_style),
 	'overlay_secondary_project_image' => esc_attr($overlay_secondary_project_image),
 	'vertical_list_hover_effect' => esc_attr($vertical_list_hover_effect),
 	'vertical_list_read_more' => esc_attr($vertical_list_read_more),
+	'vertical_list_read_more_style' => esc_attr($vertical_list_read_more_style),
 	'read_more_button' => esc_attr($read_more_button),
 	'animation' => esc_attr($animation),
 	'custom_fields' => esc_attr($custom_fields),
@@ -328,6 +331,9 @@ if ( 'stack' === $display_type ) {
 	$nectar_post_grid_class .= ' layout-stacked';
 	if( 'yes' === $stack_disable_mobile ) {
 		$nectar_post_grid_class .= ' layout-stacked--disable-mobile';
+	}
+	if( 'yes' === $grid_item_height_subtract_nav_height ) {
+		$nectar_post_grid_class .= ' subtract-nav-height';
 	}
 	wp_enqueue_script('nectar-post-grid-stacked');
 }

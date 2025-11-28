@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( '-1' );
 }
 
-$pixel_icons = vc_pixel_icons();
+$pixel_icons = vc_get_shared( 'pixel icons' );
 $custom_colors = [
 	esc_html__( 'Informational', 'js_composer' ) => 'info',
 	esc_html__( 'Warning', 'js_composer' ) => 'warning',
@@ -152,15 +152,7 @@ return [
 		[
 			'type' => 'dropdown',
 			'heading' => esc_html__( 'Icon library', 'js_composer' ),
-			'value' => [
-				esc_html__( 'Font Awesome', 'js_composer' ) => 'fontawesome',
-				esc_html__( 'Open Iconic', 'js_composer' ) => 'openiconic',
-				esc_html__( 'Typicons', 'js_composer' ) => 'typicons',
-				esc_html__( 'Entypo', 'js_composer' ) => 'entypo',
-				esc_html__( 'Linecons', 'js_composer' ) => 'linecons',
-				esc_html__( 'Pixel', 'js_composer' ) => 'pixelicons',
-				esc_html__( 'Mono Social', 'js_composer' ) => 'monosocial',
-			],
+			'value' => vc_get_shared( 'icon libraries' ),
 			'param_name' => 'icon_type',
 			'description' => esc_html__( 'Choose icon library.', 'js_composer' ),
 		],
@@ -285,6 +277,25 @@ return [
 			'dependency' => [
 				'element' => 'icon_type',
 				'value' => 'monosocial',
+			],
+			'description' => esc_html__( 'Choose icon from library.', 'js_composer' ),
+		],
+		[
+			'type' => 'iconpicker',
+			'heading' => esc_html__( 'Icon', 'js_composer' ),
+			'param_name' => 'icon_material',
+			'value' => 'vc-material vc-material-cake',
+			// default value to backend editor admin_label.
+			'settings' => [
+				'emptyIcon' => false,
+				// default true, display an "EMPTY" icon.
+				'type' => 'material',
+				'iconsPerPage' => 4000,
+				// default 100, how many icons per/page to display.
+			],
+			'dependency' => [
+				'element' => 'icon_type',
+				'value' => 'material',
 			],
 			'description' => esc_html__( 'Choose icon from library.', 'js_composer' ),
 		],

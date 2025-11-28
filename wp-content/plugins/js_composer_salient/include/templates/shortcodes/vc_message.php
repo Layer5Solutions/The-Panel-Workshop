@@ -32,7 +32,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @var WPBakeryShortCode_Vc_Message $this
  */
 $el_class = $el_id = $message_box_color = $message_box_style = $style = $css = $color = $css_animation = $icon_type = '';
-$icon_fontawesome = $icon_linecons = $icon_openiconic = $icon_typicons = $icon_entypo = '';
+$icon_fontawesome = $icon_linecons = $icon_openiconic = $icon_typicons = $icon_entypo = $icon_monosocial = $icon_material = $icon_pixelicons = '';
 $default_icon_class = 'fa fa-adjust';
 $atts = $this->convertAttributesToMessageBox2( $atts );
 $atts = vc_map_get_attributes( $this->getShortcode(), $atts );

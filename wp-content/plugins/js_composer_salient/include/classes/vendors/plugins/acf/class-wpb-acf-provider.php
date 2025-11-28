@@ -35,7 +35,7 @@ class Wpb_Acf_Provider {
 			$value = get_field( $field_key, $post_id );
 
 			if ( is_array( $value ) ) {
-				$value = implode( ', ', $value );
+				$value = $this->convert_array_to_string( $value );
 			}
 
 			if ( ! is_scalar( $value ) ) {
@@ -46,6 +46,27 @@ class Wpb_Acf_Provider {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Convert array to string.
+	 *
+	 * @param array $value
+	 * @since 8.5
+	 * @return string
+	 */
+	public function convert_array_to_string( $value ) {
+		return implode(', ', array_map(function ( $v ) {
+			if ( is_array( $v ) ) {
+				return 'Array';
+			} elseif ( is_object( $v ) ) {
+				return 'Object';
+			} elseif ( is_resource( $v ) ) {
+				return 'Resource';
+			} else {
+				return $v;
+			}
+		}, $value));
 	}
 
 	/**

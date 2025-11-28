@@ -186,7 +186,7 @@ if ( ! empty( $el_id ) ) {
 }
 $output = '
 <div class="' . esc_attr( $css_class ) . '" ' . implode( ' ', $options ) . '>
-	' . $title . '
+	' . wp_kses_post( $title ) . '
 	<div class="wpb_wrapper">
 		' . $canvas_html . '
 	</div>' . '

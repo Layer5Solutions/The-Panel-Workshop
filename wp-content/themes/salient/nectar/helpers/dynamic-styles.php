@@ -4,12 +4,387 @@
  *
  * @package Salient WordPress Theme
  * @subpackage helpers
- * @version 12.0.1
+ * @version 18.0.0
  */
 
 // Exit if accessed directly
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
+}
+
+
+// Helper to generate the fluid root typography CSS value from min/max/custom
+if( !function_exists('nectar_generate_fluid_root_typography') ) {
+    function nectar_generate_fluid_root_typography( $typo_config ) {
+        $has_min = !empty($typo_config['min']);
+        $has_max = !empty($typo_config['max']);
+        $has_custom = !empty($typo_config['custom']);
+
+        if( ($has_min || $has_max) && $has_custom ) {
+            $min_value = $has_min ? esc_attr($typo_config['min']) : '';
+            $max_value = $has_max ? esc_attr($typo_config['max']) : '';
+            $custom_value = esc_attr($typo_config['custom']);
+
+            if( $has_min && $has_max ) {
+                return "clamp({$min_value}, {$custom_value}, {$max_value})";
+            } elseif( $has_min ) {
+                return "max({$min_value}, {$custom_value})";
+            } else {
+                return "min({$max_value}, {$custom_value})";
+            }
+        } elseif( $has_custom ) {
+            return esc_attr($typo_config['custom']);
+        }
+
+        return '';
+    }
+}
+
+/**
+ * Helper function to calculate line height with proper unit handling
+ * @param string $font_size_value - The font size value (e.g., "16px", "1.2rem", "100%")
+ * @param string $font_size_units - The units for the font size (e.g., "px", "em", "rem")
+ * @param float $multiplier - Multiplier to apply to the font size for line height calculation
+ * @param float $addition - Additional value to add to the calculated line height
+ * @param string $line_height_units - The units for the line height (e.g., "px", "unitless") - optional, defaults to font size units
+ * @return string|null - The calculated line height with proper units, or null if font size is too small
+ */
+function nectar_calculate_line_height_with_units($font_size_value, $font_size_units, $multiplier = 1, $addition = 0, $line_height_units = null) {
+    if (empty($font_size_value) || $font_size_value === '-') {
+        return null;
+    }
+
+    // Extract numeric value from font size
+    $numeric_value = floatval($font_size_value);
+
+    // Check if font size is too small (only for px units)
+    if ($font_size_units === 'px' && $numeric_value < 8) {
+        return null;
+    }
+
+    // If no line height units specified, use font size units for auto calculation
+    if ($line_height_units === null) {
+        $line_height_units = $font_size_units;
+    }
+
+    // For unitless line height, just return the multiplier as unitless value
+    if ($line_height_units === 'unitless') {
+        return round($multiplier, 3);
+    }
+
+    // For em/rem line height (both auto and explicit), return unitless value (line height ratio)
+    if ($line_height_units === 'em' || $line_height_units === 'rem') {
+        return round($multiplier, 3);
+    }
+
+    // For px units (both auto and explicit), calculate based on font size
+    $line_height_value = ($numeric_value * $multiplier) + $addition;
+    return $line_height_value . $line_height_units;
+}
+
+/**
+ * Helper function to calculate line height with auto-detection of explicit vs auto line height
+ * @param array $nectar_options - The options array
+ * @param string $font_name - The font name (e.g., 'body_font')
+ * @param float $multiplier - Multiplier to apply to the font size for line height calculation
+ * @param float $addition - Additional value to add to the calculated line height
+ * @return string|null - The calculated line height with proper units, or null if font size is too small
+ */
+function nectar_calculate_line_height_auto($nectar_options, $font_name, $multiplier = 1, $addition = 0) {
+    $font_size_key = $font_name . '_size';
+    $line_height_key = $font_name . '_line_height';
+
+    if (empty($nectar_options[$font_size_key]) || $nectar_options[$font_size_key] === '-') {
+        return null;
+    }
+
+    $font_size_units = nectar_get_font_size_units($nectar_options, $font_name);
+
+    // Determine if explicit line height is set
+    $line_height_units = null;
+    if (!empty($nectar_options[$line_height_key]) && $nectar_options[$line_height_key] != '-') {
+        $line_height_units = nectar_get_line_height_units($nectar_options, $font_name);
+    }
+
+    // For auto line height calculations, return appropriate units based on font size units
+    if ($line_height_units === null) {
+        if ($font_size_units === 'px') {
+            // For px font sizes, return pixel values to maintain compatibility with existing fallback logic
+            $font_size_px = nectar_convert_to_pixels($nectar_options[$font_size_key], $font_size_units);
+            $calculated_px = ($font_size_px * $multiplier) + $addition;
+            return ceil($calculated_px) . 'px';
+        } else {
+            // For em/rem font sizes, calculate the ratio between font size and line height
+            // Convert the font size to pixels for consistent calculation
+            $font_size_px = nectar_convert_to_pixels($nectar_options[$font_size_key], $font_size_units);
+            $calculated_line_height_px = ($font_size_px * $multiplier) + $addition;
+            // Calculate the ratio: line height / font size
+            $calculated_ratio = $calculated_line_height_px / $font_size_px;
+            return round($calculated_ratio, 3);
+        }
+    }
+
+    // For explicit line height, use the normal logic
+    return nectar_calculate_line_height_with_units(
+        $nectar_options[$font_size_key],
+        $font_size_units,
+        $multiplier,
+        $addition,
+        $line_height_units
+    );
+}
+
+
+
+/**
+ * Helper function to calculate responsive font size with simplified parameters
+ * @param array $nectar_options - The options array
+ * @param string $font_name - The font name (e.g., 'h3_font')
+ * @param float $multiplier - Multiplier to apply to the font size
+ * @param float $addition - Additional value to add (optional)
+ * @param bool $important - Whether to add !important
+ * @return string - The calculated responsive font size with proper units
+ */
+function nectar_calculate_responsive_font_size($nectar_options, $font_name, $multiplier, $addition = 0, $important = false) {
+    $font_size_key = $font_name . '_size';
+
+    if (empty($nectar_options[$font_size_key]) || $nectar_options[$font_size_key] === '-') {
+        return '';
+    }
+
+    $font_size_units = nectar_get_font_size_units($nectar_options, $font_name);
+    $font_size_value = $nectar_options[$font_size_key];
+
+    $fs_units = (isset($font_size_units) && in_array($font_size_units, array('px','em','rem'))) ? $font_size_units : 'px';
+
+    // Scale the addition parameter based on units (addition is always in pixels)
+    $scaled_addition = $addition;
+    if ($fs_units === 'em' || $fs_units === 'rem') {
+        $scaled_addition = $addition / 16; // Convert px to em/rem (assuming 16px base)
+    }
+
+    $calculated_value = (floatval($font_size_value) * $multiplier) + $scaled_addition;
+    $formatted_value = ($fs_units === 'px' ? ceil($calculated_value) : round($calculated_value, 3));
+    $important_text = $important ? '!important' : '';
+
+    return $formatted_value . $fs_units . $important_text;
+}
+
+/**
+ * Helper function to calculate responsive line height with simplified parameters (for use with $the_line_height)
+ * @param mixed $the_line_height - The calculated line height value
+ * @param array $nectar_options - The options array
+ * @param string $font_name - The font name (e.g., 'h3_font')
+ * @param float $multiplier - Multiplier to apply to the line height
+ * @param float $addition - Additional value to add (optional)
+ * @param bool $important - Whether to add !important
+ * @return string - The calculated responsive line height with proper units
+ */
+function nectar_calculate_responsive_line_height($the_line_height, $nectar_options, $font_name, $multiplier, $addition = 0, $important = false) {
+    if (!$the_line_height) {
+        return '';
+    }
+
+    // Check if this is an auto-calculated unitless line height (from em/rem font sizes)
+    $is_unitless_auto = (is_numeric($the_line_height) && !is_string($the_line_height)) || (is_string($the_line_height) && is_numeric($the_line_height) && !preg_match('/[a-zA-Z]/', $the_line_height));
+
+    if ($is_unitless_auto) {
+        // This is an auto-calculated unitless line height, keep it unitless
+        $calculated_value = (floatval($the_line_height) * $multiplier) + $addition;
+        $formatted_value = round($calculated_value, 3);
+        $important_text = $important ? '!important' : '';
+        return $formatted_value . $important_text;
+    }
+
+    // This is an explicit line height with units, use normal logic
+    $line_height_units = nectar_get_line_height_units($nectar_options, $font_name);
+
+    $lh_units = (isset($line_height_units) && in_array($line_height_units, array('px','unitless'))) ? $line_height_units : 'px';
+    $calculated_value = (floatval($the_line_height) * $multiplier) + $addition;
+    $formatted_value = ($lh_units === 'px' ? ceil($calculated_value) : round($calculated_value, 3));
+    $important_text = $important ? '!important' : '';
+
+    return $formatted_value . ($lh_units === 'unitless' ? '' : $lh_units) . $important_text;
+}
+
+
+
+/**
+ * Helper function to get font size units for a given font option
+ * @param array $nectar_options - The options array
+ * @param string $font_name - The font name (e.g., 'page_heading_font')
+ * @return string - The font size units
+ */
+function nectar_get_font_size_units($nectar_options, $font_name) {
+    // First check if the units are already initialized
+    if (isset($nectar_options[$font_name . '_font_size_units']) && in_array($nectar_options[$font_name . '_font_size_units'], array('px','em','rem'))) {
+        return $nectar_options[$font_name . '_font_size_units'];
+    }
+
+    // If not initialized, try to get from the original typography field
+    $font_family_key = $font_name . '_font_family';
+    if (isset($nectar_options[$font_family_key]['font-size-units']) && in_array($nectar_options[$font_family_key]['font-size-units'], array('px','em','rem'))) {
+        return $nectar_options[$font_family_key]['font-size-units'];
+    }
+
+    // Default to px
+    return 'px';
+}
+
+/**
+ * Helper function to get line height units for a given font option
+ * @param array $nectar_options - The options array
+ * @param string $font_name - The font name (e.g., 'page_heading_font')
+ * @return string - The line height units
+ */
+function nectar_get_line_height_units($nectar_options, $font_name) {
+    // First check if the units are already initialized
+    if (isset($nectar_options[$font_name . '_line_height_units']) && in_array($nectar_options[$font_name . '_line_height_units'], array('px','unitless'))) {
+        return $nectar_options[$font_name . '_line_height_units'];
+    }
+
+    // If not initialized, try to get from the original typography field
+    $font_family_key = $font_name . '_font_family';
+    if (isset($nectar_options[$font_family_key]['line-height-units']) && in_array($nectar_options[$font_family_key]['line-height-units'], array('px','unitless'))) {
+        return $nectar_options[$font_family_key]['line-height-units'];
+    }
+
+    // Default to px
+    return 'px';
+}
+
+/**
+ * Helper function to calculate fallback line height with proper unit handling
+ * @param mixed $the_line_height - The calculated line height value (could be pixel or unitless)
+ * @param mixed $default_ratio - The default unitless ratio (like 1.0, 1.8, etc.)
+ * @param float $addition - The addition value for fallback calculation (always in pixels)
+ * @param string $font_size_units - The font size units to determine fallback behavior
+ * @param mixed $actual_font_size - The actual font size being used (in pixels)
+ * @return array - Array with 'value' and 'units' keys for the fallback line height
+ */
+function nectar_calculate_fallback_line_height($the_line_height, $default_ratio, $addition, $font_size_units, $actual_font_size) {
+    if (!empty($the_line_height)) {
+        // If line height is explicitly set, return it as-is (it already has proper units)
+        return $the_line_height;
+    }
+
+    // Calculate fallback based on font size units
+    if ($font_size_units === 'px') {
+        // For px font sizes, calculate line height based on actual font size
+        $calculated_line_height = ($default_ratio * $actual_font_size) + $addition;
+        return $calculated_line_height . 'px';
+    } else {
+        // For em/rem font sizes, calculate the ratio between font size and line height
+        // The actual_font_size is already in em/rem units, so convert to pixels
+        $font_size_px = $actual_font_size * 16; // Convert em/rem to pixels
+        $calculated_line_height_px = ($default_ratio * $font_size_px) + $addition;
+        // Calculate the ratio: line height / font size
+        $calculated_ratio = $calculated_line_height_px / $font_size_px;
+        return round($calculated_ratio, 3);
+    }
+}
+
+/**
+ * Helper function to get defined font size with proper unit conversion for defaults
+ * @param array $nectar_options - The theme options array
+ * @param string $font_name - The font name (e.g., 'h4_font', 'body_font')
+ * @param float $default_pixel_size - The default pixel size (e.g., $nectar_h4_default_size)
+ * @return float - The defined font size in the appropriate units
+ */
+function nectar_get_defined_font_size($nectar_options, $font_name, $default_pixel_size) {
+    $fs_units = nectar_get_font_size_units($nectar_options, $font_name);
+
+    if (!empty($nectar_options[$font_name . '_size']) && $nectar_options[$font_name . '_size'] != '-') {
+        return floatval($nectar_options[$font_name . '_size']);
+    } else {
+        // Convert default pixel value to the selected units
+        if ($fs_units === 'px') {
+            return $default_pixel_size;
+        } else {
+            // Convert pixels to em/rem (assuming 16px base)
+            return $default_pixel_size / 16;
+        }
+    }
+}
+
+/**
+ * Helper function to determine effective line height units based on the returned value
+ * @param mixed $defined_line_height - The line height value (could be string with units or numeric)
+ * @param string $lh_units - The original line height units from options
+ * @return string - The effective line height units ('px' or 'unitless')
+ */
+function nectar_get_effective_line_height_units($defined_line_height, $lh_units) {
+    if (is_string($defined_line_height) && strpos($defined_line_height, 'px') !== false) {
+        return 'px';
+    } else if (is_numeric($defined_line_height)) {
+        return 'unitless';
+    } else {
+        return $lh_units;
+    }
+}
+
+/**
+ * Helper function to convert any CSS value to pixels for calculations
+ * @param string $value - The CSS value (e.g., "16px", "1.2em", "1.5rem", "1.5")
+ * @param string $units - The units of the value (e.g., "px", "em", "rem", "unitless")
+ * @param float $base_font_size - Base font size in pixels for em/rem calculations (default: 16)
+ * @return int - The value converted to pixels
+ */
+function nectar_convert_to_pixels($value, $units, $base_font_size = 16) {
+    $numeric_value = floatval($value);
+
+    switch ($units) {
+        case 'px':
+            return intval($numeric_value);
+        case 'em':
+        case 'rem':
+            return intval($numeric_value * $base_font_size);
+        case 'unitless':
+            // For unitless values, assume they're line height ratios and convert to px based on base font size
+            return intval($numeric_value * $base_font_size);
+        default:
+            return intval($numeric_value);
+    }
+}
+
+/**
+ * Helper function to calculate responsive font size with multiplier (for existing responsive system)
+ * @param float $defined_font_size - The base font size value
+ * @param string $fs_units - The font size units
+ * @param float $multiplier - Multiplier to apply (e.g., $nectar_h1_small_desktop)
+ * @param bool $important - Whether to add !important
+ * @return string - The calculated font size with proper units
+ */
+function nectar_calc_resp_font_size($defined_font_size, $fs_units, $multiplier, $important = false) {
+    $calculated_value = floatval($defined_font_size) * $multiplier;
+    $formatted_value = ($fs_units === 'px' ? ceil($calculated_value) : round($calculated_value, 3));
+    $important_text = $important ? '!important' : '';
+
+    return $formatted_value . $fs_units . $important_text;
+}
+
+/**
+ * Helper function to calculate responsive line height with multiplier (for existing responsive system)
+ * @param float $defined_line_height - The base line height value
+ * @param string $lh_units - The line height units
+ * @param float $multiplier - Multiplier to apply (e.g., $nectar_h1_small_desktop)
+ * @param bool $important - Whether to add !important
+ * @return string - The calculated line height with proper units
+ */
+function nectar_calc_resp_line_height($defined_line_height, $lh_units, $multiplier, $important = false) {
+    // For explicit unitless line height, don't apply multiplier as it's already responsive
+    if ($lh_units === 'unitless') {
+        $formatted_value = round(floatval($defined_line_height), 3);
+        $important_text = $important ? '!important' : '';
+        return $formatted_value . $important_text;
+    } else {
+        // Only apply multiplier for px units
+        $calculated_value = floatval($defined_line_height) * $multiplier;
+        $formatted_value = ceil($calculated_value);
+        $important_text = $important ? '!important' : '';
+        return $formatted_value . $lh_units . $important_text;
+    }
 }
 
 
@@ -24,60 +399,60 @@ if (!function_exists('nectar_top_bottom_padding_calc')) {
 	function nectar_top_bottom_padding_calc() {
 
 		$padding_css = '';
-		
+
 		// First shortcode is fullwidth.
 		if ( nectar_using_full_width_top_level_row() || nectar_using_before_content_global_section() ) {
-			$padding_css = 'html body[data-header-resize="1"] .container-wrap, 
-			html body[data-header-format="left-header"][data-header-resize="0"] .container-wrap, 
-			html body[data-header-resize="0"] .container-wrap, 
-			body[data-header-format="left-header"][data-header-resize="0"] .container-wrap { 
-				padding-top: 0; 
-			} 
-			.main-content > .row > #breadcrumbs.yoast { 
-				padding: 20px 0; 
-			}';	
+			$padding_css = 'html body[data-header-resize="1"] .container-wrap,
+			html body[data-header-format="left-header"][data-header-resize="0"] .container-wrap,
+			html body[data-header-resize="0"] .container-wrap,
+			body[data-header-format="left-header"][data-header-resize="0"] .container-wrap {
+				padding-top: 0;
+			}
+			.main-content > .row > #breadcrumbs.yoast {
+				padding: 20px 0;
+			}';
 
-		} 
-		
+		}
+
 
 		if( nectar_using_before_content_global_section() ) {
 
 			if( function_exists('is_cart') && is_cart() ||
 				function_exists('is_checkout') && is_checkout() ) {
 				$padding_css .= '.main-content > .row > .woocommerce {
-					padding-top: 40px;	
+					padding-top: 40px;
 				 }';
 			}
-			
+
 		}
 
 		// After content global seciton.
 		if (has_action('nectar_hook_global_section_after_content')) {
-			$padding_css .= 'body[data-bg-header] .container-wrap { 
-				padding-bottom: 0; 
-			} 
-			#pagination { 
-				margin-bottom: 40px; 
+			$padding_css .= 'body[data-bg-header] .container-wrap {
+				padding-bottom: 0;
+			}
+			#pagination {
+				margin-bottom: 40px;
 			}';
 
 			// WooCommerce.
-			if( function_exists('is_cart') && is_cart() || 
+			if( function_exists('is_cart') && is_cart() ||
 				function_exists('is_checkout') && is_checkout() ) {
 				$padding_css .= '.main-content > .row > .woocommerce {
-				   padding-bottom: 40px;	
+				   padding-bottom: 40px;
 				}';
 			}
 		}
 		if (has_action('nectar_before_blog_loop_end')) {
-			$padding_css .= 'body .post-area #pagination { 
-				margin-top: 0; 
+			$padding_css .= 'body .post-area #pagination {
+				margin-top: 0;
 			}';
 		}
 
-		if (has_action('nectar_hook_before_content_global_section') && 
+		if (has_action('nectar_hook_before_content_global_section') &&
 			function_exists('is_account_page') && is_account_page() ) {
 			$padding_css .= '#primary.content-area {
-			   padding-top: 40px;	
+			   padding-top: 40px;
 			}';
 		}
 
@@ -99,7 +474,7 @@ add_action( 'wp_enqueue_scripts', 'nectar_top_bottom_padding_calc' );
  */
 
 if (!function_exists('nectar_using_before_content_global_section')) {
-	
+
 	function nectar_using_before_content_global_section() {
 
 		$using_global_hook_before_content = false;
@@ -110,14 +485,14 @@ if (!function_exists('nectar_using_before_content_global_section')) {
 				return false;
 			}
 
-			if( is_page() || 
+			if( is_page() ||
 				is_single() ||
 				function_exists('is_account_page') && is_account_page() ||
 				function_exists('is_cart') && is_cart() ||
 				function_exists('is_checkout') && is_checkout()) {
 				$using_global_hook_before_content = true;
 			}
-			
+
 		}
 
 		return $using_global_hook_before_content;
@@ -180,22 +555,26 @@ if( !function_exists('nectar_output_font_props') ) {
 		}
 		// Text Transform.
 		if( $nectar_options[$typography_item.'_transform'] != '-' ) {
-			echo 'text-transform: ' . esc_attr($nectar_options[$typography_item.'_transform']) . $important_transform . '; ';
+			echo 'text-transform: ' . esc_attr($nectar_options[$typography_item.'_transform']) . esc_attr($important_transform) . '; ';
 		}
 		// Letter Spacing.
 		if( $nectar_options[$typography_item.'_spacing'] != '-' ) {
       $ls_units = ( isset($nectar_options[$typography_item.'_spacing_units']) && in_array($nectar_options[$typography_item.'_spacing_units'], array('px','em')) ) ? $nectar_options[$typography_item.'_spacing_units'] : 'px' ;
-			echo 'letter-spacing: ' . esc_attr(floatval($nectar_options[$typography_item.'_spacing'])) . $ls_units.'; ';
+			echo 'letter-spacing: ' . esc_attr(floatval($nectar_options[$typography_item.'_spacing'])) . esc_attr($ls_units).'; ';
 		}
 		// Font Size.
 		if( $nectar_options[$typography_item.'_size'] != '-' && $font_size !== 'bypass' ) {
-			echo 'font-size:' . esc_attr($nectar_options[$typography_item.'_size']) . $important_size_weight . '; ';
+			$fs_units = nectar_get_font_size_units($nectar_options, $typography_item);
+			$size_numeric = floatval($nectar_options[$typography_item.'_size']);
+			echo 'font-size:' . esc_attr($size_numeric . $fs_units) . esc_attr($important_size_weight) . '; ';
 		}
 
-		// User Set Line Height.
-		if( $nectar_options[$typography_item.'_line_height'] != '-' && $line_height !== 'bypass' ) {
-			echo 'line-height:' . esc_attr($nectar_options[$typography_item.'_line_height']) .'; ';
-		}
+            // User Set Line Height.
+            if( $nectar_options[$typography_item.'_line_height'] != '-' && $line_height !== 'bypass' ) {
+                $lh_units = nectar_get_line_height_units($nectar_options, $typography_item);
+                $lh_numeric = floatval($nectar_options[$typography_item.'_line_height']);
+                echo 'line-height:' . esc_attr($lh_numeric . ($lh_units === 'unitless' ? '' : $lh_units)) .'; ';
+            }
 		// Auto Line Height.
 		else if( !empty($line_height) && $line_height !== 'bypass' ) {
 			echo 'line-height:' . esc_attr($line_height) .'; ';
@@ -246,7 +625,8 @@ if( !function_exists('nectar_output_font_props') ) {
 
 		// User Set Line Height.
 		if( $nectar_options[$typography_item.'_line_height'] != '-' ) {
-			$the_line_height = $nectar_options[$typography_item.'_line_height'];
+			$lh_units = ( isset($nectar_options[$typography_item.'_line_height_units']) && in_array($nectar_options[$typography_item.'_line_height_units'], array('px','unitless')) ) ? $nectar_options[$typography_item.'_line_height_units'] : 'px';
+			$the_line_height = ($lh_units === 'unitless') ? floatval($nectar_options[$typography_item.'_line_height']) : floatval($nectar_options[$typography_item.'_line_height']) . $lh_units;
 		}
 		// Auto Line Height.
 		else if( !empty($line_height) ) {
@@ -268,7 +648,7 @@ if( !function_exists('nectar_output_font_props') ) {
  *
  * @since 14.1
  */
-if( !function_exists('nectar_cubic_bezier_easings') ) { 
+if( !function_exists('nectar_cubic_bezier_easings') ) {
 
 	function nectar_cubic_bezier_easings() {
 
@@ -329,7 +709,7 @@ function nectar_quick_minify( $css ) {
 
 	$css = preg_replace( '/(:| )0\.([0-9]+)(%|em|ex|px|in|cm|mm|pt|pc)/i', '${1}.${2}${3}', $css );
 
-	$css = preg_replace( '/(:| )(\.?)0(%|em|ex|px|in|cm|mm|pt|pc)/i', '${1}0', $css );
+	$css = preg_replace( '/(:| )(\.?)0(%|em|ex|in|cm|mm|pt|pc)/i', '${1}0', $css );
 
 	return trim( $css );
 
@@ -383,7 +763,10 @@ function nectar_generate_options_css() {
 
 	if( true === nectar_dynamic_css_dir_writable() ) {
 
-		$css_dir = get_template_directory() . '/css/';
+		// Use uploads directory for better WP practices.
+		$upload_dir = wp_upload_dir();
+		$css_dir = trailingslashit($upload_dir['basedir']) . 'salient/';
+
 		ob_start();
 
 		// Include css.
@@ -393,7 +776,7 @@ function nectar_generate_options_css() {
 
 		$css = ob_get_clean();
 		$css = nectar_quick_minify($css);
-    
+
 		// Write css to file.
 		global $wp_filesystem;
 
@@ -501,22 +884,44 @@ function nectar_enqueue_dynamic_css() {
 	$nectar_theme_version    = nectar_get_theme_version();
 	$dynamic_css_version_num = ( !get_option('salient_dynamic_css_version') ) ? $nectar_theme_version : get_option('salient_dynamic_css_version');
 
-	if( is_multisite() && file_exists( NECTAR_THEME_DIRECTORY . '/css/salient-dynamic-styles-multi-id-'. get_current_blog_id() .'.css' ) ) {
-		wp_register_style('dynamic-css', get_template_directory_uri() . '/css/salient-dynamic-styles-multi-id-'. get_current_blog_id() .'.css', '', $dynamic_css_version_num);
+	// Get upload directory paths.
+	$upload_dir = wp_upload_dir();
+	$upload_basedir = trailingslashit($upload_dir['basedir']) . 'salient/';
+	$upload_baseurl = set_url_scheme( trailingslashit($upload_dir['baseurl']) . 'salient/' );
+
+	$file_exists = false;
+
+	if( is_multisite() ) {
+		$filename = 'salient-dynamic-styles-multi-id-'. get_current_blog_id() .'.css';
+
+		// Only load from new location (uploads/salient).
+		if( file_exists( $upload_basedir . $filename ) ) {
+			wp_register_style('dynamic-css', $upload_baseurl . $filename, '', $dynamic_css_version_num);
+			$file_exists = true;
+		}
 	} else {
-		wp_register_style('dynamic-css', get_template_directory_uri() . '/css/salient-dynamic-styles.css', '', $dynamic_css_version_num);
+		$filename = 'salient-dynamic-styles.css';
+
+		// Only load from new location (uploads/salient).
+		if( file_exists( $upload_basedir . $filename ) ) {
+			wp_register_style('dynamic-css', $upload_baseurl . $filename, '', $dynamic_css_version_num);
+			$file_exists = true;
+		}
 	}
 
-	wp_enqueue_style('dynamic-css');
+	// Only enqueue if file exists and was registered.
+	if( $file_exists ) {
+		wp_enqueue_style('dynamic-css');
 
-	// Handle page specific dynamic
-	$nectar_page_specific_dynamic_css = nectar_page_specific_dynamic();
-	wp_add_inline_style( 'dynamic-css', $nectar_page_specific_dynamic_css );
+		// Handle page specific dynamic
+		$nectar_page_specific_dynamic_css = nectar_page_specific_dynamic();
+		wp_add_inline_style( 'dynamic-css', $nectar_page_specific_dynamic_css );
 
-	// Theme options custom css.
-	$nectar_theme_option_css = ( !empty($nectar_options["custom-css"]) ) ? $nectar_options["custom-css"] : false;
-	if( false !== $nectar_theme_option_css ) {
-		wp_add_inline_style( 'dynamic-css', $nectar_theme_option_css );
+		// Theme options custom css.
+		$nectar_theme_option_css = ( !empty($nectar_options["custom-css"]) ) ? $nectar_options["custom-css"] : false;
+		if( false !== $nectar_theme_option_css ) {
+			wp_add_inline_style( 'dynamic-css', $nectar_theme_option_css );
+		}
 	}
 
 }
@@ -555,14 +960,25 @@ function nectar_dynamic_css_external_bool() {
 		return false;
 	}
 
+	// Get upload directory path.
+	$upload_dir = wp_upload_dir();
+	$upload_basedir = trailingslashit($upload_dir['basedir']) . 'salient/';
 
 	// Multisite enqueue dynamic css.
-	if( is_multisite() && file_exists( NECTAR_THEME_DIRECTORY . '/css/salient-dynamic-styles-multi-id-'. get_current_blog_id() .'.css' ) ) {
-		return true;
+	if( is_multisite() ) {
+		$filename = 'salient-dynamic-styles-multi-id-'. get_current_blog_id() .'.css';
+		// Only check new location (uploads/salient). If not found, will fall back to inline styles.
+		if( file_exists( $upload_basedir . $filename ) ) {
+			return true;
+		}
 	}
 	// Non multisite enqueue dynamic css.
-	else if( !is_multisite() && file_exists( NECTAR_THEME_DIRECTORY . '/css/salient-dynamic-styles.css' ) ) {
-		return true;
+	else {
+		$filename = 'salient-dynamic-styles.css';
+		// Only check new location (uploads/salient). If not found, will fall back to inline styles.
+		if( file_exists( $upload_basedir . $filename ) ) {
+			return true;
+		}
 	}
 
 	return false;
@@ -582,10 +998,22 @@ function nectar_dynamic_css_dir_writable() {
 		require_once( ABSPATH . 'wp-admin/includes/file.php' );
 	}
 
-	$path = NECTAR_THEME_DIRECTORY . '/css/';
+	// Use uploads directory for better WP practices.
+	$upload_dir = wp_upload_dir();
+	$salient_dir = trailingslashit($upload_dir['basedir']) . 'salient/';
+
+	// Ensure the salient directory exists before checking.
+	if ( ! file_exists( $salient_dir ) ) {
+		wp_mkdir_p( $salient_dir );
+	}
+
+	// If directory still doesn't exist after mkdir attempt, uploads dir isn't writable.
+	if ( ! file_exists( $salient_dir ) ) {
+		return false;
+	}
 
 	// Does the fs have direct access?
-	if( get_filesystem_method(array(), $path) === "direct" ) {
+	if( get_filesystem_method(array(), $salient_dir) === "direct" ) {
 		return true;
 	}
 
@@ -691,21 +1119,21 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 		 }
 
 		 // header space growth for nectar_hook_before_secondary_header asap
-		 if( has_action('nectar_hook_before_secondary_header') && !nectar_is_contained_header() ) {
-			echo '
-			:root {
-				--before_secondary_header_height: 0px;
-			}
-			#header-space:not(.calculated) {
-				margin-bottom: var(--before_secondary_header_height);
-			}';
-		}
+		//  if( (has_action('nectar_hook_before_secondary_header') || has_action('nectar_hook_before_secondary_header_before_scrolling')) && !nectar_is_contained_header()  ) {
+		// 	echo '
+		// 	:root {
+		// 		--nectar_hook_before_nav_content_height: 0px;
+		// 	}
+		// 	#header-space:not(.calculated) {
+		// 		margin-bottom: var(--nectar_hook_before_nav_content_height);
+		// 	}';
+		// }
 
 		 //// Default minimal blog header.
 		 $default_minimal_text_color = (!empty($nectar_options['default_minimal_text_color'])) ? $nectar_options['default_minimal_text_color'] : false;
-		 if( 'default_minimal' === $blog_header_type && 
-			  is_singular('post') && 
-			  false !== $default_minimal_text_color && 
+		 if( 'default_minimal' === $blog_header_type &&
+			  is_singular('post') &&
+			  false !== $default_minimal_text_color &&
 			  empty($font_color) ) {
 			 $font_color = $default_minimal_text_color;
 		 }
@@ -715,7 +1143,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
  		  $blog_post_type_list = apply_filters('nectar_metabox_post_types_post_header', $blog_post_type_list);
  	  	}
 		$on_blog_post_type = (isset($post->post_type) && in_array($post->post_type, $blog_post_type_list) && is_single()) ? true : false;
-		
+
 		// When filter is enabled to use post header on CPT, there needs to be container-wrap padding for content below.
 		if ( in_array( $blog_header_type, array('default_minimal','fullscreen', 'default')) ) {
 			if ( (isset($post->post_type) && $post->post_type !== 'post' && in_array($post->post_type, $blog_post_type_list) && is_single()) ) {
@@ -733,7 +1161,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			$rm_sp_comment_num = (!empty($nectar_options['blog_remove_single_comment_number'])) ? $nectar_options['blog_remove_single_comment_number'] : '0';
 			$rm_sp_est_reading = (!empty($nectar_options['blog_remove_single_reading_dur'])) ? $nectar_options['blog_remove_single_reading_dur'] : '0';
 
-			if( $rm_sp_est_reading !== '1' && 
+			if( $rm_sp_est_reading !== '1' &&
 				($rm_sp_comment_num !== '1' || $rm_sp_author !== '1' || $rm_sp_date !== '1') ) {
 
 					if ( $blog_header_type  === 'default_minimal' ) {
@@ -741,7 +1169,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 							padding: 0 20px 0 20px;
 						}';
 					}
-					
+
 			}
 		}
 
@@ -769,7 +1197,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				body.material #page-header-bg.fullscreen-header .inner-wrap >a{
 				margin-bottom: 15px;
 				}
-				
+
 				body.material #page-header-bg.fullscreen-header .inner-wrap >a {
 					border: none;
 					padding: 6px 10px
@@ -778,12 +1206,12 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				body[data-button-style^="rounded"].material #page-header-bg.fullscreen-header .inner-wrap >a {
 					border-radius:100px
 				}
-				
+
 				body.single [data-post-hs="default_minimal"] #single-below-header span,
 				body.single .heading-title[data-header-style="default_minimal"] #single-below-header span {
 					line-height: 14px;
 				}
-				
+
 				#page-header-bg[data-post-hs="default_minimal"] #single-below-header{
 					text-align:center;
 					position:relative;
@@ -879,7 +1307,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					display:inline-block;
 					top:9px
 				}
-				
+
 
 
 				@media only screen and (min-width : 690px) and (max-width : 999px) {
@@ -887,10 +1315,10 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				body.single-post #page-header-bg[data-post-hs="default_minimal"] {
 					padding-top: 10%;
 					padding-bottom: 10%;
-				} 
+				}
 
 				}
-				
+
 
 				@media only screen and (max-width : 690px) {
 
@@ -914,7 +1342,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					#page-header-bg.fullscreen-header .author-section {
 						bottom: 20px;
 					}
-				
+
 					#page-header-bg.fullscreen-header .author-section .meta-date:not(.updated) {
 						margin-top: -4px;
 						display: block;
@@ -935,7 +1363,29 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 
       $aspect_ratio = ( isset($nectar_options['blog_header_aspect_ratio']) ) ? $nectar_options['blog_header_aspect_ratio'] : '56.25';
 	  $image_under_align = ( isset($nectar_options['blog_header_image_under_align']) ) ? $nectar_options['blog_header_image_under_align'] : 'left';
-	  $image_under_author_style = ( isset( $nectar_options['blog_header_image_under_author_style'] ) ) ? $nectar_options['blog_header_image_under_author_style'] : 'default'; 
+	  $image_under_author_style = ( isset( $nectar_options['blog_header_image_under_author_style'] ) ) ? $nectar_options['blog_header_image_under_author_style'] : 'default';
+
+	  if ( 'auto' === $aspect_ratio ) {
+		echo '@media only screen and (min-width: 1001px) {.featured-media-under-header .page-header-bg-image {
+		position: relative;
+		margin: 0 auto;
+		max-width: var(--nectar-single-post-max-width, var(--container-width));
+	  }}';
+	  } else {
+		 echo '
+	  .featured-media-under-header__featured-media:not([data-format="video"]):not([data-format="audio"]):not([data-has-img="false"]) {
+        padding-bottom: '.esc_attr($aspect_ratio).'%;
+	  }
+	  .featured-media-under-header__featured-media .post-featured-img img {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: top;
+	  }';
+	  }
 
       echo '
       .single.single-post .container-wrap {
@@ -950,7 +1400,6 @@ if (!function_exists('nectar_page_specific_dynamic')) {
       .featured-media-under-header__featured-media:not([data-format="video"]):not([data-format="audio"]):not([data-has-img="false"]) {
         overflow: hidden;
         position: relative;
-        padding-bottom: '.esc_attr($aspect_ratio).'%;
 	  }
 	  .featured-media-under-header__meta-wrap {
 		display: flex;
@@ -967,7 +1416,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 		border-radius: 100px;
 	  }
       .featured-media-under-header__featured-media .post-featured-img {
-        display: block; 
+        display: block;
         line-height: 0;
         top: auto;
         bottom: 0;
@@ -975,15 +1424,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 	  .featured-media-under-header__featured-media[data-n-parallax-bg="true"] .post-featured-img {
 		height: calc(100% + 75px);
 	  }
-	  .featured-media-under-header__featured-media .post-featured-img img {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		object-position: top;
-	  }	
+
       @media only screen and (max-width: 690px) {
         .featured-media-under-header__featured-media[data-n-parallax-bg="true"] .post-featured-img {
           height: calc(100% + 45px);
@@ -999,7 +1440,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
         object-position: bottom;
       }
       .featured-media-under-header h1 {
-        margin: max(min(0.35em,35px),20px) 0 max(min(0.25em,25px),15px) 0;
+        margin: max(min(0.35em,35px),25px) 0;
       }
       .featured-media-under-header__cat-wrap .meta-category a {
         line-height: 1;
@@ -1012,24 +1453,24 @@ if (!function_exists('nectar_page_specific_dynamic')) {
       .featured-media-under-header__cat-wrap .meta-category a:hover {
         color: #fff;
       }
-  
+
       .featured-media-under-header__meta-wrap a,
       .featured-media-under-header__cat-wrap a {
         color: inherit;
       }
-  
+
       .featured-media-under-header__meta-wrap > span:not(:first-child):not(.rich-snippet-hidden):before {
           content: "·";
-          padding: 0 0.5em; 
+          padding: 0 0.5em;
       }
 	  .featured-media-under-header__excerpt {
 		margin: 0 0 20px 0;
 	  }
-	  
+
       @media only screen and (min-width: 691px) {
-        [data-animate="fade_in"] .featured-media-under-header__cat-wrap, 
+        [data-animate="fade_in"] .featured-media-under-header__cat-wrap,
         [data-animate="fade_in"].featured-media-under-header .entry-title,
-        [data-animate="fade_in"] .featured-media-under-header__meta-wrap, 
+        [data-animate="fade_in"] .featured-media-under-header__meta-wrap,
         [data-animate="fade_in"] .featured-media-under-header__featured-media,
 		[data-animate="fade_in"] .featured-media-under-header__excerpt,
         [data-animate="fade_in"].featured-media-under-header + .row .content-inner {
@@ -1037,6 +1478,10 @@ if (!function_exists('nectar_page_specific_dynamic')) {
           transform: translateY(50px);
           animation: nectar_featured_media_load 1s cubic-bezier(0.25,1,0.5,1) forwards;
         }
+		[data-animate="fade_in"].featured-media-under-header + .row .content-inner:has(.nectar-scrolling-tabs) {
+			transform: translateY(0px);
+          animation: nectar_featured_media_load_simple 1s cubic-bezier(0.25,1,0.5,1) forwards;
+	 	}
         [data-animate="fade_in"] .featured-media-under-header__cat-wrap { animation-delay: 0.1s; }
         [data-animate="fade_in"].featured-media-under-header .entry-title { animation-delay: 0.2s; }
 		[data-animate="fade_in"] .featured-media-under-header__excerpt { animation-delay: 0.3s; }
@@ -1054,6 +1499,14 @@ if (!function_exists('nectar_page_specific_dynamic')) {
           opacity: 1;
         }
       }
+		@keyframes nectar_featured_media_load_simple {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
 	  ';
 
 	  if ( is_rtl() ) {
@@ -1062,7 +1515,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			direction: rtl;
 		}
 		.featured-media-under-header__meta-wrap .meta-author img {
-		   margin-left: 10px; margin-right: 0;	
+		   margin-left: 10px; margin-right: 0;
 		}';
 	  }
 
@@ -1081,7 +1534,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				max-width: 75%;
 			}
 		  }';
-	  } 
+	  }
 
 	  // Author layouts.
 	  if( 'large' === $image_under_author_style ) {
@@ -1098,7 +1551,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			line-height: 1.5;
 		}
 		.featured-media-under-header__meta-wrap .meta-author > span span:not(.rich-snippet-hidden) {
-			display: block;	
+			display: block;
 		}
 		.featured-media-under-header__meta-wrap .meta-date,
 		.featured-media-under-header__meta-wrap .meta-reading-time {
@@ -1115,9 +1568,9 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 	  // Social.
 	  $blog_social_style = ( get_option( 'salient_social_button_style' ) ) ? get_option( 'salient_social_button_style' ) : 'fixed';
 
-	  if( function_exists('nectar_social_sharing_output') && 'default' ===  $blog_social_style ) { 
+	  if( function_exists('nectar_social_sharing_output') && 'default' ===  $blog_social_style ) {
 		echo '
-		
+
 		.single .post-content {
       display: flex;
       justify-content: center;
@@ -1128,14 +1581,14 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			html body {
 				overflow: visible;
 			}
-			
+
 			.single .post .content-inner {
 				padding-bottom: 0;
 			}
 			.single .post .content-inner .wpb_row:not(.full-width-content):last-child {
 				margin-bottom: 0;
 			}
-			
+
 			.nectar-social.vertical  {
 				transition: opacity 0.65s ease, transform 0.65s ease;
 			}
@@ -1150,7 +1603,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
       body[data-header-format="left-header"] .post-area.span_12 .post-content {
 				padding-right: 80px;
 			}
-	
+
 			.nectar-social.vertical .nectar-social-inner {
 				position: sticky;
 				top: var(--nectar-sticky-top-distance);
@@ -1174,13 +1627,13 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			}
 		}
 
-	
+
 		.ascend .featured-media-under-header + .row {
 			margin-bottom: 60px;
 		}
-		
+
 		.nectar-social.vertical .nectar-social-inner a {
-			height: 46px;	
+			height: 46px;
 			width: 46px;
 			line-height: 46px;
 			text-align: center;
@@ -1198,7 +1651,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
     }
 
 		.nectar-social.vertical .nectar-social-inner a i {
-			font-size: 16px;	
+			font-size: 16px;
 			height: auto;
 			color: inherit;
 		}';
@@ -1211,10 +1664,10 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 		 //// Page header fullscreen
     $active_fullscreen_header = false;
 
-		if( 'on' === $page_header_fullscreen || 
+		if( 'on' === $page_header_fullscreen ||
 			'on' === $page_header_box_roll ||
 			 (is_single() && 'fullscreen' === $blog_header_type) ) {
-			
+
       		$active_fullscreen_header = true;
 
 			echo '#page-header-bg.fullscreen-header,
@@ -1225,7 +1678,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			  -webkit-transition:none;
 			  z-index:2
 			}
-			
+
 			#page-header-wrap.fullscreen-header{
 			  background-color:#2b2b2b
 			}
@@ -1235,11 +1688,11 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			#page-header-bg.fullscreen-header[data-alignment-v="middle"] .span_6{
 			  top:50%!important
 			}
-			
+
 			.default-blog-title.fullscreen-header{
 			  position:relative
 			}
-			
+
 			@media only screen and (min-width : 1px) and (max-width : 999px) {
 				#page-header-bg[data-parallax="1"][data-alignment-v="middle"].fullscreen-header .span_6 {
 					-webkit-transform: translateY(-50%)!important;
@@ -1309,7 +1762,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			 }
 		}
 
-		 //// Overlay transparency. 
+		 //// Overlay transparency.
 		 $overlay_opacity = get_post_meta($post->ID, '_nectar_header_bg_overlay_opacity', true);
 
 		 if($overlay_opacity && 'default' !== $overlay_opacity) {
@@ -1321,17 +1774,17 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 		 $page_header_title = get_post_meta($post->ID, '_nectar_header_title', true);
 
 		 if( $header_auto_title && is_page() && empty($page_header_title) ) {
-			 
+
 			 $auto_header_font_color = ( isset($nectar_options['header-auto-title-text-color']) && !empty($nectar_options['header-auto-title-text-color'])) ? esc_html($nectar_options['header-auto-title-text-color']) : false;
-			 
+
 			 if( empty($font_color) ) {
 				 $font_color = (!empty($nectar_options['overall-font-color'])) ? $nectar_options['overall-font-color'] : '#333333';
-				 
+
 	 			// Auto page header font color.
 	 			if( $auto_header_font_color ) {
 	 				$font_color = $auto_header_font_color;
 	 			}
-				
+
 			 }
 		 }
 
@@ -1369,10 +1822,10 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			 }
 			 #page-header-bg[data-post-hs="default_minimal"] .inner-wrap > a:not(:hover) {
 				 color: '. esc_attr($font_color) .';
-				 border-color: rgba('.$colorR.','.$colorG.','.$colorB.',0.4);
+				 border-color: rgba('.esc_attr($colorR).','.esc_attr($colorG).','.esc_attr($colorB).',0.4);
 			 }
 			 .single #page-header-bg #single-below-header > span {
-				 border-color: rgba('.$colorR.','.$colorG.','.$colorB.',0.4);
+				 border-color: rgba('.esc_attr($colorR).','.esc_attr($colorG).','.esc_attr($colorB).',0.4);
 			 }
 			 ';
 
@@ -1384,7 +1837,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			 .single #page-header-bg .blog-title #single-meta > div a,
 			 .single #page-header-bg .blog-title #single-meta ul .n-shortcode a,
 			 #page-header-bg .blog-title #single-meta .nectar-social.hover .share-btn {
-				 border-color: rgba('.$colorR.','.$colorG.','.$colorB.',0.4);
+				 border-color: rgba('.esc_attr($colorR).','.esc_attr($colorG).','.esc_attr($colorB).',0.4);
 			 }';
 
 		 	 echo '.single #page-header-bg .blog-title #single-meta .nectar-social.hover > div a:hover,
@@ -1392,7 +1845,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			 .single #page-header-bg .blog-title #single-meta div > a:hover,
 			 .single #page-header-bg .blog-title #single-meta ul .n-shortcode a:hover,
 			 .single #page-header-bg .blog-title #single-meta ul li:not(.meta-share-count):hover > a{
-				 border-color: rgba('.$colorR.','.$colorG.','.$colorB.',1);
+				 border-color: rgba('.esc_attr($colorR).','.esc_attr($colorG).','.esc_attr($colorB).',1);
 			 }';
 
 		 	 echo '.single #page-header-bg #single-meta div span,
@@ -1402,18 +1855,23 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			 }';
 
 		 	 echo '.single #page-header-bg #single-meta ul .meta-share-count .nectar-social a i {
-				 color: rgba('.$colorR.','.$colorG.','.$colorB.',0.7)!important;
+				 color: rgba('.esc_attr($colorR).','.esc_attr($colorG).','.esc_attr($colorB).',0.7)!important;
 			 }';
 
 		 	 echo '.single #page-header-bg #single-meta ul .meta-share-count .nectar-social a:hover i {
-				 color: rgba('.$colorR.','.$colorG.','.$colorB.',1)!important;
+				 color: rgba('.esc_attr($colorR).','.esc_attr($colorG).','.esc_attr($colorB).',1)!important;
 			 }';
 		}
 
 
 		//// Header Navigation entrance animation.
 		$header_nav_entrance_animation = ( isset($post->ID) ) ? get_post_meta($post->ID, '_header_nav_entrance_animation', true) : false;
-		if( is_page() && 'fade-in' === $header_nav_entrance_animation ) {
+		$prevent_header_nav_entrance_animation = false;
+		if( isset($nectar_options['header-blur-bg-type']) && $nectar_options['header-blur-bg-type'] === 'gradient' &&
+			isset($nectar_options['header-blur-bg']) && $nectar_options['header-blur-bg'] === '1' ) {
+			$prevent_header_nav_entrance_animation = true;
+		}
+		if( is_page() && 'fade-in' === $header_nav_entrance_animation && !$prevent_header_nav_entrance_animation ) {
 			echo '
 			@keyframes header_nav_entrance_animation {
 				0% { opacity: 0.01; }
@@ -1427,26 +1885,26 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				.no-js #header-outer {
 					opacity: 1;
 				}
-		
+
 				#header-outer.entrance-animation {
 					animation: header_nav_entrance_animation 1.5s ease forwards;
 				}
-				
+
 			}
 			';
-		} 
-		else if( is_page() && 'fade-in-from-top' === $header_nav_entrance_animation  ) {
+		}
+		else if( is_page() && 'fade-in-from-top' === $header_nav_entrance_animation && !$prevent_header_nav_entrance_animation ) {
 			echo '
 			@keyframes header_nav_entrance_animation {
 				0% { opacity: 0.01; }
 				100% { opacity: 1; }
 			}
-			
+
       		@keyframes header_nav_entrance_animation_2 {
 				0% { transform: translateY(-100%); }
 				100% { transform: translateY(0); }
 			}
-			
+
 			@media only screen and (min-width: 691px) {
 				#header-outer {
 					opacity: 0.01;
@@ -1463,7 +1921,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				#header-outer.entrance-animation #header-secondary-outer {
 					animation: header_nav_entrance_animation_2 1.5s cubic-bezier(0.25,1,0.5,1) forwards;
 				}
-					
+
 			}
 			';
 		}
@@ -1475,7 +1933,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			#header-outer.entrance-animation,
 			#header-outer.entrance-animation #top,
 			#header-outer.entrance-animation #header-secondary-outer  {
-				animation-delay: '.floatval($header_nav_entrance_animation_delay).'ms;	
+				animation-delay: '.floatval($header_nav_entrance_animation_delay).'ms;
 			}';
 		}
 
@@ -1489,11 +1947,11 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				#header-outer.entrance-animation,
 				#header-outer.entrance-animation #top,
 				#header-outer.entrance-animation #header-secondary-outer  {
-					animation-timing-function: cubic-bezier('.$cubic_bezier.');	
+					animation-timing-function: cubic-bezier('.esc_attr($cubic_bezier).');
 				}';
 			}
 		}
-		
+
 
 		//// Page header text effect.
 		$page_header_text_effect = get_post_meta($post->ID, '_nectar_page_header_text-effect', true);
@@ -1687,11 +2145,11 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			}
 			';
 		}
-		
+
 
 		//// Page header blog archives;
 		if( is_category() || is_author() || is_date() || is_tag() || is_home() ) {
-			
+
 			$using_gradient_header = false;
 			if( isset(NectarThemeManager::$options['blog_archive_bg_functionality']) &&
 		 		NectarThemeManager::$options['blog_archive_bg_functionality'] === 'color' ) {
@@ -1701,9 +2159,9 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				if ( 'gradient' === $color_layout ) {
 					$using_gradient_header = true;
 				}
-				
+
 			}
-			
+
 			if (!$using_gradient_header) {
 				echo '
 				body[data-bg-header="true"].category .container-wrap,
@@ -1731,7 +2189,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			.archive.date .row .col.section-title span{
 			  padding-left:0
 			}
-			
+
 			body.author #page-header-wrap #page-header-bg,
 			body.category #page-header-wrap #page-header-bg,
 			body.tag #page-header-wrap #page-header-bg,
@@ -1740,7 +2198,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				padding-top: 8%;
     			padding-bottom: 8%;
 			}';
-			
+
 			$animate_in_effect = ( !empty($nectar_options['header-animate-in-effect'])) ? $nectar_options['header-animate-in-effect'] : 'none';
 
 			if( 'slide-down' !== $animate_in_effect ) {
@@ -1748,13 +2206,13 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					height: auto;
 				}';
 			}
-			
+
 			echo '.archive.category .row .col.section-title p,
 			.archive.tag .row .col.section-title p {
 			  margin-top: 10px;
 			}
-			
-	
+
+
 			body[data-bg-header="true"].archive .container-wrap.meta_overlaid_blog,
 			body[data-bg-header="true"].category .container-wrap.meta_overlaid_blog,
 			body[data-bg-header="true"].author .container-wrap.meta_overlaid_blog,
@@ -1762,7 +2220,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			  padding-top: 0!important;
 			}
 
-			
+
 			#page-header-bg[data-alignment="center"] .span_6 p {
 				margin: 0 auto;
 			}
@@ -1800,7 +2258,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				.blog-archive-header .nectar-author-gravatar img {
 					width: 75px;
 				}
-			}	
+			}
 
 			.blog-archive-header.color-bg  .col.section-title{
 				border-bottom: 0;
@@ -1809,7 +2267,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			.blog-archive-header.color-bg * {
 				color: inherit!important;
 			}
-			
+
 			.nectar-archive-tax-count {
 				position: relative;
 				padding: 0.5em;
@@ -1831,10 +2289,10 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				background-color: currentColor;
 				opacity: 0.1;
 			}';
-			
+
 		}
 
-		// HEADER NAV 
+		// HEADER NAV
 		$theme_skin = NectarThemeManager::$skin;
 		$header_format 	= (!empty($nectar_options['header_format'])) ? $nectar_options['header_format'] : 'default';
 
@@ -1871,7 +2329,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 		$search_padding_top    = ceil(($logo_height/2)) - ceil(21/2) +1;
 		$search_padding_bottom = (ceil(($logo_height/2)) - ceil(21/2));
 		$using_secondary       = (!empty($nectar_options['header_layout'])) ? $nectar_options['header_layout'] : ' ';
-		
+
 
 		//// Larger secondary header with material theme skin.
 		if( $theme_skin === 'material' ) {
@@ -1929,7 +2387,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					echo '@media only screen and (max-width: 999px) {
 						:root {
 							--nectar-body-border-size: 15px;
-					
+
 						}
 					}';
 				}
@@ -1959,7 +2417,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 						width: calc(100vw - 272px - var(--scroll-bar-w) - var( --nectar-body-border-size ))!important;
 						margin-left: calc(-50vw + 135px + var( --nectar-body-border-size )/2 + var(--scroll-bar-w)/2)!important;
 					}
-					
+
 					[data-header-format="left-header"] .container-wrap {
 						padding-right: var( --nectar-body-border-size );
 						padding-left: 0
@@ -2075,7 +2533,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					padding-right: 0;
 				}
 				';
-				
+
 			 }
 
 			 echo '#nectar_fullscreen_rows {
@@ -2312,7 +2770,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 
 		// HEADER NAV TRANSPARENCY
 		if( !empty($nectar_options['transparent-header']) &&
-			$nectar_options['transparent-header'] == '1' || 
+			$nectar_options['transparent-header'] == '1' ||
 			nectar_is_contained_header() ) {
 
 			if( $activate_transparency ) {
@@ -2402,7 +2860,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			}
 
 		} //using transparent theme option
-		
+
 
 		if ( nectar_is_contained_header() ) {
 			$header_extra_space_to_remove = 0;
@@ -2421,14 +2879,14 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 
 
 		// Desktop page header fullscreen calcs.
-		if( (!empty($nectar_options['transparent-header']) && 
-			$nectar_options['transparent-header'] === '1' && 
-			$activate_transparency) || 
-			$header_format === 'left-header' || 
+		if( (!empty($nectar_options['transparent-header']) &&
+			$nectar_options['transparent-header'] === '1' &&
+			$activate_transparency) ||
+			$header_format === 'left-header' ||
 			nectar_is_contained_header() ) {
 
 		 $headerFormat = (!empty($nectar_options['header_format'])) ? $nectar_options['header_format'] : 'default';
-		 
+
 		 $contained_header_mod = 25;
 
 		 echo '
@@ -2438,7 +2896,8 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				#page-header-wrap.fullscreen-header #page-header-bg,
 				html:not(.nectar-box-roll-loaded) .nectar-box-roll > #page-header-bg.fullscreen-header,
 				.nectar_fullscreen_zoom_recent_projects,
-				#nectar_fullscreen_rows:not(.afterLoaded) > div {
+				#nectar_fullscreen_rows:not(.afterLoaded) > div,
+				#nectar_fullscreen_rows:not(.afterLoaded) > section {
 					height: 100vh;
 				}
 
@@ -2457,7 +2916,8 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					echo '.admin-bar #page-header-wrap.fullscreen-header,
 					.admin-bar #page-header-wrap.fullscreen-header #page-header-bg,
 					.admin-bar .nectar_fullscreen_zoom_recent_projects,
-					.admin-bar #nectar_fullscreen_rows:not(.afterLoaded) > div {
+					.admin-bar #nectar_fullscreen_rows:not(.afterLoaded) > div,
+					.admin-bar #nectar_fullscreen_rows:not(.afterLoaded) > section {
 						height: calc(100vh - 32px);
 					}
 					.admin-bar .wpb_row.vc_row-o-full-height.top-level,
@@ -2466,18 +2926,18 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					}';
 				}
 
-				if( $headerFormat !== 'left-header' && 
+				if( $headerFormat !== 'left-header' &&
 					!(has_action('nectar_hook_global_section_after_header_navigation') && nectar_is_contained_header() )) {
 					echo '#page-header-bg[data-alignment-v="middle"] .span_6 .inner-wrap,
 					#page-header-bg[data-alignment-v="top"] .span_6 .inner-wrap,
 					.blog-archive-header.color-bg .container {
-						padding-top: '. (intval($header_space) - $header_extra_space_to_remove + $contained_header_mod) .'px;
+						padding-top: calc('. (intval($header_space) - $header_extra_space_to_remove + $contained_header_mod) .'px + var(--nectar_hook_before_nav_content_height, 0px));
 					}
 					#page-header-wrap.container #page-header-bg .span_6 .inner-wrap {
 						padding-top: 0;
 					}
 					';
-					
+
 				}
 
 				echo '.nectar-slider-wrap[data-fullscreen="true"]:not(.loaded),
@@ -2493,13 +2953,13 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			}';
 
 			// Mobile transparent header.
-			if( (!empty($nectar_options['transparent-header']) && 
-				$nectar_options['transparent-header'] === '1' && 
-				$activate_transparency) || 
+			if( (!empty($nectar_options['transparent-header']) &&
+				$nectar_options['transparent-header'] === '1' &&
+				$activate_transparency) ||
 				nectar_is_contained_header()) {
 
 				 $nectar_mobile_padding = ( $theme_skin === 'material' ) ? 10 : 25;
-				
+
 				 // OCM background specific.
 				 $full_width_header = (!empty($nectar_options['header-fullwidth']) && $nectar_options['header-fullwidth'] === '1') ? true : false;
 				 $ocm_menu_btn_color_non_compatible = ( 'ascend' === $theme_skin && true === $full_width_header ) ? true : false;
@@ -2524,7 +2984,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 							#page-header-bg[data-alignment-v="middle"]:not(.fullscreen-header) .span_6 .inner-wrap,
 							#page-header-bg[data-alignment-v="top"] .span_6 .inner-wrap,
 							.blog-archive-header.color-bg .container {
-								padding-top: '. (intval($mobile_logo_height) + $nectar_mobile_padding) .'px;
+								padding-top: calc('. (intval($mobile_logo_height) + $nectar_mobile_padding) .'px + var(--nectar_hook_before_nav_content_height, 0px));
 							}
 
 							.vc_row.top-level.full-width-section:not(.full-width-ns) > .span_12,
@@ -2576,7 +3036,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 						}
 					}';
 				 }
-				 
+
 
 			 }
 
@@ -2585,7 +3045,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 
 		// Mobile page header fullscreen calcs.
 		else {
-			
+
 			echo '@media only screen and (min-width: 1000px) {
 				body #ajax-content-wrap.no-scroll {
 					min-height:  calc(100vh - '. esc_attr($header_space) .'px);
@@ -2602,7 +3062,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					height: calc(100vh - '. (intval($header_space) - 1) .'px);
 				}
 
-				.wpb_row.vc_row-o-full-height.top-level, 
+				.wpb_row.vc_row-o-full-height.top-level,
 				.wpb_row.vc_row-o-full-height.top-level > .col.span_12 {
 					min-height: calc(100vh - '. (intval($header_space) - 1) .'px);
 				}
@@ -2618,7 +3078,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					.admin-bar #nectar_fullscreen_rows:not(.afterLoaded) > div {
 						height: calc(100vh - '. (intval($header_space) - 1) .'px - 32px);
 					}
-					.admin-bar .wpb_row.vc_row-o-full-height.top-level, 
+					.admin-bar .wpb_row.vc_row-o-full-height.top-level,
 					.admin-bar .wpb_row.vc_row-o-full-height.top-level > .col.span_12 {
 						min-height: calc(100vh - '. (intval($header_space) - 1) .'px - 32px);
 					}';
@@ -2634,12 +3094,12 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					height: calc(100vh - '. (intval($header_space) - 2) .'px - 32px)!important;
 				}
 			}
-			
-			.admin-bar[class*="page-template-template-no-header"] .wpb_row.vc_row-o-full-height.top-level, 
+
+			.admin-bar[class*="page-template-template-no-header"] .wpb_row.vc_row-o-full-height.top-level,
 			.admin-bar[class*="page-template-template-no-header"] .wpb_row.vc_row-o-full-height.top-level > .col.span_12 {
 				min-height: calc(100vh - 32px);
 			}
-			body[class*="page-template-template-no-header"] .wpb_row.vc_row-o-full-height.top-level, 
+			body[class*="page-template-template-no-header"] .wpb_row.vc_row-o-full-height.top-level,
 			body[class*="page-template-template-no-header"] .wpb_row.vc_row-o-full-height.top-level > .col.span_12 {
 				min-height: 100vh;
 			}';
@@ -2648,11 +3108,11 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 
 		// Extra padding on top level full width rows when using contained header size.
 		if( nectar_is_contained_header() ) {
-			
+
 			// Global section after header section alters selector.
 			if( has_action('nectar_hook_global_section_after_header_navigation')) {
-	
-				
+
+
 				echo '.nectar-global-section.after-nav:first-of-type .vc_row:first-of-type > .span_12,
 				.nectar_hook_global_section_after_header_navigation:first-of-type .vc_row:first-of-type > .span_12 {
 					padding-top: '. (intval($header_space) + 30) .'px;
@@ -2662,7 +3122,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					.nectar_hook_global_section_after_header_navigation:first-of-type .vc_row:first-of-type:not(.full-width-ns) > .span_12 {
 						padding-top: '. (intval($mobile_logo_height) + $nectar_mobile_padding) .'px;
 					}
-		
+
 					.nectar-global-section.after-nav .vc_row.full-width-ns:first-of-type .nectar-slider-wrap .swiper-slide[data-y-pos="middle"] .content,
 					.nectar-global-section.after-nav .vc_row.full-width-ns:first-of-type .nectar-slider-wrap .swiper-slide[data-y-pos="top"] .content {
 						padding-top: 70px;
@@ -2674,7 +3134,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				.nectar_hook_global_section_after_header_navigation:first-of-type .vc_row:first-of-type.full-width-ns > .span_12{
 					padding-top: 0;
 				}';
-			} 
+			}
 			else if( nectar_using_before_content_global_section() ) {
 				// Second Global section which may be at the top of the page.
 				echo '.nectar_hook_before_content_global_section:first-of-type .vc_row:first-of-type > .span_12 {
@@ -2684,7 +3144,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					.nectar_hook_before_content_global_section:first-of-type .vc_row:first-of-type:not(.full-width-ns) > .span_12 {
 						padding-top: '. (intval($mobile_logo_height) + $nectar_mobile_padding) .'px;
 					}
-		
+
 					.nectar_hook_before_content_global_section:first-of-type .vc_row.full-width-ns:first-of-type .nectar-slider-wrap .swiper-slide[data-y-pos="middle"] .content {
 						padding-top: 70px;
 					}
@@ -2704,7 +3164,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 					body .container-wrap .vc_row.top-level:not(.full-width-ns) > .span_12 {
 						padding-top: calc('. (nectar_get_mobile_header_height()) .'px + 25px);
 					}
-		
+
 					.full-width-ns.top-level .nectar-slider-wrap .swiper-slide[data-y-pos="middle"] .content,
 					.full-width-ns.top-level .nectar-slider-wrap .swiper-slide[data-y-pos="top"] .content {
 						padding-top: 70px;
@@ -2716,7 +3176,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				}';
 			}
 
-			
+
 		}
 
 
@@ -2931,27 +3391,27 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				}
 			}
 		}
-		
+
 		// Search results list number count
-		if( is_search() && 
-				isset($nectar_options['search-results-layout']) && 
+		if( is_search() &&
+				isset($nectar_options['search-results-layout']) &&
 				in_array($nectar_options['search-results-layout'], array('list-with-sidebar','list-no-sidebar')) ) {
-			
+
 				$current_page_num = intval(get_query_var( 'paged', 1 ));
 				$posts_per_page   = intval(get_query_var( 'posts_per_page', 12 ));
-				
+
 				if( $posts_per_page > 1 && $current_page_num > 1 ) {
-			
+
 					$current_page_num -= 1;
-					
+
 					for($i = 0; $i <= $posts_per_page; $i++) {
 						echo 'body.search-results #search-results[data-layout*="list"] article:nth-child('.$i.'):before {
 						  content: "'.esc_attr($i + ($posts_per_page*$current_page_num)).'";
 						}';
 					}
-					
+
 				}
-				
+
 		}
 
 		// WooCommerce cart global sections
@@ -2990,7 +3450,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			echo NectarElDynamicStyles::generate_styles($portfolio_content);
 
 			// Previews.
-			if( is_preview() && $portfolio_content_preview ) { 
+			if( is_preview() && $portfolio_content_preview ) {
 				echo NectarElDynamicStyles::generate_styles($portfolio_content_preview);
 			}
 		}
@@ -3000,17 +3460,17 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 		}
 
     // PUM
-    if( function_exists('pum_get_all_popups') && 
-        function_exists('pum_is_popup_loadable') && 
+    if( function_exists('pum_get_all_popups') &&
+        function_exists('pum_is_popup_loadable') &&
         !is_admin() ) {
 
         $popups = pum_get_all_popups();
-    
+
         if ( ! empty( $popups ) ) {
 
             foreach ( $popups as $popup ) {
-              if ( isset($popup->ID) && 
-                  pum_is_popup_loadable( $popup->ID ) && 
+              if ( isset($popup->ID) &&
+                  pum_is_popup_loadable( $popup->ID ) &&
                   isset($popup->content) &&
                   !empty($popup->content) ) {
 
@@ -3021,30 +3481,30 @@ if (!function_exists('nectar_page_specific_dynamic')) {
          }
 
     }
-   
-		
-		
+
+
+
 		// Global template theme options.
     $theme_template_locations = NectarThemeManager::$global_seciton_options;
     foreach ($theme_template_locations as $key => $location) {
-      
+
       if( isset($nectar_options[$location]) &&
           !empty($nectar_options[$location]) ) {
-        
+
           $template_ID = intval($nectar_options[$location]);
           $global_section_content_query = get_post($template_ID);
-          
-          if( isset($global_section_content_query->post_content) && 
+
+          if( isset($global_section_content_query->post_content) &&
               !empty($global_section_content_query->post_content) ) {
 								// Clear existing styles.
                 NectarElDynamicStyles::$element_css = array();
 								// Generate global section styles.
                 echo NectarElDynamicStyles::generate_styles($global_section_content_query->post_content);
-  
+
           }
-        
+
       }
-      
+
     } // End global section theme option loop.
 
 		// Update assist.
@@ -3069,7 +3529,7 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 			.row .col img.img-with-animation.nectar-lazy:not([srcset]) {
 				width: 100%;
 			}';
-		} 
+		}
 		else {
 			echo '.row .col img:not([srcset]):not([src*="svg"]){
 				width: auto;
@@ -3078,8 +3538,8 @@ if (!function_exists('nectar_page_specific_dynamic')) {
 				width: 100%;
 			}';
 		}
-		  
-    
+
+
 
 
 

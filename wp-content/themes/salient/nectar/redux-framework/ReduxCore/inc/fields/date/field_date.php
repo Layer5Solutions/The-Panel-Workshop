@@ -38,7 +38,7 @@ if ( ! class_exists( 'ReduxFramework_date' ) ) {
         public $field = array();
         public $value = '';
         public $parent = null;
-        
+
         /**
          * Field Constructor.
          * Required - must call the parent constructor, then assign field and value to vars, and obviously call the render field function
@@ -47,7 +47,7 @@ if ( ! class_exists( 'ReduxFramework_date' ) ) {
          * @access        public
          * @return        void
          */
-        function __construct( $field = array(), $value = '', $parent ) {
+        function __construct( $field = array(), $value = '', $parent = null ) {
             $this->parent = $parent;
             $this->field  = $field;
             $this->value  = $value;

@@ -130,13 +130,14 @@ $icon_params = array(
             esc_html__( 'Border Basic', 'salient-core' ) => 'border-basic',
             esc_html__( 'Border W/ Hover Animation', 'salient-core' ) => 'border-animation',
             esc_html__( 'Soft Color Background', 'salient-core' ) => 'soft-bg',
+            esc_html__( 'Solid Color Background', 'salient-core' ) => 'color-bg',
             esc_html__( 'Solid Color Background W/ Shadow', 'salient-core' ) => 'shadow-bg'
         ),
         'save_always' => true,
         'param_name' => 'icon_style',
         'description' => esc_html__( 'Select your button style.', 'salient-core' ),
     ),
-    
+
     array(
         'type' => 'dropdown',
         'heading' => __( 'Icon Border Thickness', 'salient-core' ),
@@ -165,7 +166,7 @@ $icon_params = array(
     ),
     array(
         'type' => 'dropdown',
-        'heading' => __( 'Icon Color', 'salient-core' ),
+        'heading' => __( 'Color', 'salient-core' ),
         'value' => $el_color_list,
         'save_always' => true,
         'param_name' => 'icon_color',
@@ -173,23 +174,36 @@ $icon_params = array(
         'description' => esc_html__( 'Choose a color from your', 'salient-core' ) . ' <a target="_blank" href="'. esc_url( NectarThemeInfo::global_colors_tab_url() ) .'"> ' . esc_html__( 'globally defined color scheme', 'salient-core' ) . '</a>',
     ),
 
+    // CUSTOM COLOR FOR BG & SHADOW BG
+    array(
+        'type' => 'colorpicker',
+        'class' => '',
+        'heading' => 'Color',
+        'param_name' => 'icon_color_custom',
+        'dependency' => array( 'element' => 'icon_color_type', 'value' => array( 'custom' ) ),
+        'value' => '',
+        'description' => '',
+    ),
+
+    // HOVER
+    array(
+        'type' => 'colorpicker',
+        'class' => '',
+        'heading' => 'Hover Color',
+        'param_name' => 'icon_color_custom_hover',
+        'dependency' => array( 'element' => 'icon_color_type', 'value' => array( 'custom' ) ),
+        'value' => ''
+    ),
+
+    // CUSTOM COLOR FOR GENERAL STYLES
     array(
         'type' => 'colorpicker',
         'class' => '',
         'heading' => 'Icon Color',
-        'param_name' => 'icon_color_custom',
-        'dependency' => array( 'element' => 'icon_color_type', 'value' => array( 'custom' ) ),
+        'param_name' => 'icon_secondary_color_custom',
+        'dependency' => array( 'element' => 'icon_style', 'value' => array( 'color-bg', 'shadow-bg' ) ),
         'value' => '',
-        'description' => esc_html__( 'Choose a custom color for your icon, outside of the global color scheme', 'salient-core' ),
-    ),
-
-    array(
-        'type' => 'colorpicker',
-        'class' => '',
-        'heading' => 'Icon Hover Color',
-        'param_name' => 'icon_color_custom_hover',
-        'dependency' => array( 'element' => 'icon_color_type', 'value' => array( 'custom' ) ),
-        'value' => ''
+        'description' => '',
     ),
 
     array(
@@ -284,6 +298,9 @@ $icon_params = array(
         'placeholder' => esc_html__( 'Right', 'salient-core' ),
         'description' => ''
     ),
+
+    ...SalientWPbakeryParamGroups::backdrop_filter_group('', []),
+
     array(
         'type' => 'textfield',
         'class' => '',

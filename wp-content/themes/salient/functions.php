@@ -18,7 +18,7 @@ define( 'NECTAR_THEME_NAME', 'salient' );
 
 if ( ! function_exists( 'get_nectar_theme_version' ) ) {
 	function nectar_get_theme_version() {
-		return '17.3.1';
+		return '18.0.1';
 	}
 }
 
@@ -69,6 +69,7 @@ require_once NECTAR_THEME_DIRECTORY . '/includes/class-nectar-theme-manager.php'
  * Register/Enqueue theme assets.
  */
 require_once NECTAR_THEME_DIRECTORY . '/nectar/helpers/icon-collections.php';
+require_once NECTAR_THEME_DIRECTORY . '/includes/element-dynamic-styles/loader.php';
 require_once NECTAR_THEME_DIRECTORY . '/includes/class-nectar-element-assets.php';
 require_once NECTAR_THEME_DIRECTORY . '/includes/class-nectar-element-styles.php';
 require_once NECTAR_THEME_DIRECTORY . '/includes/class-nectar-lazy.php';
@@ -128,6 +129,7 @@ require_once NECTAR_THEME_DIRECTORY . '/nectar/helpers/nav-menus.php';
  */
 require_once NECTAR_THEME_DIRECTORY . '/nectar/tgm-plugin-activation/class-tgm-plugin-activation.php';
 require_once NECTAR_THEME_DIRECTORY . '/nectar/tgm-plugin-activation/required_plugins.php';
+require_once NECTAR_THEME_DIRECTORY . '/nectar/tgm-plugin-activation/class-salient-plugin-updates.php';
 
 
 /**

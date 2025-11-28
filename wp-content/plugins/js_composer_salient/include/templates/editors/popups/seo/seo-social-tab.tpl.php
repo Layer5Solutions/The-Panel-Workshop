@@ -72,7 +72,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					$value = empty( $seo_settings[ $title_name ] ) ? '' : $seo_settings[ $title_name ];
 
 					if ( vc_modules_manager()->is_module_on( 'vc-ai' ) ) {
-						wpb_add_ai_icon_to_text_field( 'textfield', $title_id );
+						wpb_add_ai_icon_to_text_field( 'seo_title', $title_id );
 					}
 					?>
 					<input name="<?php echo esc_attr( $title_name ); ?>" id="<?php echo esc_attr( $title_id ); ?>" class="wpb-textinput vc_social-title-field" type="text" value="<?php echo esc_attr( $value ); ?>" placeholder="">
@@ -90,7 +90,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 
 					if ( vc_modules_manager()->is_module_on( 'vc-ai' ) ) {
-						wpb_add_ai_icon_to_text_field( 'textarea', $description_id );
+						wpb_add_ai_icon_to_text_field( 'seo_meta_description_social', $description_id );
 					}
 					?>
 					<textarea name="<?php echo esc_attr( $description_name ); ?>" id="<?php echo esc_attr( $description_id ); ?>" class="wpb-textinput vc_social-description-field" maxlength="255"><?php echo esc_html( $value ); ?></textarea>

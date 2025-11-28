@@ -38,6 +38,14 @@ if ( vc_user_access()->part( 'post_settings' )->can()->get() ) {
 }
 // [/post settings panel render]
 
+// [custom css/js panel render]
+if ( vc_user_access()->part( 'post_settings' )->can()->get() ) {
+	require_once vc_path_dir( 'EDITORS_DIR', 'popups/class-vc-custom-code.php' );
+	$custom_code = new Vc_Custom_Code( $editor, $post );
+	$custom_code->renderUITemplate();
+}
+// [/custom css/js panel render]
+
 // [panel edit layout render]
 require_once vc_path_dir( 'EDITORS_DIR', 'popups/class-vc-edit-layout.php' );
 $edit_layout = new Vc_Edit_Layout();

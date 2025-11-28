@@ -717,12 +717,41 @@ $image_with_animation_params = array(
         ),
         array(
             'type' => 'checkbox',
+            'heading' => esc_html__( 'Display Image Caption', 'salient-core' ),
+            'param_name' => 'display_caption',
+            'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+            'description' => esc_html__( 'Adds the specified caption below the image.', 'salient-core' ),
+            'value' => Array( esc_html__( 'Yes, please', 'salient-core' ) => '1' )
+        ),
+        array(
+            'type' => 'checkbox',
             'heading' => esc_html__( 'Fit to Container', 'salient-core' ),
             'param_name' => 'fit_to_container',
             'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
             'description' => esc_html__( 'Scales the image to cover the entire parent container while maintaining its aspect ratio. Parts of the image may be cropped.', 'salient-core' ),
             'value' => Array( esc_html__( 'Yes, please', 'salient-core' ) => '1' )
         ),
+        array(
+            'type' => 'dropdown',
+            'class' => '',
+            'save_always' => true,
+            'heading' => esc_html__( 'Image Position', 'salient-core' ),
+            'param_name' => 'image_object_position',
+            'value' => array(
+                esc_html__( 'Center Center', 'salient-core' ) => 'center center',
+                esc_html__( 'Center Left', 'salient-core' ) => 'center left',
+                esc_html__( 'Center Right', 'salient-core' ) => 'center right',
+                esc_html__( 'Top Center', 'salient-core' ) => 'top center',
+                esc_html__( 'Top Left', 'salient-core' ) => 'top left',
+                esc_html__( 'Top Right', 'salient-core' ) => 'top right',
+                esc_html__( 'Bottom Center', 'salient-core' ) => 'bottom center',
+                esc_html__( 'Bottom Left', 'salient-core' ) => 'bottom left',
+                esc_html__( 'Bottom Right', 'salient-core' ) => 'bottom right',
+            ),
+            'dependency' => [ 'element' => 'fit_to_container', 'value' => [ '1' ] ],
+            'description' => esc_html__( 'Determine the position of the image within the parent container.', 'salient-core' ),
+        ),
+
         array(
             "type" => "dropdown",
             "heading" => esc_html__("Overflow Visibility", "salient-core"),

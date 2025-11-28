@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 global $current_user;
 wp_get_current_user();
-require_once vc_path_dir( 'AUTOLOAD_DIR', 'class-vc-settings-presets.php' );
+require_once vc_path_dir( 'CORE_DIR', 'presets/class-vc-settings-presets.php' );
 
 if ( vc_user_access()->part( 'presets' )->can()->get() ) {
 	$vc_vendor_settings_presets = Vc_Settings_Preset::listDefaultVendorSettingsPresets();

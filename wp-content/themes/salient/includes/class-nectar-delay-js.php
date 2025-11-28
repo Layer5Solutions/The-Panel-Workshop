@@ -3,7 +3,7 @@
 /**
  * Nectar Delay JS
  *
- * 
+ *
  * @package Salient WordPress Theme
  * @version 14.1
  */
@@ -34,13 +34,14 @@ if (!class_exists('NectarDelayJS')) {
             'flickity',
             'flickity-fade',
             'magnific',
-            // 'fancyBox',
+            'fancyBox',
             'lottie-player',
             'nectar-lottie',
             'nectar-parallax',
             // 'nectar-transit',
             'fullpage',
             'vivus',
+            'stickykit',
             'owl-carousel',
             'twentytwenty',
             'progressCircle',
@@ -51,6 +52,8 @@ if (!class_exists('NectarDelayJS')) {
             'nectar-single-product',
             'nectar-fullpage',
             'nectar-testimonial-sliders',
+            'nectar-fit-text',
+            'nectar-content-trail',
             // 'nectar-post-grid-stacked',
             'wpb_composer_front_js',
             'vc_grid'
@@ -63,7 +66,7 @@ if (!class_exists('NectarDelayJS')) {
         public function __construct()
         {
             add_action('wp', array($this, 'init'), 10);
-        }  
+        }
 
         public function mod_script_list() {
 
@@ -74,13 +77,78 @@ if (!class_exists('NectarDelayJS')) {
                     unset($this->salient_scripts[$key]);
                     $this->salient_scripts = array_values($this->salient_scripts);
                 }
-                
+
+            }
+
+            // Check if top 2 rows contain lightbox links - if so, don't delay fancyBox
+            if ( $this->top_rows_contain_lightbox() ) {
+                if (($key = array_search('fancyBox', $this->salient_scripts)) !== false) {
+                    unset($this->salient_scripts[$key]);
+                    $this->salient_scripts = array_values($this->salient_scripts);
+                }
+            }
+
+            // Check if top 2 rows contain fit_text_to_container - if so, don't delay nectar-fit-text
+            if ( $this->top_rows_contain_fit_text() ) {
+                if (($key = array_search('nectar-fit-text', $this->salient_scripts)) !== false) {
+                    unset($this->salient_scripts[$key]);
+                    $this->salient_scripts = array_values($this->salient_scripts);
+                }
             }
         }
 
+        /**
+         * Check if the top 2 rows contain any specific string
+         *
+         * @param string $search_string The string to search for
+         * @return bool True if the string is found in top 2 rows
+         */
+        public function top_rows_contain_string($search_string) {
+            global $post;
+
+            if (!$post || !isset($post->post_content) || is_archive() || is_home()) {
+                return false;
+            }
+
+            // Pattern to match vc_row shortcodes
+            $pattern = '\[(\[?)(vc_row)(?![\w-])([^\]\/]*(?:\/(?!\])[^\]\/]*)*?)(?:(\/)\]|\](?:([^\[]*+(?:\[(?!\/\2\])[^\[]*+)*+)\[\/\2\])?)(\]?)';
+
+            if (preg_match_all('/' . $pattern . '/s', $post->post_content, $matches) && array_key_exists(0, $matches)) {
+
+                // Check only the first 2 rows
+                $rows_to_check = array_slice($matches[0], 0, 2);
+
+                foreach ($rows_to_check as $row_content) {
+                    // Check for the search string in the row content
+                    if (strpos($row_content, $search_string) !== false) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /**
+         * Check if the top 2 rows contain any lightbox links
+         *
+         * @return bool True if lightbox links are found in top 2 rows
+         */
+        public function top_rows_contain_lightbox() {
+            return $this->top_rows_contain_string('lightbox');
+        }
+
+        /**
+         * Check if the top 2 rows contain any fit_text_to_container strings
+         *
+         * @return bool True if fit_text_to_container is found in top 2 rows
+         */
+        public function top_rows_contain_fit_text() {
+            return $this->top_rows_contain_string('fit_text_to_container');
+        }
 
         public function init() {
-            
+
             $this->mod_script_list();
 
             $this->theme_options = get_nectar_theme_options();
@@ -89,10 +157,10 @@ if (!class_exists('NectarDelayJS')) {
 
             // critical js deps for top level
             $this->top_level_element_deps();
-            
+
             // Allow filtering of script list.
             $this->salient_scripts = apply_filters('nectar_delay_js_script_list', $this->salient_scripts);
-            
+
             // Store delay settings.
             if( isset( $this->theme_options['delay-js-execution'] ) && '1' === $this->theme_options['delay-js-execution'] ) {
                 $this->delay_js = true;
@@ -111,13 +179,13 @@ if (!class_exists('NectarDelayJS')) {
 
             // Run delay logic.
             if( $this->delay_js && !is_admin() ) {
-                
+
                 // Enqueue assrts.
                 if( $this->activate_logic ) {
                     add_action('nectar_hook_before_body_close', array($this, 'enqueue_scripts'), 20);
                     add_action('wp_enqueue_scripts', array($this, 'inline_css'), 20);
                 }
-                
+
                 // Third party exclusions.
                 $this->third_party_compatibility();
 
@@ -130,24 +198,24 @@ if (!class_exists('NectarDelayJS')) {
         }
 
          /* Adds salient scripts to excluded
-             list for various third party performnace plugins 
+             list for various third party performnace plugins
         */
         public function third_party_compatibility() {
 
-            // Autooptimize - handled in mod_script_attrs 
+            // Autooptimize - handled in mod_script_attrs
             // WP Rocket - handled in mod_script_attrs
-            // Litespeed Cache - handled in mod_script_attrs 
+            // Litespeed Cache - handled in mod_script_attrs
             // WP Asset Cleanup - handled in mod_script_attrs
-            
-            // W3 Total Cache  
-            add_filter( 'w3tc_minify_js_script_tags', array($this, 'slice_excluded_scripts'), 10, 2); 
 
-            // Siteground Optimizer 
+            // W3 Total Cache
+            add_filter( 'w3tc_minify_js_script_tags', array($this, 'slice_excluded_scripts'), 10, 2);
+
+            // Siteground Optimizer
             add_filter('sgo_js_minify_exclude', array($this, 'add_excluded_scripts'), 10);
-            add_filter('sgo_javascript_combine_exclude', array($this, 'add_excluded_scripts'), 10);   
-            
-            // Clearify 
-            add_filter('wmac_filter_js_dontmove', array($this, 'add_excluded_scripts'), 10); 
+            add_filter('sgo_javascript_combine_exclude', array($this, 'add_excluded_scripts'), 10);
+
+            // Clearify
+            add_filter('wmac_filter_js_dontmove', array($this, 'add_excluded_scripts'), 10);
         }
 
         public function slice_excluded_scripts($scripts) {
@@ -159,8 +227,8 @@ if (!class_exists('NectarDelayJS')) {
                         unset($scripts[$key]);
                     }
                 }
-            
-                
+
+
             }
 
             return $scripts;
@@ -178,7 +246,7 @@ if (!class_exists('NectarDelayJS')) {
         public function mod_script_attrs( $tag, $handle ){
 
             if ( in_array($handle, $this->salient_scripts) ) {
-                
+
                 $modded_js = str_replace( '<script', '<script data-pagespeed-no-defer data-nowprocket data-wpacu-skip data-no-optimize', $tag );
 
                 if( $this->activate_logic ) {
@@ -187,8 +255,8 @@ if (!class_exists('NectarDelayJS')) {
                     $modded_js = preg_replace( '/type=(["\'])(.*?)\1/i', 'type="salientlazyscript" data-salient-lazy-$0', $modded_js, 1 );
 
                 }
-               
-                return $modded_js; 
+
+                return $modded_js;
             }
 
             if( 'salient-delay-js' === $handle ) {
@@ -197,7 +265,7 @@ if (!class_exists('NectarDelayJS')) {
                 return $modded_js;
             }
 
-            return $tag;    
+            return $tag;
         }
 
 
@@ -206,7 +274,7 @@ if (!class_exists('NectarDelayJS')) {
             global $post;
 
             $critical_css = '';
-            
+
             // Page loading animation.
             if ( isset($this->theme_options['ajax-page-loading']) && $this->theme_options['ajax-page-loading'] === '1' ) {
 
@@ -214,16 +282,16 @@ if (!class_exists('NectarDelayJS')) {
 
                 if ( $page_loading_effect === 'standard' ) {
                     $critical_css .= '
-                    body[data-ajax-transitions="true"] #ajax-loading-screen[data-effect="standard"], 
+                    body[data-ajax-transitions="true"] #ajax-loading-screen[data-effect="standard"],
                     body[data-ajax-transitions="true"] #ajax-loading-screen[data-effect="standard"] .loading-icon {
                         transition: opacity 0.4s ease;
                     }
-                    body[data-ajax-transitions="true"] #ajax-loading-screen[data-effect="standard"].loaded, 
+                    body[data-ajax-transitions="true"] #ajax-loading-screen[data-effect="standard"].loaded,
                     body[data-ajax-transitions="true"] #ajax-loading-screen[data-effect="standard"].loaded .loading-icon {
                         opacity: 0;
                     }';
                 }
-                
+
             }
 
 
@@ -231,19 +299,19 @@ if (!class_exists('NectarDelayJS')) {
             $page_header_text_effect = (isset($post->ID)) ? get_post_meta($post->ID, '_nectar_page_header_text-effect', true) : '';
 		    if( 'rotate_in' === $page_header_text_effect ) {
                 $critical_css .= '
-                body #page-header-bg[data-text-effect="rotate_in"] .wraped span, 
-                body .overlaid-content[data-text-effect="rotate_in"] .wraped span, 
-                body #page-header-bg[data-text-effect="rotate_in"] .inner-wrap >*:not(.top-heading), 
+                body #page-header-bg[data-text-effect="rotate_in"] .wraped span,
+                body .overlaid-content[data-text-effect="rotate_in"] .wraped span,
+                body #page-header-bg[data-text-effect="rotate_in"] .inner-wrap >*:not(.top-heading),
                 body .overlaid-content[data-text-effect="rotate_in"] .inner-wrap >*:not(.top-heading),
                 body #page-header-bg[data-text-effect="rotate_in"] >div:not(.nectar-particles) .span_6 .inner-wrap >*:not(.top-heading) {
                     opacity: 1;
                     transform: none;
                 }
-                body #page-header-bg[data-text-effect="rotate_in"] .nectar-particles .inner-wrap:not(.shape-1) >*:not(.top-heading), 
+                body #page-header-bg[data-text-effect="rotate_in"] .nectar-particles .inner-wrap:not(.shape-1) >*:not(.top-heading),
                 #ajax-content-wrap .overlaid-content[data-text-effect="rotate_in"] .inner-wrap:not(.shape-1) >*:not(.top-heading) {
-                    opacity: 0;   
+                    opacity: 0;
                 }';
-                
+
             }
 
             // Box roll.
@@ -253,14 +321,14 @@ if (!class_exists('NectarDelayJS')) {
                     top: 0!important;
                 }
                 #ajax-content-wrap .scroll-down-wrap,
-                #ajax-content-wrap #page-header-bg .nectar-particles .inner-wrap >*:not(.top-heading), 
+                #ajax-content-wrap #page-header-bg .nectar-particles .inner-wrap >*:not(.top-heading),
                 #ajax-content-wrap .overlaid-content .inner-wrap >*:not(.top-heading) {
-                    opacity: 1;   
+                    opacity: 1;
                     transform: none;
                 }
-                body #page-header-bg .nectar-particles .inner-wrap:not(.shape-1) >*:not(.top-heading), 
+                body #page-header-bg .nectar-particles .inner-wrap:not(.shape-1) >*:not(.top-heading),
                 #ajax-content-wrap .overlaid-content .inner-wrap:not(.shape-1) >*:not(.top-heading) {
-                    opacity: 0;   
+                    opacity: 0;
                 }';
             }
 
@@ -326,20 +394,20 @@ if (!class_exists('NectarDelayJS')) {
 
             // Portfolio items.
             $critical_css .= '.top-level .portfolio-items[data-loading=lazy-load] .col .inner-wrap.animated .top-level-image {
-                opacity: 1;   
+                opacity: 1;
             }';
 
             // First parallax BGs.
             $critical_css .= '.wpb_row.vc_row.top-level .column-image-bg-wrap[data-n-parallax-bg="true"] .column-image-bg,
             .wpb_row.vc_row.top-level + .wpb_row .column-image-bg-wrap[data-n-parallax-bg="true"] .column-image-bg,
             #portfolio-extra > .wpb_row.vc_row.parallax_section:first-child .row-bg {
-                transform: none!important;  
+                transform: none!important;
                 height: 100%!important;
                 opacity: 1;
             }
-          
+
             #portfolio-extra > .wpb_row.vc_row.parallax_section .row-bg {
-                background-attachment: scroll;   
+                background-attachment: scroll;
             }';
 
             // Iframe video post format
@@ -364,11 +432,11 @@ if (!class_exists('NectarDelayJS')) {
                 display: none!important;
             }';
 
-            // OCM 
+            // OCM
             $critical_css .= 'body[data-slide-out-widget-area-style="slide-out-from-right"].material .slide_out_area_close.hide_until_rendered {
-                opacity: 0;   
+                opacity: 0;
             }';
-            
+
 
 
             // Masonry Blog/Portfolio.
@@ -378,20 +446,20 @@ if (!class_exists('NectarDelayJS')) {
                 $enqueued_styles[] = $handle;
             }
 
-        
+
             // Portfolio.
             if(in_array('nectar-portfolio',$enqueued_styles)) {
                 $critical_css .= $this->portfolio_grid_css();
             }
 
-            
+
             wp_add_inline_style( 'main-styles', nectar_quick_minify($critical_css) );
         }
 
         // Search for special elements which rely on JS to display and allow them to bypass the delay.
         public function top_level_element_deps() {
 
-        
+
             $critical_element_deps = array(
                 '[nectar_lottie' => array('nectar-lottie', 'lottie-player'),
             );
@@ -402,16 +470,16 @@ if (!class_exists('NectarDelayJS')) {
             global $post;
 
             if($post && isset($post->post_content) && (!is_single() && !is_archive() && !is_home()) ) {
-               
+
                 if ( preg_match_all( '/'. $pattern .'/s', $post->post_content, $matches ) && array_key_exists( 0, $matches ))  {
-                    
+
                     foreach($critical_element_deps as $shortcode => $handle_arr) {
-                        if( isset($matches[0][0]) && strpos($matches[0][0],$shortcode) !== false || 
+                        if( isset($matches[0][0]) && strpos($matches[0][0],$shortcode) !== false ||
                             isset($matches[0][1]) && strpos($matches[0][1],$shortcode) !== false) {
                             add_filter( 'nectar_delay_js_script_list', function($script_handles) use ($handle_arr) {
-                                
+
                                 foreach($handle_arr as $handle) {
-                                    
+
                                     $key = array_search($handle, $script_handles);
                                     if($key !== false) {
                                         unset($script_handles[$key]);
@@ -440,25 +508,25 @@ if (!class_exists('NectarDelayJS')) {
             $header_format = ( isset( $this->theme_options['header_format'] ) ) ? $this->theme_options['header_format'] : 'default';
 
             wp_enqueue_script(
-                'salient-delay-js', 
-                get_template_directory_uri() . '/js/'.$src_dir.'/nectar-delay-javascript.js', 
-                array( 'jquery' ), 
-                $nectar_theme_version, 
+                'salient-delay-js',
+                get_template_directory_uri() . '/js/'.$src_dir.'/nectar-delay-javascript.js',
+                array( 'jquery' ),
+                $nectar_theme_version,
                 true
             );
 
             // theme option specicifc.
             if ( $header_format === 'centered-logo-between-menu' ) {
                 wp_enqueue_script(
-                    'salient-delay-js-centered-logo', 
-                    get_template_directory_uri() . '/js/'.$src_dir.'/nectar-delay-javascript-centered-logo.js', 
-                    array( 'jquery' ), 
-                    $nectar_theme_version, 
+                    'salient-delay-js-centered-logo',
+                    get_template_directory_uri() . '/js/'.$src_dir.'/nectar-delay-javascript-centered-logo.js',
+                    array( 'jquery' ),
+                    $nectar_theme_version,
                     true
                 );
             }
 
-           
+
         }
 
 
@@ -492,14 +560,14 @@ if (!class_exists('NectarDelayJS')) {
             }
 
             @media only screen and (max-width: 999px) {
-                .portfolio-items .col .inner-wrap[data-animation="fade_in"], 
+                .portfolio-items .col .inner-wrap[data-animation="fade_in"],
                 .portfolio-items:not(.carousel) .col .inner-wrap.animated {
                     transform: none;
                     opacity: 1;
                 }
             }
             @media only screen and (min-width: 470px) and (max-width: 690px) {
-                body .portfolio-items .col.elastic-portfolio-item.tall, 
+                body .portfolio-items .col.elastic-portfolio-item.tall,
                 body .portfolio-items .col.elastic-portfolio-item.regular,
                 body .portfolio-items .col.elastic-portfolio-item:not([class*="wide"]) {
                     width: 50%;
@@ -507,21 +575,21 @@ if (!class_exists('NectarDelayJS')) {
             }
 
             @media only screen and (min-width: 691px) {
-                
+
                 body .portfolio-items {
                     display: flex;
                     flex-wrap: wrap;
                 }
 
-                body .portfolio-items .col.elastic-portfolio-item.tall, 
+                body .portfolio-items .col.elastic-portfolio-item.tall,
                 body .portfolio-items .col.elastic-portfolio-item.regular,
                 body .portfolio-items .col.elastic-portfolio-item:not([class*="wide"])  {
                     width: 50%;
                 }
             }
 
-            @media only screen and (min-width: 1000px) { 
-                body .portfolio-items .col.elastic-portfolio-item.tall, 
+            @media only screen and (min-width: 1000px) {
+                body .portfolio-items .col.elastic-portfolio-item.tall,
                 body .portfolio-items .col.elastic-portfolio-item.regular {
                     width: 33.3%;
                 }

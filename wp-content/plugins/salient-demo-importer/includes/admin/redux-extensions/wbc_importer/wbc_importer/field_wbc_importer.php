@@ -56,7 +56,7 @@ if ( !class_exists( 'ReduxFramework_wbc_importer' ) ) {
                 $this->extension_url = site_url( str_replace( trailingslashit( str_replace( '\\', '/', ABSPATH ) ), '', $this->extension_dir ) );
             }
         }
-        
+
 
         /**
          * Field Render Function.
@@ -85,55 +85,55 @@ if ( !class_exists( 'ReduxFramework_wbc_importer' ) ) {
             $imported = false;
 
             $this->field['wbc_demo_imports'] = apply_filters( "redux/{$this->parent->args['opt_name']}/field/wbc_importer_files", array() );
-            
+
             /*nectar addition*/
-            
-            
+
+
             echo '<div class="nectar-demo-importer-selection-modal-backdrop"></div> <div class="nectar-demo-importer-selection-modal">';
-            
+
             echo '
                 <div class="nectar-demo-preview-header"><div class="nectar-preview-img"></div><span>'. esc_html__("Selected Demo","salient") .'</span><h2></h2></div>
                 <div class="inner-wrap">';
-                
+
                 $plugin_array = array(
                   array(
                     'name'          => 'Salient WPBakery Page Builder',
-                    'slug'          => 'js_composer_salient', 
+                    'slug'          => 'js_composer_salient',
                     'source'            => get_template_directory() . '/plugins/js_composer_salient.zip'
                   ),
                   array(
                     'name'          => 'Salient Core',
-                    'slug'          => 'salient-core', 
+                    'slug'          => 'salient-core',
                     'source'            => get_template_directory() . '/plugins/salient-core.zip'
                   ),
                   array(
                     'name'          => 'Salient Portfolio',
-                    'slug'          => 'salient-portfolio', 
+                    'slug'          => 'salient-portfolio',
                     'source'            => get_template_directory() . '/plugins/salient-portfolio.zip'
                   ),
                   array(
                     'name'          => 'Salient Social',
-                    'slug'          => 'salient-social', 
+                    'slug'          => 'salient-social',
                     'source'            => get_template_directory() . '/plugins/salient-social.zip'
                   ),
                   array(
                     'name'          => 'Salient Widgets',
-                    'slug'          => 'salient-widgets', 
+                    'slug'          => 'salient-widgets',
                     'source'            => get_template_directory() . '/plugins/salient-widgets.zip'
                   ),
                   array(
                     'name'          => 'Salient Nectar Slider',
-                    'slug'          => 'salient-nectar-slider', 
+                    'slug'          => 'salient-nectar-slider',
                     'source'            => get_template_directory() . '/plugins/salient-nectar-slider.zip'
                   ),
                   array(
                     'name'          => 'Salient Home Slider',
-                    'slug'          => 'salient-home-slider', 
+                    'slug'          => 'salient-home-slider',
                     'source'            => get_template_directory() . '/plugins/salient-home-slider.zip'
                   ),
                   array(
                     'name'          => 'Salient Shortcodes',
-                    'slug'          => 'salient-shortcodes', 
+                    'slug'          => 'salient-shortcodes',
                     'source'            => get_template_directory() . '/plugins/salient-shortcodes.zip'
                   ),
                   array(
@@ -152,58 +152,61 @@ if ( !class_exists( 'ReduxFramework_wbc_importer' ) ) {
                   ),
                   array(
                     'slug' => 'popup-maker'
+                  ),
+                  array(
+                    'slug' => 'fluentform'
                   )
                 );
 
                 if(class_exists('Connekt_Plugin_Installer')){
                   Connekt_Plugin_Installer::init($plugin_array);
                 }
-                
+
                 echo '<h3>'. esc_html__('Demo Content To Import','salient-demo-importer').'</h3>';
-                
+
                 echo '<div class="demo-importer-form-row first-row">
-                    
+
                     <div class="redux-container-switch import-nectar-theme-demo-content">
                       <div class="switch-options salient activated">
                       </div>
                     </div>
-                    
+
                     <a class="theme-demo-import-option" href="#">' . esc_html__("Demo Content","salient") . '<span>'. esc_html__("This includes all pages, posts and other content shown in the demo.","salient") . '</span></a>
                   </div>
-                  
+
                   <div class="demo-importer-form-row">
-                  
+
                     <div class="redux-container-switch import-nectar-theme-option-settings">
                       <div class="switch-options salient activated">
                       </div>
                     </div>
                     <a class="theme-demo-import-option" href="#">' . esc_html__("Theme Option Settings","salient") . '<span>'. esc_html__("This will override your current theme option settings.","salient") . '</span></a>
-                  
+
                   </div>
-                  
+
                   <div class="demo-importer-form-row">
-                  
+
                     <div class="redux-container-switch import-nectar-theme-demo-widgets">
                       <div class="switch-options salient activated">
                       </div>
                     </div>
-                  
+
                     <a class="theme-demo-import-option" href="#">' . esc_html__("Widgets","salient") . '<span>'. esc_html__("This will only add new widgets - your existing widgets will be retained.","salient") . '</span></a>
                   </div>
-                  
+
                   <div class="demo-importer-form-row">
                     <a href="#" class="button submit">'. esc_html__('Confirm Demo Import','salient-demo-importer') . '</a>
                     <a href="#" class="close button">'. esc_html__('Cancel','salient-demo-importer') . '</a>
                   </div>';
-            
+
             echo '</div></div>';
-            
+
             //screenshots
             /*nectar addition end*/
             echo '<div class="theme-browser"><div class="themes">';
 
             if ( !empty( $this->field['wbc_demo_imports'] ) ) {
-                
+
                 foreach ( $this->field['wbc_demo_imports'] as $section => $imports ) {
 
                     if ( empty( $imports ) ) {
@@ -265,7 +268,7 @@ if ( !class_exists( 'ReduxFramework_wbc_importer' ) ) {
         public function enqueue() {
 
             $min = Redux_Functions::isMin();
-            
+
             wp_enqueue_script(
                 'redux-field-wbc-importer-js',
                 SALIENT_DEMO_IMPORTER_PLUGIN_PATH . '/includes/admin/redux-extensions/wbc_importer/wbc_importer/field_wbc_importer.js',

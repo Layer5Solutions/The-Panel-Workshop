@@ -41,7 +41,9 @@ body .nectar-fancy-ul[data-list-icon="none"] ul li{
 
 .container-wrap .nectar-fancy-ul[data-spacing="10px"] ul li {
 	margin-bottom: 10px;
-	line-height: 1.3em;
+}
+.container-wrap .nectar-fancy-ul[data-spacing="10px"] {
+  line-height: 1.3em;
 }
 .nectar-fancy-ul[data-spacing="10px"] ul li ul {
 	margin-top: 10px;
@@ -49,7 +51,9 @@ body .nectar-fancy-ul[data-list-icon="none"] ul li{
 
 .container-wrap .nectar-fancy-ul[data-spacing="15px"] ul li {
 	margin-bottom: 15px;
-	line-height: 1.3em;
+}
+.container-wrap .nectar-fancy-ul[data-spacing="15px"] {
+  line-height: 1.3em;
 }
 .container-wrap .nectar-fancy-ul[data-spacing="15px"] ul li ul {
 	margin-top: 15px;
@@ -57,7 +61,9 @@ body .nectar-fancy-ul[data-list-icon="none"] ul li{
 
 .container-wrap .nectar-fancy-ul[data-spacing="20px"] ul li {
 	margin-bottom: 20px;
-	line-height: 1.3em;
+}
+.container-wrap .nectar-fancy-ul[data-spacing="20px"] {
+  line-height: 1.3em;
 }
 .nectar-fancy-ul[data-spacing="20px"] ul li ul {
 	margin-top: 20px;
@@ -65,22 +71,22 @@ body .nectar-fancy-ul[data-list-icon="none"] ul li{
 
 .container-wrap .nectar-fancy-ul[data-spacing="25px"] ul li {
 	margin-bottom: 25px;
-	line-height: 1.3em;
+}
+.container-wrap .nectar-fancy-ul[data-spacing="25px"] {
+  line-height: 1.3em;
 }
 .nectar-fancy-ul[data-spacing="25px"] ul li ul {
 	margin-top: 25px;
 }
 
 .nectar-fancy-ul[data-list-icon="dot"] ul li {
-	padding-left: 30px;
+	padding-left: 15px;
 }
 .nectar-fancy-ul[data-list-icon="dot"] ul li:before {
-	content: ".";
+	content: "•";
   position: absolute;
   left: 0px;
-	top: 9px;
-	line-height: 0;
-  font-size: 26px;
+	top: 0px;
 }
 
 .nectar-fancy-ul[data-animation="true"] ul li{

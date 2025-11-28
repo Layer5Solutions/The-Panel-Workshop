@@ -2,6 +2,7 @@
 /**
  * Default templates list.
  *
+ * @depreacted
  * @since 4.4
  */
 

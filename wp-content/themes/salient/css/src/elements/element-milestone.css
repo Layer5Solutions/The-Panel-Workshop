@@ -33,11 +33,13 @@ body .nectar-milestone .number h5{
 .nectar-milestone .number{
   font-size:62px;
   line-height:62px;
-  font-family:'Open Sans';
   font-weight:600;
   margin-bottom:5px;
   position:relative;
   display:inline-block
+}
+.nectar-milestone[data-effect="none"]:not(.animated-in) {
+  opacity:1;
 }
 .nectar-milestone.motion_blur .number span:not(.in-sight) {
   transform:translateY(-100%);
@@ -47,11 +49,7 @@ body .nectar-milestone .number h5{
 .nectar-milestone.motion_blur .number span{
   display:inline-block
 }
-body .nectar-milestone .subject {
-  letter-spacing:0.5px;
-  font-size:16px;
-  line-height:25px
-}
+
 .nectar-milestone .number .symbol-wrap{
   display:inline-block
 }

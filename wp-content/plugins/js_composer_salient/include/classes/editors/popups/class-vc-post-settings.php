@@ -51,11 +51,6 @@ class Vc_Post_Settings {
 	 * Render UI template.
 	 */
 	public function renderUITemplate() {
-
-		$css_info = vc_get_template( 'editors/partials/param-info.tpl.php', [ 'description' => esc_html__( 'Enter custom CSS (Note: it will be outputted only on this particular page).', 'js_composer' ) ] );
-		$js_head_info = vc_get_template( 'editors/partials/param-info.tpl.php', [ 'description' => esc_html__( 'Enter custom JS (Note: it will be outputted only on this particular page inside <head> tag).', 'js_composer' ) ] );
-		$js_body_info = vc_get_template( 'editors/partials/param-info.tpl.php', [ 'description' => esc_html__( 'Enter custom JS (Note: it will be outputted only on this particular page before closing', 'js_composer' ) ] );
-
 		vc_include_template( 'editors/popups/vc_ui-panel-post-settings.tpl.php',
 		[
 			'controls' => $this->getControls(),
@@ -63,9 +58,6 @@ class Vc_Post_Settings {
 			'page_settings_data' => [
 				'can_unfiltered_html_cap' =>
 					vc_user_access()->part( 'unfiltered_html' )->checkStateAny( true, null )->get(),
-				'css_info' => $css_info,
-				'js_head_info' => $js_head_info,
-				'js_body_info' => $js_body_info,
 				'post_title' => $this->post->post_title,
 				'is_hide_title' => wpb_is_hide_title( $this->post->ID ),
 			],
@@ -114,19 +106,9 @@ class Vc_Post_Settings {
 	 * @return array
 	 */
 	public function get_categories() {
-
-		// nectar addition - moving css & js to first tab and limiting tabs to css/js only  if not in frontend editor
-		if ( vc_is_frontend_editor() ) {
-			return [
-				esc_html__( 'CSS & JS', 'js_composer' ),
-				esc_html__( 'Settings', 'js_composer' ),
-			];
-		} else {
-			return [
-				esc_html__( 'CSS & JS', 'js_composer' )
-			];
-		}
-		// nectar addition end
+		return [
+			esc_html__( 'Settings', 'js_composer' ),
+		];
 	}
 
 	/**
@@ -136,19 +118,9 @@ class Vc_Post_Settings {
 	 * @return array
 	 */
 	public function get_tabs_templates() {
-
-		// nectar addition - moving css & js to first tab and limiting tabs to css/js only  if not in frontend editor
-		if ( vc_is_frontend_editor() ) {
-			return [
-				'editors/popups/page-settings/custom-css-js-tab.tpl.php',
-				'editors/popups/page-settings/page-settings-tab.tpl.php',
-			];
-		} else {
-			return [
-				'editors/popups/page-settings/custom-css-js-tab.tpl.php',
-			];
-		}
-		// nectar addition end
+		return [
+			'editors/popups/page-settings/page-settings-tab.tpl.php',
+		];
 	}
 
 	/**
@@ -212,6 +184,7 @@ class Vc_Post_Settings {
 			[
 				'name'  => 'close',
 				'label' => esc_html__( 'Close', 'js_composer' ),
+				'title' => esc_html( wpb_get_title_with_shortcut( 'Close' ) ),
 			],
 		];
 
@@ -221,6 +194,7 @@ class Vc_Post_Settings {
 				$controls[] = [
 					'name'        => 'save-draft',
 					'label'       => esc_html__( 'Save Draft', 'js_composer' ),
+					'title'       => esc_html( wpb_get_title_with_shortcut( 'Save Draft' ) ),
 					'css_classes' => 'vc_ui-button-fw',
 					'style'       => 'action',
 				];
@@ -228,6 +202,7 @@ class Vc_Post_Settings {
 				$controls[] = [
 					'name'        => 'save-pending',
 					'label'       => esc_html__( 'Save as Pending', 'js_composer' ),
+					'title'       => esc_html( wpb_get_title_with_shortcut( 'Save as Pending' ) ),
 					'css_classes' => 'vc_ui-button-fw',
 					'style'       => 'action',
 				];
@@ -236,6 +211,7 @@ class Vc_Post_Settings {
 				$controls[] = [
 					'name'               => 'publish',
 					'label'              => esc_html__( 'Publish', 'js_composer' ),
+					'title'              => esc_html__( 'Publish', 'js_composer' ),
 					'css_classes'        => 'vc_ui-button-fw',
 					'style'              => 'action-secondary',
 					'data_change_status' => 'publish',
@@ -244,6 +220,7 @@ class Vc_Post_Settings {
 				$controls[] = [
 					'name'               => 'submit-review',
 					'label'              => esc_html__( 'Submit for Review', 'js_composer' ),
+					'title'              => esc_html( wpb_get_title_with_shortcut( 'Submit for Review' ) ),
 					'css_classes'        => 'vc_ui-button-fw',
 					'style'              => 'action',
 					'data_change_status' => 'pending',
@@ -253,6 +230,7 @@ class Vc_Post_Settings {
 			$controls[] = [
 				'name'        => 'update',
 				'label'       => esc_html__( 'Update', 'js_composer' ),
+				'title'       => esc_html( wpb_get_title_with_shortcut( 'Update' ) ),
 				'css_classes' => 'vc_ui-button-fw',
 				'style'       => 'action',
 			];
@@ -278,6 +256,7 @@ class Vc_Post_Settings {
 		$settings = [
 			'name'  => 'preview',
 			'label' => esc_html__( 'Preview', 'js_composer' ),
+			'title' => esc_html( wpb_get_title_with_shortcut( 'Preview' ) ),
 			'id'  => 'wpb-settings-preview',
 		];
 

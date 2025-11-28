@@ -129,7 +129,7 @@ class WPBakeryShortCode_Vc_Cta extends WPBakeryShortCode {
 					$inline_css_string = ' style="' . implode( '', $inline_css ) . '"';
 				}
 
-				return '<' . $tag . $inline_css_string . '>' . $atts[ $tag ] . '</' . $tag . '>';
+				return '<' . $tag . $inline_css_string . '>' . wp_kses_post( $atts[ $tag ] ) . '</' . $tag . '>';
 			}
 		}
 

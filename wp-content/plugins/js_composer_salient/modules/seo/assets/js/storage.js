@@ -18,11 +18,18 @@ if ( !window.vc ) {
 				slug: '',
 				isUsedKeyphrase: ''
 			},
+			formDataPrevious: {
+				keyphrase: '',
+				title: '',
+				description: '',
+				slug: '',
+				isUsedKeyphrase: ''
+			},
 			results: []
 		},
 		setResults: function ( item, type, state ) {
 			var currentState = this.get( state );
-			if ( 'focus-keyphrase' === type ) {
+			if ( 'focus-keyphrase' === type || 'keyphrase' === type ) {
 				type = 'keyphrase';
 				if ( item && item !== this.get( state ).keyphrase ) {
 					var _this = this;

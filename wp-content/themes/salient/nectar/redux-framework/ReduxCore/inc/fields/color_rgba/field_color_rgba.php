@@ -25,7 +25,7 @@
 
     // Don't duplicate me!
     if ( ! class_exists( 'ReduxFramework_color_rgba' ) ) {
-        
+
         /**
          * Main ReduxFramework_color_rgba class
          *
@@ -49,7 +49,7 @@
              *
              * @return      void
              */
-            public function __construct( $field = array(), $value = '', $parent ) {
+            public function __construct( $field = array(), $value = '', $parent = null ) {
 
                 // Set required variables
                 $this->parent = $parent;
@@ -103,8 +103,8 @@
                 $field_id = $this->field['id'];
 
                 // Color picker container
-                echo '<div 
-                      class="redux-color-rgba-container ' . esc_attr( $this->field['class'] ) . '" 
+                echo '<div
+                      class="redux-color-rgba-container ' . esc_attr( $this->field['class'] ) . '"
                       data-id="' . esc_attr( $field_id ) . '"
                       data-show-input="' . esc_attr( $this->field['options']['show_input'] ) . '"
                       data-show-initial="' . esc_attr( $this->field['options']['show_initial'] ) . '"

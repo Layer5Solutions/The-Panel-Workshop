@@ -400,6 +400,11 @@ jQuery(document).ready(function($){
     var galleryWidth    = ( leftAlignedBool ) ? $('.woocommerce-product-gallery .product-slider').width() : $('.woocommerce-product-gallery').width(),
     zoomEnabled         = false;
 
+    var leftAlignedClickEvent = 'default';
+    if ( leftAlignedBool && $('[data-gallery-style="left_thumb_sticky"]').find('.click-event--open_in_lightbox').length > 0 ) {
+      leftAlignedClickEvent = 'open_in_lightbox';
+    }
+
     $( zoomTarget ).each( function( index, target ) {
       var image = zoomTarget.find( 'img[data-large_image_width]' );
       if ( image.data( 'large_image_width' ) > galleryWidth ) {
@@ -415,7 +420,7 @@ jQuery(document).ready(function($){
       }, wc_single_product_params.zoom_options );
 
       if ( 'ontouchstart' in document.documentElement ) {
-        if( leftAlignedBool ) {
+        if( leftAlignedBool && leftAlignedClickEvent === 'default' ) {
           //skip processing.
         } else {
           zoom_options.on = 'click';
@@ -453,7 +458,7 @@ jQuery(document).ready(function($){
         pageDots: false,
         resize: true,
         adaptiveHeight: true,
-  
+
         on: {
           change: function( index ) {
             if($().zoom) {
@@ -469,11 +474,11 @@ jQuery(document).ready(function($){
             $that.removeClass('is-moving');
           }
         }
-  
+
       });
-      
+
     });
-    
+
 
     $('.product div .flickity.product-thumbs .slider').each(function(i){
 
@@ -531,7 +536,7 @@ jQuery(document).ready(function($){
   */
  var rebuildLeftThumbSlider = false;
 
- function leftThumbStickyRebuild() { 
+ function leftThumbStickyRebuild() {
 
   var additionalGallery = $('.woocommerce-product-gallery--wcavi');
 
@@ -558,7 +563,7 @@ jQuery(document).ready(function($){
        });
 
        $(this).empty();
-       
+
        $(this).append('<a href="#" class="woocommerce-product-gallery__trigger"></a>');
        $(this).append('<div class="flickity product-slider"><div class="slider generate-markup"></div></div> <div class="flickity product-thumbs"><div class="slider generate-markup"></div></div>');
 
@@ -569,10 +574,10 @@ jQuery(document).ready(function($){
         $mainImages.append('<div class="slide"><div class="woocommerce-product-gallery__image easyzoom"><img data-large_image_width="'+el.image.width+'" src="'+el.image.src+'" /></div></div>');
         $sidebarImages.append('<div class="thumb slide"><div class="thumb-inner"><img src="'+el.thumb+'" /></div></div>');
        });
-       
+
 
     }
-    
+
   });
 
   rebuildLeftThumbSlider = true;
@@ -614,7 +619,8 @@ jQuery(document).ready(function($){
         }
 
         // Add id to main images.
-        $mainImages.find('.slide:nth-child('+j+') .woocommerce-product-gallery__image').attr('id','nectar_woo_gallery_slide_'+ id);
+        // Since .slide is now the same element as .woocommerce-product-gallery__image
+        $mainImages.find('.slide:nth-child('+j+')').attr('id','nectar_woo_gallery_slide_'+ id);
 
       });
 
@@ -637,7 +643,8 @@ jQuery(document).ready(function($){
   function leftAlignedRelationsDestroy() {
 
     $('[data-gallery-style="left_thumb_sticky"] .flickity.product-slider .slide').each(function(){
-      $(this).find('.woocommerce-product-gallery__image').attr('id','');
+      // Since .slide is now the same element as .woocommerce-product-gallery__image
+      $(this).attr('id','');
     });
 
     $('[data-gallery-style="left_thumb_sticky"] .flickity.product-thumbs .thumb').each(function(){
@@ -666,14 +673,15 @@ jQuery(document).ready(function($){
 
       var closestToTop = $images.find('.slide:first-child');
 
-      $images.find('.slide').each(function(){
-        if($(this).offset().top - leftAlignedScrollTop < headerSpace + 250) {
-          closestToTop = $(this);
-        }
-      });
+    $images.find('.slide').each(function(){
+      if($(this).offset().top - leftAlignedScrollTop < headerSpace + 250) {
+        closestToTop = $(this);
+      }
+    });
 
-  
-      var id = closestToTop.find('.woocommerce-product-gallery__image').attr('id');
+
+    // Since .slide is now the same element as .woocommerce-product-gallery__image
+    var id = closestToTop.attr('id');
 
       if ($thumbs.find('.thumb-inner').find('a[href="#'+ id +'"]').length > 0) {
           $thumbs.find('.thumb-inner a').removeClass('active');
@@ -704,7 +712,8 @@ jQuery(document).ready(function($){
 
       $('body').on('mouseover','.product[data-gallery-style="left_thumb_sticky"] .product-slider .slide',function(){
 
-        var imgWidth = ($(this).find('.woocommerce-product-gallery__image img[data-large_image_width]').length > 0) ? parseInt($(this).find('.woocommerce-product-gallery__image img').data('large_image_width')) : 0;
+        // Since .slide is now the same element as .woocommerce-product-gallery__image
+        var imgWidth = ($(this).find('img[data-large_image_width]').length > 0) ? parseInt($(this).find('img').data('large_image_width')) : 0;
 
         //only if image is larger than gallery
         if(imgWidth > $('.single-product .images .product-slider').width()) {
@@ -761,7 +770,7 @@ jQuery(document).ready(function($){
   */
   function nectarWooProdSliderLiveOrDie() {
 
-    if(  window.innerWidth <= 999 && $mainProdSlider.length == 0 && $thumbProdSlider.length == 0 || 
+    if(  window.innerWidth <= 999 && $mainProdSlider.length == 0 && $thumbProdSlider.length == 0 ||
          window.innerWidth <= 999 && rebuildLeftThumbSlider == true) {
 
       //carousel
@@ -793,7 +802,7 @@ jQuery(document).ready(function($){
     if($('[data-gallery-style="left_thumb_sticky"]').length > 0) {
 
       if( window.innerWidth < 690 &&
-          navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/) ) { 
+          navigator.userAgent.match(/(Android|iPod|iPhone|iPad|BlackBerry|IEMobile|Opera Mini)/) ) {
             nectarWooProdSliderInit();
       } else {
         nectarWooProdSliderLiveOrDie();
@@ -804,7 +813,7 @@ jQuery(document).ready(function($){
         leftAlignedZoomIcon();
       }
 
-      
+
     }
     else if($('[data-gallery-style="ios_slider"]').length > 0 ) {
       nectarWooProdSliderInit();
@@ -901,7 +910,7 @@ jQuery(document).ready(function($){
                           el.flickity( 'resize' );
                         },1000);
                       });
-                      
+
                     }
 
                     //update zoom
@@ -953,14 +962,14 @@ jQuery(document).ready(function($){
         } else {
 
           setTimeout(function(){
-            $.each($mainProdSlider, function(i, el){      
+            $.each($mainProdSlider, function(i, el){
               el.flickity( 'resize' );
             });
-            $.each($thumbProdSlider, function(i, el){      
+            $.each($thumbProdSlider, function(i, el){
               el.flickity( 'resize' );
             });
           },200);
-         
+
         }
 
         //update zoom
@@ -1010,7 +1019,7 @@ jQuery(document).ready(function($){
       // Padding from top of screen.
       var $ssExtraTopSpace = 50;
       var $secondaryHeaderHeight = ($('#header-secondary-outer').length > 0) ? $('#header-secondary-outer').height() : 0;
-      
+
       if($('#header-outer[data-remove-fixed="0"]').length > 0
           && $('#header-outer[data-format="left-header"]').length == 0) {
         $ssExtraTopSpace += $('#header-outer').outerHeight();

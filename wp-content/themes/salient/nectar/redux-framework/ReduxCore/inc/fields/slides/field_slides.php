@@ -38,7 +38,7 @@ if ( !class_exists ( 'ReduxFramework_slides' ) ) {
         public $field = array();
         public $value = '';
         public $parent = null;
-        
+
         /**
          * Field Constructor.
          * Required - must call the parent constructor, then assign field and value to vars, and obviously call the render field function
@@ -47,7 +47,7 @@ if ( !class_exists ( 'ReduxFramework_slides' ) ) {
          * @access      public
          * @return      void
          */
-        function __construct ( $field = array(), $value = '', $parent ) {
+        function __construct ( $field = array(), $value = '', $parent = null ) {
             $this->parent = $parent;
             $this->field = $field;
             $this->value = $value;
@@ -241,19 +241,19 @@ if ( !class_exists ( 'ReduxFramework_slides' ) ) {
             } else {
                 wp_enqueue_script( 'media-upload' );
             }
-                
+
             if ($this->parent->args['dev_mode']){
                 wp_enqueue_style ('redux-field-media-css');
-                
+
                 wp_enqueue_style (
-                    'redux-field-slides-css', 
-                    get_template_directory_uri() . '/nectar/redux-framework/ReduxCore/inc/fields/slides/field_slides.css', 
+                    'redux-field-slides-css',
+                    get_template_directory_uri() . '/nectar/redux-framework/ReduxCore/inc/fields/slides/field_slides.css',
                     array(),
-                    time (), 
+                    time (),
                     'all'
                 );
             }
-            
+
             wp_enqueue_script(
                 'redux-field-media-js',
                 get_template_directory_uri() . '/nectar/redux-framework/ReduxCore/assets/js/media/media' . Redux_Functions::isMin() . '.js',
@@ -263,10 +263,10 @@ if ( !class_exists ( 'ReduxFramework_slides' ) ) {
             );
 
             wp_enqueue_script (
-                'redux-field-slides-js', 
-                get_template_directory_uri() . '/nectar/redux-framework/ReduxCore/inc/fields/slides/field_slides' . Redux_Functions::isMin () . '.js', 
+                'redux-field-slides-js',
+                get_template_directory_uri() . '/nectar/redux-framework/ReduxCore/inc/fields/slides/field_slides' . Redux_Functions::isMin () . '.js',
                 array( 'jquery', 'jquery-ui-core', 'jquery-ui-accordion', 'jquery-ui-sortable', 'redux-field-media-js' ),
-                time (), 
+                time (),
                 true
             );
         }

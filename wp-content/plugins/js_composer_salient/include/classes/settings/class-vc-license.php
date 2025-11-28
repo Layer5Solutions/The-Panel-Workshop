@@ -153,7 +153,8 @@ class Vc_License {
 	 * @return array
 	 */
 	public function getLicenseErrors() {
-		return get_option( $this->license_errors_slug, [] );
+		$errors = get_option( $this->license_errors_slug, [] );
+		return is_array( $errors ) ? $errors : [];
 	}
 
 	/**

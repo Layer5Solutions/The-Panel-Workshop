@@ -58,6 +58,11 @@ class Vc_Custom_Js_Module {
 			$this,
 			'enqueue_editor_js',
 		]);
+
+		// Add custom code filters.
+		add_filter( 'vc_template_custom_code', [ $this, 'add_template_to_custom_code' ] );
+		add_filter( 'vc_custom_code_categories', [ $this, 'add_custom_code_categories' ], 20 );
+		add_filter( 'vc_custom_code_templates', [ $this, 'add_custom_code_templates' ], 20 );
 	}
 
 	/**
@@ -222,5 +227,51 @@ class Vc_Custom_Js_Module {
 		$dependencies[] = 'wpb-code-editor';
 
 		return $dependencies;
+	}
+
+	/**
+	 * Add template info to custom code.
+	 *
+	 * @since 8.5
+	 * @param array $custom_code_info
+	 * @return array
+	 */
+	public function add_template_to_custom_code( $custom_code_info ) {
+		global $post;
+		$custom_code_info['custom_js_header'] = get_post_meta( $post->ID, '_wpb_post_custom_js_header', true );
+		$custom_code_info['custom_js_footer'] = get_post_meta( $post->ID, '_wpb_post_custom_js_footer', true );
+		$custom_code_info['js_head_info_template'] = 'editors/partials/param-info.tpl.php';
+		$custom_code_info['js_head_info_description'] = esc_html__( 'Enter custom JS (Note: it will be outputted only on this particular page inside <head> tag).', 'js_composer' );
+		$custom_code_info['js_body_info_template'] = 'editors/partials/param-info.tpl.php';
+		$custom_code_info['js_body_info_description'] = esc_html__( 'Enter custom JS (Note: it will be outputted only on this particular page before closing).', 'js_composer' );
+		return $custom_code_info;
+	}
+
+	/**
+	 * Add categories to custom code.
+	 *
+	 * @since 8.5
+	 * @param array $categories
+	 * @return array
+	 */
+	public function add_custom_code_categories( $categories ) {
+		if ( vc_modules_manager()->is_module_on( 'vc-custom-js' ) ) {
+			$categories[] = esc_html__( 'JS', 'js_composer' );
+		}
+		return $categories;
+	}
+
+	/**
+	 * Add templates to custom code.
+	 *
+	 * @since 8.5
+	 * @param array $templates
+	 * @return array
+	 */
+	public function add_custom_code_templates( $templates ) {
+		if ( vc_modules_manager()->is_module_on( 'vc-custom-js' ) ) {
+			$templates[] = 'editors/popups/custom-code/js-tab.tpl.php';
+		}
+		return $templates;
 	}
 }

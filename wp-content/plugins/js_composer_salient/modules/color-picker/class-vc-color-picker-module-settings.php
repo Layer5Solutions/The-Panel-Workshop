@@ -253,8 +253,8 @@ class Vc_Color_Picker_Module_Settings {
 	 * @since 7.8
 	 */
 	public function load_module_settings_assets() {
-		wp_enqueue_style( 'pickr', vc_asset_url( 'lib/vendor/node_modules/@simonwep/pickr/dist/themes/classic.min.css' ), [], WPB_VC_VERSION );
-		wp_enqueue_script( 'pickr', vc_asset_url( 'lib/vendor/node_modules/@simonwep/pickr/dist/pickr.es5.min.js' ), [], WPB_VC_VERSION, true );
+		wp_enqueue_style( 'pickr', vc_asset_url( 'lib/vendor/dist/@simonwep/pickr/dist/themes/classic.min.css' ), [], WPB_VC_VERSION );
+		wp_enqueue_script( 'pickr', vc_asset_url( 'lib/vendor/dist/@simonwep/pickr/dist/pickr.es5.min.js' ), [], WPB_VC_VERSION, true );
 		wp_enqueue_script( 'wpb_color_picker_module', vc_asset_url( '../modules/color-picker/assets/dist/module.min.js' ), [], WPB_VC_VERSION, true );
 		wp_enqueue_style( 'wpb_automapper_module', vc_asset_url( '../modules/color-picker/assets/dist/module.min.css' ), false, WPB_VC_VERSION );
 	}

@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+
    extract(shortcode_atts(array(
 	"type" => 'in_container',
 	'bg_image'=> '',
@@ -12,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	'bg_image_phone' => '',
 	'bg_image_animation' => 'none',
 	'bg_image_animation_delay' => '',
+	'color_change_section' => '',
 	'background_image_mobile_hidden' => '',
 	'clip_path_animation_type' => '',
 	'background_image_loading' => '',
@@ -20,6 +22,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	'bg_position_x' => '50%',
 	'bg_position_y' => '50%',
 	'bg_repeat' => '',
+	'bg_image_type' => 'default',
+	'background_image_preload' => '',
 	'parallax_bg' => '',
 	'parallax_bg_speed' => 'fast',
 	'bg_color'=> '',
@@ -118,8 +122,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
   global $post;
 
-	// CSS perspective.
-	$css_perspective_class = '';
+  global $nectar_options;
+
+  // CSS perspective.
+  $css_perspective_class = '';
 
   // Top level row class.
   $top_level_class = '';
@@ -137,6 +143,11 @@ if ( ! defined( 'ABSPATH' ) ) {
       if( $nectar_page_header_bool == false ) {
 
         $top_level_class .= 'top-level ';
+
+		if ( $nectar_options && isset( $nectar_options['lcp-optimize-top-level-images'] ) && $nectar_options['lcp-optimize-top-level-images'] == '1' ) {
+			$background_image_preload = 'true';
+			$bg_image_type = 'img';
+		}
 
         if ( isset( $content ) && strpos( $content, '[nectar_slider' ) !== false && strpos( $content, 'full_width="true"' ) !== false ) {
           $top_level_class .= 'full-width-ns ';
@@ -181,6 +192,7 @@ if ( ! defined( 'ABSPATH' ) ) {
   $using_image_class = '';
   $row_bg_classes = array('row-bg-wrap');
   $using_custom_text_color = null;
+  $desktop_bg_is_lazy = false;
 
   $nectar_using_VC_front_end_editor = (isset($_GET['vc_editable'])) ? sanitize_text_field($_GET['vc_editable']) : '';
   $nectar_using_VC_front_end_editor = ($nectar_using_VC_front_end_editor == 'true') ? true : false;
@@ -203,58 +215,101 @@ if ( ! defined( 'ABSPATH' ) ) {
 				'lazy_src' => '',
 				'props' => '',
 				'classes' => '',
-				'in_use' => true
+				'in_use' => true,
+				'content' => ''
 			),
 			'tablet' => array(
 				'src' => $bg_image_tablet,
 				'lazy_src' => '',
 				'props' => '',
 				'classes' => '',
-				'in_use' => false
+				'in_use' => false,
+				'content' => ''
 			),
 			'phone' => array(
 				'src' => $bg_image_phone,
 				'lazy_src' => '',
 				'props' => '',
 				'classes' => '',
-				'in_use' => false
+				'in_use' => false,
+				'content' => ''
 			),
 		);
+
+		// auto set the phone image to the large size.
+		if ( !$bg_image_phone && preg_match('/^\d+$/', $bg_image) && $bg_image_type === 'img' ) {
+			$bg_img_arr['phone']['src'] = $bg_image;
+		}
+
+		// if mobile, switch order of desktop and mobile  to ensure fetch priority is correct
+		if (function_exists('wp_is_mobile') && wp_is_mobile()) {
+			$desired_order = array('phone', 'desktop', 'tablet');
+			uksort($bg_img_arr, function($a, $b) use ($desired_order) {
+				return array_search($a, $desired_order) - array_search($b, $desired_order);
+			});
+		}
 
 
 		foreach( $bg_img_arr as $viewport => $image ) {
 
 			if( !empty($bg_img_arr[$viewport]['src']) ) {
 
-					$bg_img_arr[$viewport]['in_use'] = true;
+				$bg_img_arr[$viewport]['in_use'] = true;
 
-					// BG img src.
-					if(!preg_match('/^\d+$/',$bg_img_arr[$viewport]['src'])) {
+				// Preload image
+				if( $background_image_preload === 'true' ) {
+					$background_image_loading = 'skip-lazy-load';
+				}
 
-						if( 'lazy-load' === $background_image_loading ||
-						     property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $background_image_loading ) {
-							$bg_img_arr[$viewport]['lazy_src'] .= ' data-nectar-img-src="'.esc_url($bg_img_arr[$viewport]['src']).'"';
-						}	else {
-							$bg_img_arr[$viewport]['props'] .= 'background-image: url('. esc_url($bg_img_arr[$viewport]['src']) . '); ';
+				$image_data = nectar_get_image_src_data($bg_img_arr[$viewport]['src'], $background_image_loading);
+
+				if($bg_image_type === 'img') {
+					// Handle as img tag
+					$img_classes = 'row-bg-img';
+					$is_lazy = false;
+					if(!empty($image_data['lazy_attrs'])) {
+						$is_lazy = true;
+						if( 'desktop' === $viewport ) {
+							$desktop_bg_is_lazy = true;
 						}
-
 					}
-					else {
-						$bg_image_src = wp_get_attachment_image_src($bg_img_arr[$viewport]['src'], apply_filters('nectar_default_row_background_image_size','full'));
-
-						if( isset($bg_image_src[0]) ) {
-
-							if( 'lazy-load' === $background_image_loading ||
-							    property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $background_image_loading ) {
-								$bg_img_arr[$viewport]['lazy_src'] .= ' data-nectar-img-src="'.esc_url($bg_image_src[0]).'"';
-							}	else {
-								$bg_img_arr[$viewport]['props'] .= 'background-image: url('. esc_url($bg_image_src[0]) . '); ';
-							}
-
+					$object_position = '';
+					if('custom' === $bg_position) {
+						$object_position = esc_attr(intval($bg_position_x)) .'% '. esc_attr(intval($bg_position_y)) .'%;';
+					} else {
+						$object_position = esc_attr($bg_position);
+					}
+					$image_size = $viewport === 'phone' ? 'large' : 'full';
+					$fetch_priority = '';
+					if ( isset($GLOBALS['nectar_vc_row_count']) && $GLOBALS['nectar_vc_row_count'] == 1 ) {
+						$fetch_priority = 'high';
+					}
+					// Only generate the picture tag for desktop viewport
+					if($viewport === 'desktop') {
+						$bg_img_arr[$viewport]['content'] = nectar_get_row_picture_tag(
+							$bg_img_arr,
+							$image_size,
+							$img_classes,
+							$is_lazy,
+							$object_position,
+							$fetch_priority
+						);
+					} else {
+						$bg_img_arr[$viewport]['content'] = '';
+						// only output desktop, since it contains the responsive picture.
+						$bg_img_arr[$viewport]['in_use'] = false;
+					}
+				} else {
+					// Handle as background image
+					if(!empty($image_data['lazy_attrs'])) {
+						$bg_img_arr[$viewport]['lazy_src'] .= $image_data['lazy_attrs'];
+						if( 'desktop' === $viewport ) {
+							$desktop_bg_is_lazy = true;
 						}
-
+					} else {
+						$bg_img_arr[$viewport]['props'] .= 'background-image: url('. $image_data['src'] . '); ';
 					}
-
+				}
 
 				// Custom bg pos.
 				if( 'custom' === $bg_position ) {
@@ -348,6 +403,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 				$style .= 'padding-top: calc(100vw * 0.'. $leading_zero . intval($top_padding) .'); ';
 			} else if( strpos($top_padding,'em') !== false ) {
 				$style .= 'padding-top: '. intval($top_padding) .'em; ';
+			} else if( strpos($top_padding,'vh') !== false ) {
+				$style .= 'padding-top: '. intval($top_padding) .'vh; ';
 			} else {
 				$style .= 'padding-top: '. intval($top_padding) .'px; ';
 			}
@@ -360,7 +417,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 			} else if( strpos($top_padding,'em') !== false  ) {
 				$style .= 'padding-bottom: '. intval($bottom_padding) .'em; ';
-			} else {
+			} else if( strpos($bottom_padding,'vh') !== false ) {
+				$style .= 'padding-bottom: '. intval($bottom_padding) .'vh; ';
+			}
+			else {
 				$style .= 'padding-bottom: '. intval($bottom_padding) .'px; ';
 			}
 
@@ -376,9 +436,29 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		if( $text_color === 'custom' && !empty($custom_text_color) ) {
 			$midnight_color = 'dark';
-			$style .= 'color: '. esc_attr($custom_text_color) .'; ';
+			$style .= 'color: var(--nectar-page-text-color,'. esc_attr($custom_text_color) .'); ';
 			$using_custom_text_color = 'data-using-ctc="true"';
 		}
+
+		$color_change_section_attrs = '';
+
+		if ( $color_change_section === 'true' && !empty($bg_color) ) {
+			if ( $type === 'in_container' ) {
+				$type = 'full_width_background';
+			}
+
+			if ( !empty($using_custom_text_color) ) {
+				$color_change_section_text_color = $custom_text_color;
+			} else {
+				if ( $text_color === 'dark' ) {
+					$color_change_section_text_color = 'var(--nectar-font-color)';
+				} else {
+					$color_change_section_text_color = 'var(--nectar-font-light-color)';
+				}
+			}
+			$color_change_section_attrs = ' data-color-change-section-bg-color="'.esc_attr($bg_color).'" data-color-change-section-text-color="'.esc_attr($color_change_section_text_color).'"';
+		}
+
 
 		// Row type class.
 		if( $type === 'in_container' ) {
@@ -398,6 +478,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		if( $page_full_screen_rows === 'on' && $page_full_screen_rows_animation === 'none' && !empty($bg_color) ) {
 			$style .= 'background-color: '.esc_attr($bg_color).';';
+		} else if (
+			!empty($bg_color) &&
+			$bg_image_animation === 'none' &&
+			strtolower($parallax_bg) !== 'true' &&
+			! $desktop_bg_is_lazy &&
+			preg_match('/^#[A-Fa-f0-9]{6}$/', $bg_color)
+		) {
+			// Used for accessibility testers which don't see the real rendered BG color from sibling elements.
+			$style .= '--row-bg-color: '.esc_attr($bg_color).';';
+			// performance issue when using this on FE editor.
+			if ( !$nectar_using_VC_front_end_editor ) {
+				$main_class .= 'has-row-bg-color ';
+			}
 		}
 
 
@@ -445,6 +538,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		}
 
 		$midnight_attr = 'data-midnight="'.esc_attr(strtolower($midnight_color)).'"';
+
 
 		// Border radius
 		$border_radius_attrs = '';
@@ -523,7 +617,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		echo '<div class="nectar-sticky-row-wrap nectar-sticky-row-wrap--'.esc_attr($sticky_row_alignment).$sticky_row_mobile_class.'"'.$sticky_div_style.'>';
 	}
 	   echo'
-		<div id="'. esc_attr($row_id) .'" '.$fullscreen_anchor_id . $border_radius_attrs .' data-column-margin="'.esc_attr($column_margin).'" '.$midnight_attr.' '.$row_percent_padding_attr . $json_animation_attrs . $bg_mobile_hidden. ' class="'.nectar_clean_classnames($css_classes_combined).'" '.$using_custom_text_color.' style="'.$style.'">';
+		<div id="'. esc_attr($row_id) .'" '.$fullscreen_anchor_id . $border_radius_attrs .' data-column-margin="'.esc_attr($column_margin).'" '.$midnight_attr.' '.$row_percent_padding_attr . $json_animation_attrs . $bg_mobile_hidden. $color_change_section_attrs .' class="'.nectar_clean_classnames($css_classes_combined).'" '.$using_custom_text_color.' style="'.$style.'">';
 
 		if( $page_full_screen_rows === 'on' ) {
       echo '<div class="full-page-inner-wrap-outer"><div class="full-page-inner-wrap" data-name="'.esc_attr($row_name).'" data-content-pos="'.esc_attr($full_screen_row_position).'"><div class="full-page-inner">';
@@ -541,7 +635,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		foreach( $bg_img_arr as $viewport => $image ) {
 			if( true === $image['in_use'] ) {
-				echo '<div class="row-bg viewport-'. esc_attr($viewport) . $using_image_class . $disable_ken_burns_class . esc_attr($image['classes']).'" '.$parallax_speed.' style="'.$image['props'].'"'.$image['lazy_src'].'></div>';
+				echo '<div class="row-bg viewport-'. esc_attr($viewport) . $using_image_class . $disable_ken_burns_class . esc_attr($image['classes']).'" '.$parallax_speed.' style="'.$image['props'].'"'.$image['lazy_src'].'>';
+				echo wp_kses_post($image['content']);
+				echo '</div>';
 			}
 		}
 
@@ -677,7 +773,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	        		$layer_one_image_src = $layer_one_image;
 	        	} else {
 	        		$layer_one_image_src = wp_get_attachment_image_src($layer_one_image, 'full');
-	        		$layer_one_image_src = $layer_one_image_src[0];
+	        		$layer_one_image_src = isset($layer_one_image_src[0]) ? $layer_one_image_src[0] : '';
 	        	}
 
 	        	echo '<li class="layer" data-depth="'.esc_attr($layer_one_strength).'"><div style="background-image:url(\''. esc_url($layer_one_image_src) .'\');"></div></li>';
@@ -689,7 +785,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	        		$layer_two_image_src = $layer_two_image;
 	        	} else {
 	        		$layer_two_image_src = wp_get_attachment_image_src($layer_two_image, 'full');
-	        		$layer_two_image_src = $layer_two_image_src[0];
+	        		$layer_two_image_src = isset($layer_two_image_src[0]) ? $layer_two_image_src[0] : '';
 	        	}
 
 	        	echo '<li class="layer" data-depth="'.esc_attr($layer_two_strength).'"><div style="background-image:url(\''. esc_url($layer_two_image_src) .'\');"></div></li>';
@@ -701,7 +797,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	        		$layer_three_image_src = $layer_three_image;
 	        	} else {
 	        		$layer_three_image_src = wp_get_attachment_image_src($layer_three_image, 'full');
-	        		$layer_three_image_src = $layer_three_image_src[0];
+	        		$layer_three_image_src = isset($layer_three_image_src[0]) ? $layer_three_image_src[0] : '';
 	        	}
 
 	        	echo '<li class="layer" data-depth="'.esc_attr($layer_three_strength).'"><div style="background-image:url(\''. esc_url($layer_three_image_src) .'\');"></div></li>';
@@ -713,7 +809,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	        		$layer_four_image_src = $layer_four_image;
 	        	} else {
 	        		$layer_four_image_src = wp_get_attachment_image_src($layer_four_image, 'full');
-	        		$layer_four_image_src = $layer_four_image_src[0];
+	        		$layer_four_image_src = isset($layer_four_image_src[0]) ? $layer_four_image_src[0] : '';
 	        	}
 
 	        	echo '<li class="layer" data-depth="'.esc_attr($layer_four_strength).'"><div style="background-image:url(\''. esc_url($layer_four_image_src) .'\');"></div></li>';
@@ -730,8 +826,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	        	echo '<li class="layer" data-depth="'.esc_attr($layer_five_strength).'"><div style="background-image:url(\''. esc_url($layer_five_image_src) .'\');"></div></li>';
 	        }
 	        echo '</ul>';
-
-	        global $nectar_options;
 	        $loading_animation    = (!empty($nectar_options['loading-image-animation']) && !empty($nectar_options['loading-image'])) ? $nectar_options['loading-image-animation'] : null;
     			$default_loader       = (empty($nectar_options['loading-image']) && !empty($nectar_options['theme-skin']) && $nectar_options['theme-skin'] === 'ascend') ? '<span class="default-loading-icon spin"></span>' : null;
     			$default_loader_class = (empty($nectar_options['loading-image']) && !empty($nectar_options['theme-skin']) && $nectar_options['theme-skin'] === 'ascend') ? 'default-loader' : null;
@@ -808,7 +902,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		$extra_container_div         = false;
 		$extra_container_div_closing = false;
 
-		if( $page_full_screen_rows === 'on' && $main_class === "full-width-section ") {
+		if( $page_full_screen_rows === 'on' && strpos($main_class, 'full-width-section') !== false ) {
 
 			$extra_container_div = true;
 			$extra_container_div_closing = true;

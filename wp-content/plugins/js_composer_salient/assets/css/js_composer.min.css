@@ -176,7 +176,7 @@
 
 
 @media (max-width: 690px) {
-    
+
   body .vc_row-fluid .vc_col-xs-5\/5 {
       width: 100%
   }
@@ -217,9 +217,9 @@
         width: 40%;
     }
     body .vc_row-fluid .vc_col-md-1\/5 {
-        width: 20%; 
+        width: 20%;
     }
-  
+
 }
 
 @media (min-width: 1300px) {
@@ -243,9 +243,9 @@
         width: 40%;
     }
     body .vc_row-fluid .vc_col-lg-1\/5 {
-        width: 20%; 
+        width: 20%;
     }
-    
+
 }
 
 
@@ -286,12 +286,13 @@
     vertical-align: middle
 }
 
-@font-face{
-    font-family:vcpb-plugin-icons;
-    src:url(../fonts/vc_icons_v4/fonts/vcpb-plugin-icons.eot?f6ud62);
-    src:url(../fonts/vc_icons_v4/fonts/vcpb-plugin-icons.eot?f6ud62#iefix) format('embedded-opentype'),url(../fonts/vc_icons_v4/fonts/vcpb-plugin-icons.ttf?f6ud62) format('truetype'),url(../fonts/vc_icons_v4/fonts/vcpb-plugin-icons.woff?f6ud62) format('woff'),url(../fonts/vc_icons_v4/fonts/vcpb-plugin-icons.svg?f6ud62#vcpb-plugin-icons) format('svg');
-    font-weight:400;
-    font-style:normal
+@font-face {
+    font-display: block;
+    font-family: vcpb-plugin-icons;
+    font-style: normal;
+    font-weight: 400;
+    src: url(../fonts/vc_icons/fonts/vcpb-plugin-icons.eot?30guqj);
+    src: url(../fonts/vc_icons/fonts/vcpb-plugin-icons.eot?30guqj#iefix) format("embedded-opentype"),url(../fonts/vc_icons/fonts/vcpb-plugin-icons.ttf?30guqj) format("truetype"),url(../fonts/vc_icons/fonts/vcpb-plugin-icons.woff?30guqj) format("woff"),url(../fonts/vc_icons/fonts/vcpb-plugin-icons.svg?30guqj#vcpb-plugin-icons) format("svg")
 }
 .vc-composer-icon{
     font-family:vcpb-plugin-icons!important;
@@ -1883,9 +1884,9 @@ body .wpb_gallery_slides ul li {
 }
 
 
-@media screen and (max-width: 999px) { 
-  .vc_row.vc_row-flex > .span_12, .vc_row.vc_row-flex > .span_12 > .vc_column_container, 
-  .vc_row.vc_row-flex>.span_12>.vc_column_container>.vc_column-inner, 
+@media screen and (max-width: 999px) {
+  .vc_row.vc_row-flex > .span_12, .vc_row.vc_row-flex > .span_12 > .vc_column_container,
+  .vc_row.vc_row-flex>.span_12>.vc_column_container>.vc_column-inner,
   .vc_row.vc_row-flex>.span_12>.vc_column_container>.column-inner-wrap>.column-inner {
     display: block;
   }

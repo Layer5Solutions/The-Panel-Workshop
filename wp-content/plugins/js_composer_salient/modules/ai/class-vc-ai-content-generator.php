@@ -173,7 +173,7 @@ class Vc_Ai_Content_Generator {
 	 */
 	public function edit_data_before_request( $data ) {
 		if ( isset( $data['prompt'] ) ) {
-			// we should cut the prompt for all data excerpt translated and improved to 200 words.
+			// we should cut the prompt for all data excerpt translated and improved to 2000 words.
 			$full_length_content_type = [ 'improve_existing', 'translate' ];
 			if ( ! in_array( $data['contentType'], $full_length_content_type ) ) {
 

@@ -63,10 +63,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 				[
 					'name' => 'close',
 					'label' => esc_html__( 'Close', 'js_composer' ),
+					'title' => esc_html( wpb_get_title_with_shortcut( 'Close' ) ),
 				],
 				[
 					'name' => 'save',
 					'label' => esc_html__( 'Save changes', 'js_composer' ),
+					'title' => esc_html( wpb_get_title_with_shortcut( 'Save changes' ) ),
 					'css_classes' => 'vc_ui-button-fw',
 					'style' => 'action',
 				],

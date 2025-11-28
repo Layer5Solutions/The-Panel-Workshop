@@ -21,8 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 4.4
  */
 function vc_colorpicker_form_field( $settings, $value ) {
-	// nectar addition - replacing $settings['default_colorpicker_color'] with $default_colorpicker_color for backwards compatibility.
-	$default_colorpicker_color = isset( $settings['default_colorpicker_color'] ) ? $settings['default_colorpicker_color'] : '';
-	return sprintf( '<div class="color-group"><div class="wpb-color-picker"></div><input name="%s" class="wpb_vc_param_value wpb-textinput %s %s_field vc_color-control vc_ui-hidden" type="text" value="%s" data-default-colorpicker-color="%s"/></div>', $settings['param_name'], $settings['param_name'], $settings['type'], $value, $default_colorpicker_color );
-	// nectar addition end
+
+	$settings['default_colorpicker_color'] = isset( $settings['default_colorpicker_color'] ) ? $settings['default_colorpicker_color'] : ''; // nectar addition changing transparent to empty string for true color removal
+	return sprintf( '<div class="color-group"><div class="wpb-color-picker"></div><input name="%s" class="wpb_vc_param_value wpb-textinput %s %s_field vc_color-control vc_ui-hidden" type="text" value="%s" data-default-colorpicker-color="%s"/></div>', $settings['param_name'], $settings['param_name'], $settings['type'], $value, $settings['default_colorpicker_color'] );
 }

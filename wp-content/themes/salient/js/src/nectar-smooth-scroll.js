@@ -10,28 +10,67 @@
   var safariAgent = navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") < 1;
   var usingMobileDevice = navigator.userAgent.match(/Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone/i);
 
-  if ( !safariAgent && !usingMobileDevice && !usingIOS && usingSmoothScroll ) {
-    const lenis = new Lenis({
+  var lenis = null;
+  var rafActive = false;
+  var rafId = null;
+
+  function startRaf() {
+    if ( rafActive ) return;
+    rafActive = true;
+    function raf(time) {
+      if ( lenis ) {
+        lenis.raf(time);
+      }
+      rafId = requestAnimationFrame(raf);
+    }
+    rafId = requestAnimationFrame(raf);
+  }
+
+  function stopRaf() {
+    if ( !rafActive ) return;
+    if ( rafId ) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    rafActive = false;
+  }
+
+  function initLenis() {
+    lenis = new Lenis({
       lerp: 0.17 * (1.5 - smoothScrollStrength / 100),
-      prevent: function(node) { 
-        return node.classList.contains('nectar-modal') || 
+      prevent: function(node) {
+        return node.classList.contains('nectar-modal') ||
           node.classList.contains('select2-container') ||
-          node.classList.contains('widget_shopping_cart') || 
+          node.classList.contains('widget_shopping_cart') ||
           node.id === 'slide-out-widget-area';
       }
     });
 
     lenis.on('scroll', (e) => {
-      if ( window.nectarDOMInfo ) {
+      if ( window.nectarDOMInfo && !window.nectarState.materialOffCanvasOpen ) {
         window.nectarDOMInfo.scrollTop = e.animatedScroll;
       }
     });
+    startRaf();
+  }
 
-    function raf(time) {
-      lenis.raf(time)
-      requestAnimationFrame(raf)
-    }
-    requestAnimationFrame(raf);
+  if ( !safariAgent && !usingMobileDevice && !usingIOS && usingSmoothScroll ) {
+    initLenis();
+  }
+
+  if ( window.jQuery ) {
+    jQuery(window).on('nectar-material-ocm-open', function() {
+      if ( lenis ) {
+        stopRaf();
+        lenis.destroy();
+        lenis = null;
+      }
+    });
+    jQuery(window).on('nectar-material-ocm-close', function() {
+      if ( !lenis && !safariAgent && !usingMobileDevice && !usingIOS && usingSmoothScroll ) {
+        initLenis();
+      }
+    });
   }
 
 })();

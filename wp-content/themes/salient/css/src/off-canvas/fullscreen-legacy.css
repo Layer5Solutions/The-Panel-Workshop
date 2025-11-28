@@ -166,13 +166,13 @@ body #slide-out-widget-area .inner .off-canvas-menu-container li.menu-item-has-i
    margin: 0;
    margin-right: 20px;
  }
- 
+
  #slide-out-widget-area.fullscreen .nectar-global-section .container,
  #slide-out-widget-area.fullscreen-alt .nectar-global-section .container {
     padding: 0;
  }
 
- 
+
  @media only screen and (min-width:690px){
     #slide-out-widget-area.fullscreen .recent_projects_widget div a,
     #slide-out-widget-area.fullscreen-alt .recent_projects_widget div a{
@@ -350,4 +350,10 @@ body #slide-out-widget-area .inner .off-canvas-menu-container li.menu-item-has-i
 
 #slide-out-widget-area .off-canvas-menu-container {
   padding: 0 10%;
+}
+
+#slide-out-widget-area .off-canvas-social-links {
+   padding: 0 10%;
+   align-items: center;
+   justify-content: center;
 }

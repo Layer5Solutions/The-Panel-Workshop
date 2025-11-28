@@ -95,6 +95,7 @@ if ( $min_height ) {
 
 if ( ! empty( $full_width ) ) {
 	$wrapper_attributes[] = 'data-vc-full-width="true"';
+	$wrapper_attributes[] = 'data-vc-full-width-temp="true"';
 	$wrapper_attributes[] = 'data-vc-full-width-init="false"';
 	if ( 'stretch_row_content' === $full_width ) {
 		$wrapper_attributes[] = 'data-vc-stretch-content="true"';

@@ -9,18 +9,18 @@ $el_color_list = array(
     esc_html__( "Default (inherit from row Text Color)", "salient-core") => "Default",
 	esc_html__( "Accent Color", "salient-core") => "Accent-Color",
 	esc_html__( "Extra Color 1", "salient-core") => "Extra-Color-1",
-	esc_html__( "Extra Color 2", "salient-core") => "Extra-Color-2",	
+	esc_html__( "Extra Color 2", "salient-core") => "Extra-Color-2",
 	esc_html__( "Extra Color 3", "salient-core") => "Extra-Color-3",
 );
 $custom_colors = apply_filters('nectar_additional_theme_colors', array());
 $el_color_list = array_merge($el_color_list, $custom_colors);
 
 return array(
-	"name" => esc_html__("Single Testimonial", "salient-core"),
+	"name" => esc_html__("Testimonial", "salient-core"),
 	"base" => "nectar_single_testimonial",
 	"icon" => "icon-nectar-single-testimonial",
 	"category" => esc_html__('Content', 'salient-core'),
-	"description" => esc_html__('Styled Quotes', 'salient-core'),
+	"description" => esc_html__('Styled Quotes, single testimonial', 'salient-core'),
 	"params" => array(
 		array(
 			"type" => "dropdown",
@@ -90,7 +90,7 @@ return array(
 			"dependency" => array('element' => "testimonial_style", 'value' => array('small_modern','bold')),
 			'description' => esc_html__('Choose a color from your','salient-core') . ' <a target="_blank" href="'. esc_url(NectarThemeInfo::global_colors_tab_url()) .'"> ' . esc_html__('globally defined color scheme','salient-core') . '</a>',
 		),
-		
+
 	)
 );
 

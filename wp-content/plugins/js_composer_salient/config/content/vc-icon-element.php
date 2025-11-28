@@ -29,18 +29,7 @@ function vc_icon_element_params() {
 			[
 				'type' => 'dropdown',
 				'heading' => esc_html__( 'Icon library', 'js_composer' ),
-				'value' => [
-					esc_html__( 'Font Awesome', 'js_composer' ) => 'fontawesome',
-					esc_html__( 'Open Iconic', 'js_composer' ) => 'openiconic',
-					esc_html__( 'Typicons', 'js_composer' ) => 'typicons',
-					esc_html__( 'Entypo', 'js_composer' ) => 'entypo',
-					esc_html__( 'Linecons', 'js_composer' ) => 'linecons',
-					esc_html__( 'Mono Social', 'js_composer' ) => 'monosocial',
-                ],
-					/* nectar addition */ 
-					/*
-					__( 'Material', 'js_composer' ) => 'material',*/
-					/* nectar addition end */ 
+				'value' => vc_get_shared( 'icon libraries' ),
 				'admin_label' => true,
 				'param_name' => 'type',
 				'description' => esc_html__( 'Select icon library.', 'js_composer' ),
@@ -138,8 +127,8 @@ function vc_icon_element_params() {
 				],
 				'description' => esc_html__( 'Select icon from library.', 'js_composer' ),
             ],
-			/* nectar addition */ 
-			/* 
+			/* nectar addition */
+			/*
 			array(
 				'type' => 'iconpicker',
 				'heading' => __( 'Icon', 'js_composer' ),
@@ -180,7 +169,23 @@ function vc_icon_element_params() {
 				'description' => __( 'Select icon from library.', 'js_composer' ),
 			),
 			*/
-			/* nectar addition end */ 
+			/* nectar addition end */
+			[
+				'type' => 'iconpicker',
+				'heading' => esc_html__( 'Icon', 'js_composer' ),
+				'param_name' => 'icon_pixelicons',
+				'value' => 'vc_pixel_icon vc_pixel_icon-alert',
+				'settings' => [
+					'emptyIcon' => false,
+					'type' => 'pixelicons',
+					'source' => vc_get_shared( 'pixel icons' ),
+				],
+				'dependency' => [
+					'element' => 'type',
+					'value' => 'pixelicons',
+				],
+				'description' => esc_html__( 'Select icon from library.', 'js_composer' ),
+			],
 			[
 				'type' => 'dropdown',
 				'heading' => esc_html__( 'Icon color', 'js_composer' ),

@@ -614,7 +614,12 @@
             var isPreviewSize = $( '#' + mainID + ' .typography-preview' ).data( 'preview-size' );
 
             if ( isPreviewSize == '0' ) {
-                $( '#' + mainID + ' .typography-preview' ).css( 'font-size', size + units );
+                var fsUnits = units; /* nectar addition - font size units */
+                var $fsUnitsField = $( selector ).parents( '.redux-container-typography:first' ).find('.typography-font-size-units select');
+                if( $fsUnitsField.length > 0 && ($fsUnitsField.val() == 'em' || $fsUnitsField.val() == 'rem') ) {
+                  fsUnits = $fsUnitsField.val();
+                }
+                $( '#' + mainID + ' .typography-preview' ).css( 'font-size', size + fsUnits );
             }
 
             $( '#' + mainID + ' .typography-preview' ).css( 'font-weight', style );
@@ -627,13 +632,18 @@
                 $( '#' + mainID + ' .typography-preview' ).css( 'font-family', 'inherit' );
             }
 
-            $( '#' + mainID + ' .typography-preview' ).css( 'line-height', height + units );
+            var lhUnits = units; /* nectar addition - line height units */
+            var $lhUnitsField = $( selector ).parents( '.redux-container-typography:first' ).find('.typography-line-height-units select');
+            if( $lhUnitsField.length > 0 && $lhUnitsField.val() == 'unitless' ) {
+              lhUnits = ''; // unitless line height
+            }
+            $( '#' + mainID + ' .typography-preview' ).css( 'line-height', height + lhUnits );
             $( '#' + mainID + ' .typography-preview' ).css( 'word-spacing', word + units );
-            
+
              /* nectar addition - letter spacing units */
              var lsUnits = units;
              var $lsUnitsField = $( selector ).parents( '.redux-container-typography:first' ).find('.typography-letter-spacing-units select');
-   
+
             if( $lsUnitsField.length > 0 && $lsUnitsField.val() == 'em' ) {
               lsUnits = 'em';
             }

@@ -107,7 +107,7 @@ if( $style !== 'slider' &&
     ob_start();
 
     if( $title_labels === 'true' ) {
-      echo '<h2 class="uppercase recent-posts-title">'. wp_kses_post( $recent_posts_title_text ) .'<a href="'. esc_attr($posts_page_link) .'" class="button"> / '. wp_kses_post( $recent_posts_link_text ) .'</a></h2>';
+      echo '<h2 class="uppercase recent-posts-title">'. wp_kses_post( $recent_posts_title_text ) .'<a href="'. esc_url($posts_page_link) .'" class="button"> / '. wp_kses_post( $recent_posts_link_text ) .'</a></h2>';
     }
 
     $modded_style = $style;
@@ -122,7 +122,7 @@ if( $style !== 'slider' &&
       <?php
 
         $r_post_count = 0;
-				
+
         if( $orderby !== 'view_count' ) {
 
           $recentBlogPosts = array(
@@ -161,10 +161,10 @@ if( $style !== 'slider' &&
         );
 
       }
-			
-			
+
+
 			// Allow link posts in certain styles.
-			if( $style === 'classic_enhanced' || 
+			if( $style === 'classic_enhanced' ||
 			    $style === 'classic_enhanced_alt' ||
           $style === 'minimal' ||
           $style === 'title_only' ) {
@@ -299,8 +299,8 @@ if( $style !== 'slider' &&
 
           } // end default style
 
-          else if( $style === 'minimal' ) { 
-            
+          else if( $style === 'minimal' ) {
+
             $post_link_target = ( get_post_format() === 'link' ) ? 'target="_blank"' : '';
 
             $minimal_perma = get_permalink();
@@ -312,7 +312,7 @@ if( $style !== 'slider' &&
 						}
 
             ?>
-            
+
             <a href="<?php echo $minimal_perma; ?>" <?php echo $post_link_target; ?> aria-label="<?php the_title(); ?>"></a>
             <div class="post-header">
               <span class="meta"> <span> <?php echo get_the_date() . '</span> ' . esc_html__( 'in','salient-core'); ?> <?php the_category(', '); ?> </span>
@@ -326,8 +326,8 @@ if( $style !== 'slider' &&
 
           <?php } // end minimal style
 
-          else if( $style === 'title_only' ) { 
-            
+          else if( $style === 'title_only' ) {
+
             $post_link_target = ( get_post_format() === 'link' ) ? 'target="_blank"' : '';
 
             $title_only_perma = get_permalink();
@@ -361,21 +361,21 @@ if( $style !== 'slider' &&
 
               if( $style === 'list_featured_first_row_tall' && $r_post_count <= $columns ) {
 
-                if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() || 
+                if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() ||
 								     property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $image_loading ) {
-                    
+
                   $lazy_escaped_markup = nectar_lazy_loaded_image_markup(get_post_thumbnail_id(), 'medium_featured');
-      
+
                 } else {
                   $lazy_escaped_markup = get_the_post_thumbnail($post->ID, 'medium_featured', array('title' => ''));
                 }
                  echo'<a href="' . esc_url(get_permalink()) . '" aria-label="'.get_the_title().'" class="'.esc_attr($list_featured_image_class).'"><span class="post-featured-img">'.$lazy_escaped_markup.'</span></a>';
-              
+
                 } else {
 
-                if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() || 
+                if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() ||
 								     property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $image_loading ) {
-            			
+
                       $lazy_thumb = nectar_lazy_loaded_image_markup(get_post_thumbnail_id(), 'regular');
                       $lazy_escaped_markup = '<span class="img-thumbnail">'.$lazy_thumb.'</span>';
             		} else {
@@ -406,7 +406,7 @@ if( $style !== 'slider' &&
             if($r_post_count <= $columns) {
 
               do_action('nectar_recent_posts_list_featured_first_row_after_title');
-              
+
               $excerpt_length = (!empty($nectar_options['blog_excerpt_length'])) ? intval($nectar_options['blog_excerpt_length']) : 15;
               echo '<div class="excerpt">'.nectar_excerpt($excerpt_length).'</div>';
 
@@ -429,7 +429,7 @@ if( $style !== 'slider' &&
             <div <?php post_class('inner-wrap'); ?>>
 
             <?php
-						
+
 						$classic_enhanced_perma = get_permalink();
 						$post_link_url  = get_post_meta( $post->ID, '_nectar_link', true );
 						$post_link_text = get_the_content();
@@ -437,14 +437,14 @@ if( $style !== 'slider' &&
 						if ( empty( $post_link_text ) && !empty($post_link_url) ) {
 							$classic_enhanced_perma = esc_url($post_link_url);
 						}
-						
+
             $post_link_target = ( get_post_format() === 'link' ) ? 'target="_blank"' : '';
 
             if ( has_post_thumbnail() ) {
 
               if( $style === 'classic_enhanced' ) {
                 echo '<a href="' . esc_url($classic_enhanced_perma) . '" '.$post_link_target.' class="img-link"><span class="post-featured-img">'.get_the_post_thumbnail($post->ID, 'portfolio-thumb', $image_attrs) .'</span></a>';
-              } 
+              }
 							else if($style === 'classic_enhanced_alt') {
                 $masonry_sizing_type = (!empty($nectar_options['portfolio_masonry_grid_sizing']) && $nectar_options['portfolio_masonry_grid_sizing'] == 'photography') ? 'photography' : 'default';
                 $cea_size = ($masonry_sizing_type == 'photography') ? 'regular_photography' : 'tall';
@@ -558,9 +558,9 @@ else if( $style === 'single_large_featured' ) { //single_large_featured
   $recent_posts_query = new WP_Query($recentBlogPosts);
 
   $animate_in_effect = (!empty($nectar_options['header-animate-in-effect'])) ? $nectar_options['header-animate-in-effect'] : 'none';
-  $load_in_animation_classes = ( !empty($load_in_animation) && $load_in_animation !== 'none' ) ? ' ' . esc_attr($load_in_animation) .' nectar-waypoint-el' : ''; 
+  $load_in_animation_classes = ( !empty($load_in_animation) && $load_in_animation !== 'none' ) ? ' ' . esc_attr($load_in_animation) .' nectar-waypoint-el' : '';
   $load_in_animation_attrs = ( !empty($load_in_animation) && $load_in_animation !== 'none' ) ? ' data-nectar-waypoint-el-offset="70%"' : '';
-  
+
   echo '<div id="'.uniqid('rps_').'" class="nectar-recent-posts-single_featured nectar-recent-posts-element parallax_section'.$load_in_animation_classes. $recent_post_dynamic_classes.'"'.$load_in_animation_attrs.' data-max-width="'.esc_attr($large_featured_content_max_width).'" data-align="'.esc_attr($single_large_featured_content_alignment).'" data-side-spacing="'.esc_attr($single_large_featured_content_side_spacing).'" data-padding="'. esc_attr( $large_featured_padding ) .'" data-bg-overlay="'. esc_attr( $bg_overlay ) .'" data-height="'. esc_attr( $slider_size ) .'" data-animate-in-effect="'. esc_attr( $animate_in_effect ) .'" data-remove-post-date="'. esc_attr( $blog_remove_post_date ) .'" data-remove-post-author="'. esc_attr( $blog_remove_post_author ) .'" data-remove-post-comment-number="'.esc_attr($blog_remove_post_comment_number).'" data-remove-post-nectar-love="'.esc_attr($blog_remove_post_nectar_love).'">';
 
   $i = 0;
@@ -585,7 +585,7 @@ else if( $style === 'single_large_featured' ) { //single_large_featured
           $featured_img = $image_src[0];
         }
 
-        if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() || 
+        if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() ||
 				     property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $image_loading ) {
               if ($featured_img ) {
                 $lazy_escaped_markup = 'data-nectar-img-src="'.esc_url( $featured_img ).'"';
@@ -623,8 +623,8 @@ else if( $style === 'single_large_featured' ) { //single_large_featured
 
 
           echo '<div class="grav-wrap"><a href="'.get_author_posts_url($post->post_author).'">'.get_avatar( get_the_author_meta('email'), 70,  null, get_the_author() ). '</a><div class="text"><span>'.esc_html__( 'By','salient').' <a href="'.get_author_posts_url($post->post_author).'" rel="author">' .get_the_author().'</a></span><span> '.esc_html__( 'In','salient').'</span> '. trim( $cat_output) . '</div></div>';
-          
-          
+
+
           if( !in_array($large_featured_heading_tag, array('h2','h3','h4'))) {
             $large_featured_heading_tag = 'h2';
           }
@@ -730,9 +730,9 @@ else if( $style === 'multiple_large_featured' ) { //multiple_large_featured
 
   $button_color      = strtolower($button_color);
   $animate_in_effect = (!empty($nectar_options['header-animate-in-effect'])) ? $nectar_options['header-animate-in-effect'] : 'none';
-  $load_in_animation_classes = ( !empty($load_in_animation) && $load_in_animation !== 'none' ) ? ' ' . esc_attr($load_in_animation) .' nectar-waypoint-el' : ''; 
+  $load_in_animation_classes = ( !empty($load_in_animation) && $load_in_animation !== 'none' ) ? ' ' . esc_attr($load_in_animation) .' nectar-waypoint-el' : '';
   $load_in_animation_attrs = ( !empty($load_in_animation) && $load_in_animation !== 'none' ) ? ' data-nectar-waypoint-el-offset="70%"' : '';
-  
+
   echo '<div id="'.uniqid('rps_').'" class="nectar-recent-posts-single_featured nectar-recent-posts-element multiple_featured parallax_section'.$load_in_animation_classes.$recent_post_dynamic_classes.'"'.$load_in_animation_attrs.' data-max-width="'.esc_attr($large_featured_content_max_width).'" data-button-color="'. esc_attr( $button_color ) .'" data-nav-location="'. esc_attr( $mlf_navigation_location ) .'" data-bg-overlay="'. esc_attr( $bg_overlay ) .'" data-padding="'. esc_attr( $large_featured_padding ) .'" data-autorotate="'. esc_attr( $auto_rotate ) .'" data-height="'. esc_attr( $slider_size ) .'" data-animate-in-effect="'. esc_attr( $animate_in_effect ) .'" data-remove-post-date="'. esc_attr( $blog_remove_post_date ) .'" data-remove-post-author="'. esc_attr( $blog_remove_post_author ) .'" data-remove-post-comment-number="'. esc_attr( $blog_remove_post_comment_number ) .'" data-remove-post-nectar-love="'. esc_attr( $blog_remove_post_nectar_love ) .'">';
 
   $i = 0;
@@ -761,12 +761,12 @@ else if( $style === 'multiple_large_featured' ) { //multiple_large_featured
 
         }
 
-        if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() || 
+        if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() ||
 				    property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $image_loading ) {
               if( $featured_img ) {
                 $lazy_escaped_markup = 'data-nectar-img-src="'.esc_url( $featured_img ).'"';
               }
-       
+
         } else {
           if ($featured_img) {
             $background_markup = 'background-image: url('.esc_url( $featured_img ).');';
@@ -802,7 +802,7 @@ else if( $style === 'multiple_large_featured' ) { //multiple_large_featured
 
 
           echo '<div class="grav-wrap"><a href="'.get_author_posts_url($post->post_author).'">'.get_avatar( get_the_author_meta('email'), 70,  null, get_the_author() ). '</a><div class="text"><span>'.esc_html__( 'By','salient').' <a href="'.get_author_posts_url($post->post_author).'" rel="author">' .get_the_author().'</a></span><span> '.esc_html__( 'In','salient').'</span> '. trim( $cat_output) . '</div></div>';
-          
+
           if( !in_array($large_featured_heading_tag, array('h2','h3','h4'))) {
             $large_featured_heading_tag = 'h2';
           }
@@ -811,13 +811,13 @@ else if( $style === 'multiple_large_featured' ) { //multiple_large_featured
           <?php echo '</'.$large_featured_heading_tag .'>'; ?>
 
           <?php
-          
+
           if( has_action('nectar_recent_posts_multiple_large_featured_after_title') ) {
             echo '<div class="custom-content">';
             do_action('nectar_recent_posts_multiple_large_featured_after_title');
             echo '</div>';
           }
-         
+
 
           //stop regular grad class for material skin
           $regular_btn_class = ' regular-button';
@@ -934,7 +934,7 @@ else if( $style === 'slider_multiple_visible' ) { //slider multiple visible
           $featured_img = $image_src[0];
         }
 
-        if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() || 
+        if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() ||
 				    property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $image_loading ) {
           $lazy_escaped_markup = 'data-nectar-img-src="'.esc_url( $featured_img ).'"';
         } else {
@@ -1086,7 +1086,7 @@ else { //slider
           $featured_img = $image_src[0];
         }
 
-        if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() || 
+        if( 'lazy-load' === $image_loading && NectarLazyImages::activate_lazy() ||
 				     property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $image_loading ) {
           $lazy_escaped_markup = 'data-nectar-img-src="'.esc_url( $featured_img ).'"';
         } else {

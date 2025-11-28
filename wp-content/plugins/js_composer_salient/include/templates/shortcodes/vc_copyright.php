@@ -29,10 +29,10 @@ $id = empty( $atts['el_id'] ) ? '' : ' id="' . esc_attr( $atts['el_id'] ) . '"';
 $output = '<p ' . $id . ' class="' . esc_attr( $css_class ) . '"';
 
 $output .= '>';
-$output .= $atts['prefix'];
+$output .= wp_kses_post( $atts['prefix'] );
 $output .= '&copy; ';
 $output .= gmdate( 'Y' );
-$output .= $atts['postfix'];
+$output .= wp_kses_post( $atts['postfix'] );
 
 $output .= '</p>';
 

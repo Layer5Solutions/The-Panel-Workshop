@@ -11,7 +11,7 @@
 (function ($) {
 
     var NectarStickyState = function() {
-      this.scrollTop = $(document).scrollTop();
+      this.scrollTop = window.nectarDOMInfo && window.nectarDOMInfo.scrollTop ? window.nectarDOMInfo.scrollTop : window.scrollY;
       this.scrollLeft = 0;
       this.bindEvents()
     };
@@ -21,7 +21,7 @@
       var that = this;
 
       $(document).on('scroll', function() {
-        that.scrollTop = window.scrollY || $(document).scrollTop();
+        that.scrollTop = window.nectarDOMInfo && window.nectarDOMInfo.scrollTop ? window.nectarDOMInfo.scrollTop : window.scrollY
         that.scrollLeft = 0;
       });
 
@@ -186,44 +186,55 @@
                 // Scroll top (value) when the sidebar has fixed position.
                 o.fixedScrollTop = 0;
 
+                // Timestamp of last scroll event to detect idle periods
+                o.lastScrollTs = 0;
+
                 // Set sidebar to default values.
                 resetSidebar();
 
                 o.onScroll = function (o) {
 
+                    var currentScrollY = (window.nectarDOMInfo && window.nectarDOMInfo.scrollTop) || window.scrollY || window.pageYOffset || (document.documentElement && document.documentElement.scrollTop) || 0;
+                    var outAbove = currentScrollY < o.cachedOffsetTop - o.windowHeight - 200;
+                    var outBelow = currentScrollY > o.cachedContainerHeight + o.cachedOffsetTop + o.paddingTop + o.options.additionalMarginTop;
+                    var offCanvasOpen = window.nectarState && window.nectarState.materialOffCanvasOpen;
+                    var notVisible = !o.stickySidebarVisible;
+
                     // Check if in view
-                    if (nectarStickyState.scrollTop < o.cachedOffsetTop - o.windowHeight - 200 ||
-                        nectarStickyState.scrollTop > o.cachedContainerHeight + o.cachedOffsetTop + o.paddingTop + o.options.additionalMarginTop ||
-                        window.nectarState && window.nectarState.materialOffCanvasOpen ||
-                        !o.stickySidebarVisible ) {
-                        
+                    if (outAbove || outBelow || offCanvasOpen || notVisible ) {
+
                         o.stickySidebar[0].style.opacity = '0';
                         o.stickySidebar[0].style.pointerEvents = 'none';
 
+                        // prevent stale accumulated offsets across large jumps
+                        o._lastTop = undefined;
+                        o.prevPosition = '';
+
                         return;
-                    }   
-                    
-                    o.stickySidebar[0].style.opacity = '1';
-                    o.stickySidebar[0].style.pointerEvents = 'all';
-                    
-                    // Stop if the sidebar width is larger than the container width (e.g. the theme is responsive and the sidebar is now below the content)
-                    if (o.options.disableOnResponsiveLayouts && o.windowWidth < 1000) {
-                        
-                        resetSidebar();
-            
-                        return;
-                       
                     }
 
-                    var scrollTop = nectarStickyState.scrollTop;
+                    o.stickySidebar[0].style.opacity = '1';
+                    o.stickySidebar[0].style.pointerEvents = 'all';
+
+                    // Stop if the sidebar width is larger than the container width (e.g. the theme is responsive and the sidebar is now below the content)
+                    if (o.options.disableOnResponsiveLayouts && o.windowWidth < 1000) {
+
+                        resetSidebar();
+
+                        return;
+
+                    }
+
+                    var scrollTop = currentScrollY;
                     var position = 'static';
+                    var priorPosition = o.prevPosition;
 
 
                     // If the user has scrolled down enough for the sidebar to be clipped at the top, then we can consider changing its position.
 
                     if (scrollTop >= o.cachedOffsetTop + (o.paddingTop - o.options.additionalMarginTop)) {
-                        
-              
+
+
                         var cachedOuterHeight = o.cachedOuterHeight;
 
                         // The top and bottom offsets, used in various calculations.
@@ -231,14 +242,16 @@
                         var offsetBottom = o.paddingBottom + o.marginBottom + options.additionalMarginBottom;
 
                         // All top and bottom positions are relative to the window, not to the parent elemnts.
+                        // use cached measurements for stability
                         var containerHeight = o.cachedContainerHeight;
 
                         var containerTop = o.cachedOffsetTop;
-                        var containerBottom = o.cachedOffsetTop + containerHeight;
+                        var containerBottom = containerTop + containerHeight;
 
                         // The top and bottom offsets relative to the window screen top (zero) and bottom (window height).
                         var windowOffsetTop = 0 + options.additionalMarginTop;
                         var windowOffsetBottom;
+                        var EPS = 2; // small hysteresis to avoid flicker at boundaries
 
 
                         // Nectar addition conditional
@@ -256,16 +269,22 @@
                           var staticLimitTop = containerTop - scrollTop + o.paddingTop;
                           var staticLimitBottom = containerBottom - scrollTop - o.paddingBottom - o.marginBottom;
 
-                          var top = o.stickySidebar.offset().top - scrollTop;
-                          
                           var scrollTopDiff = o.previousScrollTop - scrollTop;
-
-                          // If the sidebar position is fixed, then it won't move up or down by itself. So, we manually adjust the top coordinate.
-                          if (o.stickySidebar.css('position') == 'fixed') {
-                              if (o.options.sidebarBehavior == 'modern') {
-                                  top += scrollTopDiff;
-                              }
+                          var DZ = 2; // deadzone to prevent bias when barely moving
+                          var top;
+                          if (typeof o._runTop === 'number') {
+                              top = o._runTop + scrollTopDiff;
                           }
+                          else if (o.prevPosition == 'fixed' && typeof o._lastTop === 'number') {
+                              top = o._lastTop + scrollTopDiff;
+                          }
+                          else {
+                              top = o.stickySidebar.offset().top - scrollTop;
+                          }
+
+
+
+                          // Removed CSS-based position read; rely on accumulator to avoid drift
 
                           if (o.options.sidebarBehavior == 'stick-to-top') {
                               top = options.additionalMarginTop;
@@ -275,11 +294,13 @@
                               top = windowOffsetBottom - cachedOuterHeight;
                           }
 
-                          if (scrollTopDiff > 0) { // If the user is scrolling up.
-                              top = Math.min(top, windowOffsetTop);
-                          }
-                          else { // If the user is scrolling down.
-                              top = Math.max(top, windowOffsetBottom - cachedOuterHeight);
+                          if (Math.abs(scrollTopDiff) > DZ) {
+                              if (scrollTopDiff > 0) { // scrolling up
+                                  top = Math.min(top, windowOffsetTop);
+                              }
+                              else { // scrolling down
+                                  top = Math.max(top, windowOffsetBottom - cachedOuterHeight);
+                              }
                           }
 
                           top = Math.max(top, staticLimitTop);
@@ -288,14 +309,14 @@
 
                           // If the sidebar is the same height as the container, we won't use fixed positioning.
                           var sidebarSameHeightAsContainer = containerHeight == cachedOuterHeight;
-                  
-                          if (!sidebarSameHeightAsContainer && top == windowOffsetTop) {
+
+                          if (!sidebarSameHeightAsContainer && Math.abs(top - windowOffsetTop) <= EPS) {
                               position = 'fixed';
                           }
-                          else if (!sidebarSameHeightAsContainer && top == windowOffsetBottom - cachedOuterHeight) {
+                          else if (!sidebarSameHeightAsContainer && Math.abs(top - (windowOffsetBottom - cachedOuterHeight)) <= EPS) {
                               position = 'fixed';
                           }
-                          else if (scrollTop + top - o.cachedOffsetTop - o.paddingTop <= options.additionalMarginTop ) {
+                          else if (scrollTop + top - o.cachedOffsetTop - o.paddingTop <= options.additionalMarginTop - EPS ) {
                               // Stuck to the top of the page. No special behavior.
                               position = 'static';
                           }
@@ -303,6 +324,8 @@
                               // Stuck to the bottom of the page.
                               position = 'absolute';
                           }
+
+
 
                       }// Nectar addition conditional end.
 
@@ -314,41 +337,73 @@
                      * Performance notice: It's OK to set these CSS values at each resize/scroll, even if they don't change.
                      * It's way slower to first check if the values have changed.
                      */
-                    if (position == 'fixed' && o.prevPosition != 'fixed') {
-                     
+                    if (position == 'fixed') {
+
                         //var scrollLeft = nectarStickyState.scrollLeft;
                         var scrollLeft = 0;
+
+                        if (o.prevPosition != 'fixed') {
+                            o.stickySidebar.css({
+                                'position': 'fixed',
+                                'top': '0px'
+                            });
+                            // reset diff accumulator upon entering fixed
+                            o.previousScrollTop = scrollTop;
+                        }
+
                         o.stickySidebar.css({
-                            'position': 'fixed',
                             'width': getWidthForObject(o.sidebar) + 'px',
                             'transform': 'translateY(' + top + 'px)',
-                            'left': (o.sidebar.offset().left + parseInt(o.sidebar.css('padding-left')) - scrollLeft) + 'px',
-                            'top': '0px'
+                            'left': (o.sidebar.offset().left + parseInt(o.sidebar.css('padding-left')) - scrollLeft) + 'px'
                         });
+
+                        // store last applied top for stable accumulation
+                        o._lastTop = top;
+                        o._runTop = top;
+
+
                     }
-                    else if (position == 'absolute' && o.prevPosition != 'absolute') {
-                       
+                    else if (position == 'absolute') {
+
+                        var translateY = (scrollTop + top - o.sidebar.offset().top - o.stickySidebarPaddingTop - o.stickySidebarPaddingBottom);
                         var css = {};
 
-                        if (o.stickySidebar.css('position') != 'absolute') {
+                        if (o.prevPosition != 'absolute') {
                             css.position = 'absolute';
-                            css.transform = 'translateY(' + (scrollTop + top - o.sidebar.offset().top - o.stickySidebarPaddingTop - o.stickySidebarPaddingBottom) + 'px)';
                             css.top = '0px';
+                            // reset diff accumulator upon entering absolute
+                            o.previousScrollTop = scrollTop;
                         }
 
                         css.width = getWidthForObject(o.sidebar) + 'px';
+                        css.transform = 'translateY(' + translateY + 'px)';
                         css.left = '';
 
                         o.stickySidebar.css(css);
+
+                        // store last applied top equivalent for absolute branch
+                        o._lastTop = translateY;
+                        o._runTop = top;
+
+
                     }
-                    else if (position == 'static' && o.prevPosition != 'static') {
-                     
-                        resetSidebar();
+                    else if (position == 'static') {
+
+                        if (o.prevPosition != 'static') {
+                            resetSidebar();
+                        }
+
+                        // clear accumulators when snapping back to static
+                        o._lastTop = undefined;
+                        o._runTop = undefined;
+                        o.previousScrollTop = scrollTop;
+
+
                     }
 
                     /*
                     if (position != 'static') {
-                        
+
                         if (o.options.updateSidebarHeight == true) {
                             o.sidebar.css({
                                 'min-height': o.stickySidebar.outerHeight() + o.stickySidebar.offset().top - o.sidebar.offset().top + o.paddingBottom
@@ -358,18 +413,27 @@
 
                     o.prevPosition = position;
                     o.previousScrollTop = scrollTop;
-                   
+
+                    // If we changed state, normalize next frame to avoid one-tick lag
+                    if (priorPosition != position) {
+                        if (typeof requestAnimationFrame !== 'undefined' && !o._switchRAF) {
+                            o._switchRAF = true;
+                            requestAnimationFrame(function(){
+                                o._switchRAF = false;
+                                o.onScroll(o);
+                            });
+                        }
+                    }
+
+
+
                 };
 
                 // Initialize the sidebar's position.
                 o.onScroll(o);
 
-                // Recalculate the sidebar's position on every scroll and resize.
-                $(document).on('scroll.' + o.options.namespace, function (o) {
-                    return function () {
-                        o.onScroll(o);
-                    };
-                }(o));
+                // Remove scroll listener: we'll drive updates via RAF instead
+                $(document).off('scroll.' + o.options.namespace);
 
                 // nectar addition end
                 $(window).on('load.' + o.options.namespace, function (o) {
@@ -381,7 +445,7 @@
                   o.cachedContainerHeight = getClearedHeight(o.container);
                 }(o));
 
-         
+
                 $(window).on('nectar-tab-changed', function(){
                   o.cachedOffsetTop = o.sidebar.offset().top;
                   o.cachedOuterHeight = o.stickySidebar.outerHeight();
@@ -414,6 +478,23 @@
                             o.onScroll(o);
                         };
                     }(o));
+                }
+
+                // Remove idle normalizer interval if present
+                if (o._idleTick) {
+                    clearInterval(o._idleTick);
+                    o._idleTick = null;
+                }
+
+                // RAF-driven loop: run every frame for smooth updates
+                if (!o._rafTick && typeof requestAnimationFrame !== 'undefined') {
+                    var tick = function(){
+                        if (!(window.nectarState && window.nectarState.materialOffCanvasOpen)) {
+                            o.onScroll(o);
+                        }
+                        o._rafTick = requestAnimationFrame(tick);
+                    };
+                    o._rafTick = requestAnimationFrame(tick);
                 }
 
                 // Reset the sidebar to its default state

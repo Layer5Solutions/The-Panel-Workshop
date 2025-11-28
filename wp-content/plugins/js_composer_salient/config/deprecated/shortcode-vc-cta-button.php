@@ -10,9 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( '-1' );
 }
 
-$colors_arr = vc_colors_arr();
-$icons_arr = vc_icons_arr();
-$size_arr = vc_size_arr();
+$colors_arr = vc_get_shared( 'colors arr' );
+$icons_arr = vc_get_shared( 'icons arr' );
+$size_arr = vc_get_shared( 'sizes arr' );
 return [
 	'name' => esc_html__( 'Old Call to Action', 'js_composer' ),
 	'base' => 'vc_cta_button',
@@ -47,7 +47,7 @@ return [
 			'type' => 'dropdown',
 			'heading' => esc_html__( 'Target', 'js_composer' ),
 			'param_name' => 'target',
-			'value' => vc_target_param_list(),
+			'value' => vc_get_shared( 'target param list' ),
 			'dependency' => [
 				'element' => 'href',
 				'not_empty' => true,

@@ -28,6 +28,7 @@ extract(shortcode_atts(array(
 	'flickity_touch_total_indicator_bg_color' => '#000',
 	'flickity_touch_total_indicator_icon_color' => '#fff',
 	'flickity_touch_total_indicator_blurred_bg' => '',
+	'flickity_subtract_from_column_width' => '',
 	'easing' => 'easeInExpo',
 	'autorotate' => '',
 	'autorotate_type' => '',
@@ -168,14 +169,14 @@ else if( $script === 'flickity' ) {
 	if( function_exists('nectar_el_dynamic_classnames') ) {
 		$dynamic_class_names = nectar_el_dynamic_classnames('carousel', $atts);
 	}
-	
+
 
   $flickity_attrs = '';
 
   if( $flickity_touch_total_style == 'solid_bg' || $flickity_touch_total_style == 'tooltip_text') {
-	
+
 	if( $flickity_touch_total_indicator_blurred_bg == 'yes') {
-		$flickity_attrs .= 'data-indicator-blur="true" '; 
+		$flickity_attrs .= 'data-indicator-blur="true" ';
 	}
 
 	$flickity_attrs .= 'data-indicator-style="'.esc_attr($flickity_touch_total_style).'" ';
@@ -189,7 +190,12 @@ else if( $script === 'flickity' ) {
 	$flickity_attrs .= 'data-ticker-direction="'.esc_attr($ticker_direction).'" ';
   }
 
-	echo '<div class="nectar-flickity not-initialized nectar-carousel'.esc_attr($dynamic_class_names).'" '.$flickity_attrs.'data-centered-cells="'.esc_attr($flickity_centered_cells).'" data-pause-on-hover="'.esc_attr($flickity_autorotate_pause_on_hover).'" data-touch-icon-color="'.esc_attr($flickity_touch_total_icon_color).'" data-control-color="'.esc_attr($color).'" data-overflow="'.esc_attr($flickity_overflow).'" data-r-bottom-total="'.esc_attr($flickity_touch_total_hide_indicator).'" data-drag-scale="'.esc_attr($flickity_image_scale_on_drag).'" data-wrap="'.esc_attr($flickity_wrap_around).'" data-spacing="'.esc_attr($flickity_spacing).'" data-controls="'.esc_attr($flickity_controls).'" data-pagination-alignment="'.esc_attr($pagination_alignment_flickity).'" data-adaptive-height="'.esc_attr($flickity_adaptive_height).'" data-border-radius="'.esc_attr($border_radius).'" data-column-border="'.esc_attr($enable_column_border).'" data-column-padding="'.esc_attr($column_padding).'" data-format="'.esc_attr($flickity_formatting).'" data-autoplay="'.esc_attr($autorotate).'" data-autoplay-dur="'.esc_attr($autorotation_speed).'" data-control-style="material_pagination" data-desktop-columns="'.esc_attr($desktop_cols_flickity).'" data-small-desktop-columns="'.esc_attr($desktop_small_cols_flickity).'" data-tablet-columns="'.esc_attr($tablet_cols_flickity).'" data-phone-columns="'.esc_attr($phone_cols_flickity).'" data-column-color="'.esc_attr($column_color).'">';
+	$style_attr = '';
+	if( !empty($flickity_subtract_from_column_width) ) {
+		$style_attr = ' style="--subtract-from-col-width: ' . esc_attr(nectar_css_sizing_units($flickity_subtract_from_column_width)) . ';"';
+	}
+
+	echo '<div class="nectar-flickity not-initialized nectar-carousel'.esc_attr($dynamic_class_names).'" '.$flickity_attrs.'data-centered-cells="'.esc_attr($flickity_centered_cells).'" data-pause-on-hover="'.esc_attr($flickity_autorotate_pause_on_hover).'" data-touch-icon-color="'.esc_attr($flickity_touch_total_icon_color).'" data-control-color="'.esc_attr($color).'" data-overflow="'.esc_attr($flickity_overflow).'" data-r-bottom-total="'.esc_attr($flickity_touch_total_hide_indicator).'" data-drag-scale="'.esc_attr($flickity_image_scale_on_drag).'" data-wrap="'.esc_attr($flickity_wrap_around).'" data-spacing="'.esc_attr($flickity_spacing).'" data-controls="'.esc_attr($flickity_controls).'" data-pagination-alignment="'.esc_attr($pagination_alignment_flickity).'" data-adaptive-height="'.esc_attr($flickity_adaptive_height).'" data-border-radius="'.esc_attr($border_radius).'" data-column-border="'.esc_attr($enable_column_border).'" data-column-padding="'.esc_attr($column_padding).'" data-format="'.esc_attr($flickity_formatting).'" data-autoplay="'.esc_attr($autorotate).'" data-autoplay-dur="'.esc_attr($autorotation_speed).'" data-control-style="material_pagination" data-desktop-columns="'.esc_attr($desktop_cols_flickity).'" data-small-desktop-columns="'.esc_attr($desktop_small_cols_flickity).'" data-tablet-columns="'.esc_attr($tablet_cols_flickity).'" data-phone-columns="'.esc_attr($phone_cols_flickity).'" data-column-color="'.esc_attr($column_color).'"'.$style_attr.'>';
 	echo '<div class="flickity-viewport"> <div class="flickity-slider">' . do_shortcode(wp_kses_post($content)) . '</div></div>';
 	echo '</div>';
 
@@ -214,7 +220,7 @@ else if( $script === 'simple_slider' ) {
 	$attrs[] = 'data-arrows="'.esc_attr($simple_slider_arrow_controls).'"';
 	$attrs[] = 'data-simple-slider-transition="'.esc_attr($simple_slider_transition_type).'"';
 	$attrs[] = 'data-pause-on-hover="'.esc_attr($flickity_autorotate_pause_on_hover).'"';
-  
+
   if( 'true' === $simple_slider_touch_indicator ) {
     $attrs[] = 'data-touch-indicator="true"';
     $class_names[] = 'drag-indicator-only';
@@ -228,7 +234,7 @@ else if( $script === 'simple_slider' ) {
 	if( 'true' ===  $simple_slider_row_bg_connect ) {
 		$attrs[] = 'data-row-bg-connection="true"';
 	}
-	
+
 	if( 'true' === $autorotate && !$nectar_using_VC_front_end_editor ) {
 		$attrs[] = 'data-autoplay="'.esc_attr($autorotate).'"';
 		$attrs[] = 'data-autoplay-dur="'.esc_attr($autorotation_speed).'"';

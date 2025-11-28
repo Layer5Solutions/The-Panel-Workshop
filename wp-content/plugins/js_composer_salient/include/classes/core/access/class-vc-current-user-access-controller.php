@@ -153,9 +153,7 @@ class Vc_Current_User_Access_Controller extends Vc_Role_Access_Controller {
 		}
 
 		if ( $this->getValidAccess() ) {
-			// Administrators have all access always.
-            // phpcs:ignore
-			if ( current_user_can( 'administrator' ) ) {
+			if ( $this->is_admin_with_not_editable_part( $part ) ) {
 				$this->setValidAccess( true );
 
 				return $this;
@@ -182,6 +180,25 @@ class Vc_Current_User_Access_Controller extends Vc_Role_Access_Controller {
 	}
 
 	/**
+	 * Check if user is administrator and part is not editable for admin role.
+	 *
+	 * @param string $part
+	 * @return bool
+	 */
+	public function is_admin_with_not_editable_part( $part ) {
+        // phpcs:ignore:WordPress.WP.Capabilities.RoleFound
+		if ( current_user_can( 'administrator' ) ) {
+			$admin_parts_list = [
+				'backend_editor',
+			];
+
+			return ! in_array( $part, $admin_parts_list );
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Set state.
 	 *
 	 * @param mixed $value
@@ -205,8 +222,8 @@ class Vc_Current_User_Access_Controller extends Vc_Role_Access_Controller {
 	public function getState() {
 		$currentUser = wp_get_current_user();
 		$allCaps = $currentUser->get_role_caps();
-        // phpcs:ignore
-		if ( current_user_can( 'administrator' ) ) {
+
+		if ( $this->is_admin_with_not_editable_part( $this->getPart() ) ) {
 			return true;
 		}
 		$capKey = $this->getStateKey();

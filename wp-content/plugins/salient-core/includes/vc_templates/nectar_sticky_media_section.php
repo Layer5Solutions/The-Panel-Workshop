@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) {
@@ -9,6 +9,8 @@ extract(shortcode_atts(array(
 	'section_type' => 'image',
 	'image' => '',
 	'section_color' => '',
+	'section_color_source' => 'custom',
+	'section_color_palette' => '',
 	'video_mp4' => '',
 	'video_webm' => '',
 	'video_fit' => 'cover',
@@ -48,7 +50,7 @@ if( 'image' === $section_type ) {
 		if (isset($image_arr[0])) {
 			$image_src = $image_arr[0];
 		}
-	} 
+	}
 	else {
 		$image_src = $image;
 	}
@@ -59,18 +61,18 @@ if( 'image' === $section_type ) {
 	} else {
 		$media_asset = ' style="background-image:url('.esc_attr($image_src).')"';
 	}
-	
-} 
+
+}
 
 //// Video.
 else if( 'video' === $section_type  ) {
-	
+
 	$video_classes = array('fit-'.esc_attr($video_fit));
 
 	if( 'cover' === $video_fit ) {
 		$video_classes[] = 'align-'.esc_attr($video_alignment);
 	}
-	
+
 	$loop_attr = 'loop';
 
 	if('no-loop' === $video_functionality) {
@@ -80,15 +82,19 @@ else if( 'video' === $section_type  ) {
 
 	$video_classes[] = 'nectar-lazy-video';
 
-	$video = '<video width="1800" height="700" preload="auto" '.$loop_attr.' muted playsinline class="'.nectar_clean_classnames(implode(' ',$video_classes)).'">';
+	$video = '<video width="1800" height="700" preload="auto" '.$loop_attr.' muted autoplay playsinline class="'.nectar_clean_classnames(implode(' ',$video_classes)).'">';
 	if (!empty($video_webm)) { $video .= '<source data-nectar-video-src="'. esc_url($video_webm) .'" type="video/webm">'; }
 	if (!empty($video_mp4)) { $video .= '<source data-nectar-video-src="'. esc_url($video_mp4) .'"  type="video/mp4">'; }
 	$video .= '</video>';
- 
+
 }
 //// Color
 else if( 'color' === $section_type  ) {
-	$media_asset = ' style="background-color:'.esc_attr($section_color).'"';
+	if( 'palette' === $section_color_source ) {
+		$media_asset = ' style="background :var(--nectar-'.esc_attr($section_color_palette).')"';
+	} else {
+		$media_asset = ' style="background-color:'.esc_attr($section_color).'"';
+	}
 }
 
 $link_markup = '';
@@ -105,8 +111,8 @@ $featured_media = '<div class="nectar-sticky-media-content__media-wrap"><div cla
 
 $GLOBALS['nectar-sticky-media-section-count'] = $count + 1;
 
-if ( $sticky_media_type === 'scroll-pinned-sections' ) {
-	echo '<div class="nectar-sticky-media-section__content-section">'. $link_markup; 
+if ( $sticky_media_type === 'scroll-pinned-sections' || $sticky_media_type === 'horizontal-scrolling' || $sticky_media_type === 'layered-card-reveal' ) {
+	echo '<div class="nectar-sticky-media-section__content-section">'. $link_markup;
 	echo '<div class="nectar-sticky-media-section__content-section__wrap">' . $featured_media .'<div class="nectar-sticky-media-section__content-section-inner">' . do_shortcode(wp_kses_post($content)) . '</div></div>';
 	echo '</div>';
 } else {

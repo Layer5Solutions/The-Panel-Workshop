@@ -46,13 +46,16 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
             } else {
                 add_action('wp', array($this, 'init'));
             }
-            
-       
+
+
             add_action('add_meta_boxes', array($this, 'add_display_options_meta_box'), 90);
             add_action('admin_enqueue_scripts', array($this, 'admin_enqueue_assets'));
 
             add_action('save_post', array($this, 'save_display_conditions'), 10, 3);
             add_action('before_delete_post', array($this, 'on_delete_post'));
+
+            // AJAX handler for post search
+            add_action('wp_ajax_nectar_search_posts', array($this, 'ajax_search_posts'));
         }
 
         /**
@@ -73,10 +76,10 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
             }
         }
 
-        
-        public function add_filters() 
-        {   
-            // Limit to only one special location 
+
+        public function add_filters()
+        {
+            // Limit to only one special location
             add_filter('nectar_available_special_locations', function($locations) {
 
                 $modified_locations = array();
@@ -129,7 +132,7 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
 
             // Populate saved.
             global $post;
-   
+
             self::$conditions = ($post && isset($post->ID)) ? get_post_meta($post->ID, 'nectar_g_section_conditions', true) : false;
 
             if (!empty(self::$conditions)) {
@@ -145,8 +148,8 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
             self::$locations = ($post && isset($post->ID)) ? get_post_meta($post->ID, 'nectar_g_section_locations', true) : false;
 
            // // Starting location from visual hook link.
-           if ( isset($_GET['salient_starting_hook']) && 
-           !empty($_GET['salient_starting_hook']) && 
+           if ( isset($_GET['salient_starting_hook']) &&
+           !empty($_GET['salient_starting_hook']) &&
            empty(self::$locations) ) {
                 $this->set_starting_hook();
            }
@@ -161,7 +164,7 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
         // Sets the default location to the visual hook that was clicked.
         public function set_starting_hook()
         {
-           
+
             $starting_location = sanitize_text_field($_GET['salient_starting_hook']);
 
             // verify that it's a valid location.
@@ -208,12 +211,12 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
                 }
 
             }
-        
+
         }
-        
-        
+
+
         public function set_settings()
-        {   
+        {
             // Post types.
             $post_types = get_post_types(
                 array(
@@ -221,7 +224,7 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
                 )
             );
             $exlcude_post_types = array('salient_g_sections', 'home_slider', 'nectar_slider');
-            
+
             // Post types.
             $formatted_post_types = array();
             foreach ($post_types as $post_type) {
@@ -271,12 +274,16 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
                 'top' => array(
                     array(
                         'value' => 'nectar_hook_before_secondary_header',
-                        'label' => esc_html__('Inside Header Navigation Top', 'salient-core'),
+                        'label' => esc_html__('In Navigation Top', 'salient-core'),
+                    ),
+                    array(
+                        'value' => 'nectar_hook_before_secondary_header_before_scrolling',
+                        'label' => esc_html__('In Navigation Top Before Scrolling', 'salient-core'),
                     ),
 
                     array(
                         'value' => 'nectar_hook_global_section_after_header_navigation',
-                        'label' => esc_html__('After Header Navigation', 'salient-core'),
+                        'label' => esc_html__('After Navigation', 'salient-core'),
                     )
                 ),
                 'main_content' => array(
@@ -324,7 +331,7 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
                         'label' => esc_html__('Off Canvas Menu Meta Area', 'salient-core'),
                     ),
 
-                   
+
                 ),
 
                 'bottom' => array(
@@ -438,13 +445,13 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
                         'value' => 'nectar_woocommerce_proceed_to_checkout',
                         'label' => esc_html__('Cart Proceed to Checkout', 'salient-core'),
                     ),
-                    
-
-                   
-                    
 
 
-       
+
+
+
+
+
                 )
 
             );
@@ -482,6 +489,11 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
                                 'label' => esc_html__('Single', 'salient-core'),
                                 'args' => ''
                             ),
+                            array(
+                                'value' => 'specific_post',
+                                'label' => esc_html__('Specific Post', 'salient-core'),
+                                'args' => ''
+                            ),
                         )
 
                     ),
@@ -498,17 +510,17 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
                                         'label' => esc_html__('User Logged In', 'salient-core'),
                                         'args' => ''
                                         )
-                                    ), 
+                                    ),
                                     array(
                                         array(
                                         'value' => 'is_user_not_logged_in',
                                         'label' => esc_html__('User Not Logged In', 'salient-core'),
                                         'args' => ''
                                         )
-                                    ), 
+                                    ),
                                     $user_roles
                         )
- 
+
                     ),
                 ),
 
@@ -570,17 +582,17 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
         /**
          * Returns a flat hook list of all Salient hooks.
          */
-        public function get_flat_hook_list() 
+        public function get_flat_hook_list()
         {
-                
+
                 $flat_hook_list = array();
-    
+
                 foreach ($this->theme_hooks as $location) {
                     foreach ($location as $hook) {
                         $flat_hook_list[] = $hook['value'];
                     }
                 }
-    
+
                 return $flat_hook_list;
         }
 
@@ -620,6 +632,7 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
                 array(
                     'saved' => self::$options_saved,
                     'options' => self::$options,
+                    'nonce' => wp_create_nonce('nectar_search_posts_nonce'),
                     'i18n' => array(
                         'remove' => esc_html__('Remove', 'salient-core'),
                         'and' => esc_html__('And', 'salient-core'),
@@ -670,18 +683,18 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
             return isset($special_locations[$location]) ? $special_locations[$location] : false;
         }
 
-        public function update_special_locations($saved_key, $saved_data, $post_id) 
+        public function update_special_locations($saved_key, $saved_data, $post_id)
         {
             $special_locations = array(
                 'nectar_special_location__blog_loop'
             );
 
             if( 'nectar_g_section_locations' === $saved_key ) {
-                
+
                 $saved_special_locations = self::get_active_special_locations();
 
                 foreach($special_locations as $location) {
-                    
+
                     // Has special location.
                     if(strpos($saved_data, $location) !== false) {
 
@@ -690,7 +703,7 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
                             array( $location => strval($post_id) )
                         );
                         update_option( 'salient_global_section_special_locations', $merged_special_locations );
-                    } 
+                    }
                     else if ( isset($saved_special_locations[ $location ]) && $saved_special_locations[ $location ] === strval($post_id) ) {
                         unset($saved_special_locations[ $location ]);
                         update_option( 'salient_global_section_special_locations', $saved_special_locations );
@@ -746,20 +759,20 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
                 return;
             }
 
-            
+
             foreach ($_POST[self::$post_meta_key] as $key => $val) {
 
                 // Track active special locations.
                 if ( 'revision' !== $post->post_type ) {
                     $this->update_special_locations($key, $val, $post_id);
-                } 
+                }
 
                 // Save field.
                 update_post_meta($post_id, $key, json_decode(html_entity_decode(stripslashes($val))));
             }
         }
 
-        function on_delete_post($post_id) 
+        function on_delete_post($post_id)
         {
             //remove any special locations.
             $special_locations = array(
@@ -769,13 +782,93 @@ if (!class_exists('Nectar_Global_Sections_Display_Options')) {
             $saved_special_locations = self::get_active_special_locations();
 
             foreach($special_locations as $location) {
-                
+
                 if ( isset($saved_special_locations[ $location ]) && $saved_special_locations[ $location ] == strval($post_id) ) {
                     unset($saved_special_locations[ $location ]);
                     update_option( 'salient_global_section_special_locations', $saved_special_locations );
                 }
             }
 
+        }
+
+        /**
+         * AJAX handler for searching posts
+         */
+        public function ajax_search_posts()
+        {
+            // Verify nonce
+            if (!isset($_GET['nonce']) || !wp_verify_nonce($_GET['nonce'], 'nectar_search_posts_nonce')) {
+                wp_send_json_error(array('message' => 'Invalid nonce'));
+                return;
+            }
+
+            // Check user permissions
+            if (!current_user_can('edit_posts')) {
+                wp_send_json_error(array('message' => 'Insufficient permissions'));
+                return;
+            }
+
+            $search_term = isset($_GET['search']) ? sanitize_text_field($_GET['search']) : '';
+
+            if (empty($search_term)) {
+                wp_send_json_success(array());
+                return;
+            }
+
+            // Get public post types, excluding sensitive ones
+            $post_types = get_post_types(array('public' => true));
+            $excluded_post_types = apply_filters('nectar_global_sections_search_excluded_post_types', array(
+                'salient_g_sections',
+                'home_slider',
+                'nectar_slider',
+                'attachment'
+            ));
+
+            $allowed_post_types = array_diff($post_types, $excluded_post_types);
+
+            // Build query arguments
+            $args = array(
+                'post_status' => 'publish',
+                'posts_per_page' => 20,
+                'post_type' => array_values($allowed_post_types),
+                'orderby' => 'relevance',
+                'order' => 'DESC',
+                'no_found_rows' => true,
+                'update_post_meta_cache' => false,
+                'update_post_term_cache' => false
+            );
+
+            // Check if search term is numeric (ID search)
+            if (is_numeric($search_term)) {
+                $args['p'] = absint($search_term);
+                unset($args['orderby']);
+            } else {
+                // Search by title or slug
+                $args['s'] = $search_term;
+            }
+
+            $query = new WP_Query($args);
+            $results = array();
+
+            if ($query->have_posts()) {
+                while ($query->have_posts()) {
+                    $query->the_post();
+
+                    $post_id = get_the_ID();
+                    $post_type_obj = get_post_type_object(get_post_type());
+
+                    $results[] = array(
+                        'id' => $post_id,
+                        'title' => wp_kses_post(get_the_title()),
+                        'slug' => sanitize_title(get_post_field('post_name', $post_id)),
+                        'type' => sanitize_text_field($post_type_obj->labels->singular_name)
+                    );
+                }
+            }
+
+            wp_reset_postdata();
+
+            wp_send_json_success($results);
         }
     }
 

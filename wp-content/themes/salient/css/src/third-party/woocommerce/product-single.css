@@ -371,6 +371,10 @@ body:not(.woocommerce-cart) .main-content .woocommerce-tabs[data-tab-style="full
     pointer-events: none;
     display: block;
   }
+  .product[data-gallery-style="left_thumb_sticky"] .click-event--open_in_lightbox .easyzoom > a {
+    pointer-events: all;
+    display: block;
+  }
   .product[data-gallery-style="left_thumb_sticky"] .zoomImg {
     opacity: 0!important; pointer-events: none;
     -webklit-transition: opacity 0.15s ease;

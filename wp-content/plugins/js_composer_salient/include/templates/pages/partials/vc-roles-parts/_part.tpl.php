@@ -61,6 +61,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<?php if ( isset( $use_table ) && true === $use_table ) : ?>
 		<?php
 		require_once vc_path_dir( 'EDITORS_DIR', 'popups/class-vc-add-element-box.php' );
+		require_once vc_path_dir( 'SHORTCODES_DIR', 'core/class-wpbakeryshortcode.php' );
 		$add_box = new Vc_Add_Element_Box();
 		?>
 		<tr data-vc-role-related-part="<?php echo esc_attr( $part . '-' . $role ); ?>"
@@ -120,6 +121,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 									class="<?php echo esc_attr( trim( $category_css_classes ) ); ?>">
 									<td title="<?php echo esc_attr( $cap['base'] ); ?>">
 										<?php
+										$shortcode = new class( $cap ) extends WPBakeryShortCode {};
+										$shortcode->printIconStyles();
 										// @codingStandardsIgnoreLine
 										print $add_box->renderIcon( $cap );
 										?>

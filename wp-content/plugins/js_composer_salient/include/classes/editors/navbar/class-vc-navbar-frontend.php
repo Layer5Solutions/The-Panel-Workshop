@@ -26,8 +26,9 @@ class Vc_Navbar_Frontend extends Vc_Navbar {
 		'view_post',
 		'more',
 		'save_buttons',
+		'post_settings',
+		'custom_code',
 		'screen_size',
-		'custom_css',
 	];
 	/**
 	 * Filter name for the frontend controls.
@@ -167,7 +168,8 @@ class Vc_Navbar_Frontend extends Vc_Navbar {
 						// @codingStandardsIgnoreLine
 						print $control[1];
 					endforeach;
-					echo wp_kses_post( $this->getControlCustomCss() );
+					echo wp_kses_post( $this->getControlPostSettings() );
+					echo wp_kses_post( $this->getControlCustomCode() );
 					echo wp_kses_post( $this->getControlSaveButtons( true ) );
 					?>
 					<li class="vc_dropdown-list-item">

@@ -3,6 +3,21 @@ Theme Name:  Salient
 Description: Theme Skin set to "Ascend" in theme options
 */
 
+.ascend #sidebar #project-meta ul .project-date{
+    border:2px solid rgba(0,0,0,0.1)
+}
+.ascend #sidebar #project-meta ul .project-date {
+    border:2px solid rgba(0,0,0,0.1)!important;
+}
+
+.ascend #slide-out-widget-area[class*="slide-out-from-right"] {
+	display: block;
+}
+
+body.ascend .comment-list .pingback .comment-body {
+	padding-left: 0;
+}
+
 body.ascend #header-outer[data-full-width="false"] #top nav >.buttons {
     margin-left:15px
 }
@@ -169,11 +184,11 @@ body.ascend #header-outer .cart-contents .cart-wrap span{
 
 .ascend .light [data-full-width="false"] .carousel-next:after,
 .ascend .light [data-full-width="false"] .carousel-prev:after {
-    background-color:#fff
+    background-color:var(--nectar-font-light-color)
 }
 
 .ascend .light .carousel-next i,.ascend .light .carousel-prev i {
-    color:#fff
+    color:var(--nectar-font-light-color)
 }
 .ascend [data-full-width="false"] .carousel-next:after {
     left:5px
@@ -225,7 +240,7 @@ body.ascend #header-outer .cart-contents .cart-wrap span{
 }
 .ascend .light .carousel-next:hover i,
 .ascend .light .carousel-prev:hover i {
-    color:#fff
+    color:var(--nectar-font-light-color)
 }
 .ascend .nectar-button.see-through,
 body.ascend .nectar-button.see-through,
@@ -1212,9 +1227,9 @@ body[data-fancy-form-rcs="1"] .span_12.light .select2-container--default .select
     z-index:0
 }
 
-.nectar-button[class*="extra-color-gradient"] .hover { 
-  padding: inherit; 
-  top: 0; 
+.nectar-button[class*="extra-color-gradient"] .hover {
+  padding: inherit;
+  top: 0;
 }
 
 .nectar-button.extra-color-gradient-1:hover .hover,

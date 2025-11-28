@@ -34,6 +34,7 @@ if( !function_exists('nectar_wpbakery_element_list') ) {
 			'nectar_animated_title',
 			'nectar_animated_shape',
 			'nectar_lottie',
+			'nectar_content_trail',
 			'nectar_responsive_text',
 			'nectar_blog',
 			'nectar_btn',
@@ -77,6 +78,7 @@ if( !function_exists('nectar_wpbakery_element_list') ) {
 			'nectar_sticky_media_section',
 			'nectar_scrolling_text',
 			'nectar_text_inline_images',
+			'nectar_flexbox',
 			'toggle',
 			'toggles',
 			'vc_column',
@@ -85,7 +87,8 @@ if( !function_exists('nectar_wpbakery_element_list') ) {
 			'vc_gallery',
 			'vc_pie',
 			'vc_row',
-			'vc_row_inner'
+			'vc_row_inner',
+			'vc_section'
 		);
 
 		return $element_list;
@@ -232,7 +235,7 @@ if( !function_exists('salient_remove_core_common_wpbakery_els') ) {
 			'vc_button2',
 			'vc_cta_button',
 			'vc_cta_button2',
-			'vc_section'
+			// 'vc_section'
 		);
 
 		if( true !== $enable_raw_wpbakery_post_grid ) {
@@ -305,6 +308,7 @@ vc_remove_element("vc_wp_rss");
 vc_remove_element("vc_wp_search");
 vc_remove_element("vc_wp_tagcloud");
 vc_remove_element("vc_wp_text");
+// vc_remove_element("vc_section");
 
 
 // remove WC elements
@@ -442,7 +446,8 @@ function nectar_select_color_styles() {
 	$nectar_color_css = '.vc_edit-form-tab .chosen-container .chosen-results li.Default:before,
 	.vc_edit-form-tab .chosen-container .chosen-results li.default:before,
 	.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"].Default + .chosen-container > a:before,
-	.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"].default + .chosen-container > a:before { background: linear-gradient(to right, #444 49%, #fff 51%); }
+	.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"].default + .chosen-container > a:before,
+	.nectar-theme-color-param .chosen-container.color-default > a:before { background: linear-gradient(to right, #444 49%, #fff 51%); }
 
 	.vc_edit-form-tab .chosen-container .chosen-results li[class*="Accent-Color"]:before,
 	.vc_edit-form-tab .chosen-container .chosen-results li.Default-Accent-Color:before,
@@ -450,25 +455,29 @@ function nectar_select_color_styles() {
 	.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"].Default-Accent-Color + .chosen-container > a:before,
 	.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"][class*="Accent-Color"] + .chosen-container > a:before,
 	.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"][class*="accent-color"] + .chosen-container > a:before,
-	.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="cta_button_style"].accent-color + .chosen-container > a:before { background-color: '.$nectar_accent_color.'; }
+	.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="cta_button_style"].accent-color + .chosen-container > a:before,
+	.nectar-theme-color-param .chosen-container.color-accent-color > a:before { background-color: '.$nectar_accent_color.'; }
 
     .vc_edit-form-tab .chosen-container .chosen-results li[class*="Extra-Color-1"]:before,
 		.vc_edit-form-tab .chosen-container .chosen-results li[class*="extra-color-1"]:before,
 		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"][class*="Extra-Color-1"] + .chosen-container > a:before,
 		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"][class*="extra-color-1"] + .chosen-container > a:before,
-		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="cta_button_style"].extra-color-1 + .chosen-container > a:before { background-color: '.$nectar_extra_color_1.'; }
+		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="cta_button_style"].extra-color-1 + .chosen-container > a:before,
+		.nectar-theme-color-param .chosen-container.color-extra-color-1 > a:before { background-color: '.$nectar_extra_color_1.'; }
 
     .vc_edit-form-tab .chosen-container .chosen-results li[class*="Extra-Color-2"]:before,
 		.vc_edit-form-tab .chosen-container .chosen-results li[class*="extra-color-2"]:before,
 		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"][class*="Extra-Color-2"] + .chosen-container > a:before,
 		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"][class*="extra-color-2"] + .chosen-container > a:before,
-		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="cta_button_style"].extra-color-2 + .chosen-container > a:before { background-color: '.$nectar_extra_color_2.'; }
+		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="cta_button_style"].extra-color-2 + .chosen-container > a:before,
+		.nectar-theme-color-param .chosen-container.color-extra-color-2 > a:before { background-color: '.$nectar_extra_color_2.'; }
 
     .vc_edit-form-tab .chosen-container .chosen-results li[class*="Extra-Color-3"]:before,
 		.vc_edit-form-tab .chosen-container .chosen-results li[class*="extra-color-3"]:before,
 		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"][class*="Extra-Color-3"] + .chosen-container > a:before,
 		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"][class*="extra-color-3"] + .chosen-container > a:before,
-		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="cta_button_style"].extra-color-3 + .chosen-container > a:before { background-color: '.$nectar_extra_color_3.'; }';
+		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="cta_button_style"].extra-color-3 + .chosen-container > a:before,
+		.nectar-theme-color-param .chosen-container.color-extra-color-3 > a:before { background-color: '.$nectar_extra_color_3.'; }';
 
 	$custom_colors = apply_filters('nectar_additional_theme_colors', array());
 
@@ -533,7 +542,8 @@ function nectar_select_color_styles() {
 		$nectar_color_css .= '.vc_edit-form-tab .chosen-container .chosen-results li.extra-color-gradient-1:before,
 		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"].extra-color-gradient-1 + .chosen-container > a:before,
 		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="button_color"].extra-color-gradient-1 + .chosen-container > a:before,
-		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name="icon_color"].extra-color-gradient-1 + .chosen-container > a:before {  background: linear-gradient(to right, '.$nectar_gradient_1_from.', '.$nectar_gradient_1_to.'); }';
+		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name="icon_color"].extra-color-gradient-1 + .chosen-container > a:before,
+		.nectar-theme-color-param .chosen-container.color-extra-color-gradient-1 > a:before {  background: linear-gradient(to right, '.$nectar_gradient_1_from.', '.$nectar_gradient_1_to.'); }';
 	}
 
 	if( !empty($nectar_options["extra-color-gradient-2"]) && $nectar_options["extra-color-gradient-2"]['to'] && $nectar_options["extra-color-gradient-2"]['from']) {
@@ -543,7 +553,8 @@ function nectar_select_color_styles() {
 		$nectar_color_css .= '.vc_edit-form-tab .chosen-container .chosen-results li.extra-color-gradient-2:before,
 		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="color"].extra-color-gradient-2 + .chosen-container > a:before,
 		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name*="button_color"].extra-color-gradient-2 + .chosen-container > a:before,
-		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name="icon_color"].extra-color-gradient-2 + .chosen-container > a:before {  background: linear-gradient(to right, '.$nectar_gradient_2_from.', '.$nectar_gradient_2_to.'); }';
+		.vc_edit-form-tab .vc_shortcode-param[data-param_type="dropdown"] select[name="icon_color"].extra-color-gradient-2 + .chosen-container > a:before,
+		.nectar-theme-color-param .chosen-container.color-extra-color-gradient-2 > a:before {  background: linear-gradient(to right, '.$nectar_gradient_2_from.', '.$nectar_gradient_2_to.'); }';
 	}
 
 
@@ -849,6 +860,11 @@ if(function_exists('vc_add_shortcode_param')) {
 
 			foreach($options as $html => $v) {
 
+				if ($v === 'SKIP_OPTION') {
+					$param_line .= '<li class="nectar-radio-html-list__section-title">'.$html.'</li>';
+					continue;
+				}
+
 				if($value == $v) {
 					$checked = 'checked';
 				}
@@ -920,7 +936,7 @@ if(function_exists('vc_add_shortcode_param')) {
 
 
 	/**
-	 * Create attach hidden param.
+	 * Radio Tab Selection
 	 *
 	 * @since 13.1
 	 */
@@ -934,12 +950,12 @@ if(function_exists('vc_add_shortcode_param')) {
 		$options_values = array_values($options);
 		$param_line = '<input id="nectar-radio-tab-'.$rnd_id.'" data-default-val="'.esc_attr($options_values[0]).'" name="' . esc_attr($param['param_name']) . '" class="wpb_vc_param_value wpb-textinput ' . esc_attr($param['param_name']) . ' ' . esc_attr($param['type']) . '" type="hidden" value="' . esc_attr( $value) . '"/>';
 		$param_line .= '<div class="nectar-radio-tab" data-grp-id="' . $rnd_id . '">';
-		$param_line .= '<ul class="nectar_radio_tab_list">';
+		$param_line .= '<ul class="nectar_radio_tab_list" data-allow-empty="' . (isset($param['allow_empty']) ? 'true' : 'false') . '">';
 
 		$i = 0;
 		foreach($options as $k => $v) {
 
-				if($value == $v || empty($value) && $i == 0) {
+				if($value == $v || (empty($value) && $i == 0 && !isset($param['start_empty']))) {
 					$checked = 'checked';
 				}
 				else {
@@ -948,10 +964,58 @@ if(function_exists('vc_add_shortcode_param')) {
 
 				$param_line .= '<li><label>
 					<input type="radio" class="n_radio_tab_val" value="'.esc_attr($v).'" name="n_radio_tab_' . $rnd_id . '" ' . $checked . ' />
-					<span class="n_radio_image_title">'.esc_html($k).'</span>
+					<span class="n_radio_image_title">'.$k.'</span>
 				</label></li>';
 
 				$i++;
+
+		}
+
+
+		$param_line .= '</ul></div>';
+
+		return $param_line;
+
+	}
+
+
+	/**
+	 * Checkbox Tab Selection
+	 *
+	 * @since 18.0
+	 */
+	vc_add_shortcode_param( 'nectar_checkbox_tab_selection', 'nectar_checkbox_tab_selection_field' );
+	function nectar_checkbox_tab_selection_field( $param, $value ) {
+
+		$options = isset($param['options']) ? $param['options'] : array();
+
+		$rnd_id = uniqid();
+
+		$min_items = isset($param['min_items']) ? $param['min_items'] : 1;
+		$max_items = isset($param['max_items']) ? $param['max_items'] : 1;
+		$options_values = array_values($options);
+		$start_empty = isset($param['start_empty']) ? $param['start_empty'] : false;
+		$default_val = !$start_empty ? $options_values[0] : '';
+		$param_line = '<input id="nectar-radio-tab-'.$rnd_id.'" data-default-val="'.esc_attr($default_val).'" name="' . esc_attr($param['param_name']) . '" class="wpb_vc_param_value wpb-textinput ' . esc_attr($param['param_name']) . ' ' . esc_attr($param['type']) . '" type="hidden" value="' . esc_attr( $value) . '"/>';
+		$param_line .= '<div class="nectar-radio-tab" data-grp-id="' . $rnd_id . '" data-min-items="' . $min_items . '" data-max-items="' . $max_items . '">';
+		$param_line .= '<ul class="nectar_radio_tab_list" data-allow-empty="' . (isset($param['allow_empty']) ? 'true' : 'false') . '">';
+
+		$i = 0;
+		foreach($options as $k => $v) {
+
+			if($value == $v || (empty($value) && $i == 0 && !isset($param['start_empty']))) {
+				$checked = 'checked';
+			}
+			else {
+				$checked = '';
+			}
+
+			$param_line .= '<li><label>
+				<input type="checkbox" class="n_radio_tab_val" value="'.esc_attr($v).'" name="n_radio_tab_' . $rnd_id . '" ' . $checked . ' />
+				<span class="n_radio_image_title">'.$k.'</span>
+			</label></li>';
+
+			$i++;
 
 		}
 
@@ -1012,7 +1076,7 @@ if(function_exists('vc_add_shortcode_param')) {
 	vc_add_shortcode_param( 'nectar_numerical', 'nectar_numerical_field' );
 	function nectar_numerical_field( $settings, $value ) {
 
-		$value = htmlspecialchars( $value );
+		$value = isset( $value ) ? htmlspecialchars( $value ) : '';
 
 		$placeholder_active = ( !empty($value) || '0' === $value ) ? ' focus' : '';
 		$placeholder_text = ( isset($settings['placeholder']) ) ? $settings['placeholder'] : '';
@@ -1136,6 +1200,136 @@ if(function_exists('vc_add_shortcode_param')) {
 
 		return $markup;
 	}
+
+
+
+
+	/**
+	 * Create nectar color picker repeater field
+	 *
+	 * @since 16.2
+	 */
+	vc_add_shortcode_param('nectar_color_repeater', 'nectar_color_repeater_field');
+
+	function nectar_color_repeater_field($settings, $value) {
+		$markup = '<div class="nectar-repeater-field">';
+
+		if (!$value) {
+			$value = '';
+		}
+
+		$markup .= '<div class="nectar-repeater-field__save_data">
+			<input name="' . $settings['param_name'] . '" class="wpb_vc_param_value wpb-textinput ' . $settings['param_name'] . ' ' . $settings['type'] . '" type="hidden" value="' . esc_attr($value) . '"/>
+		</div>';
+
+		$markup .= '<div class="nectar-repeater-field__template">
+			<div class="nectar-repeater-field__item">
+				<a href="#" class="nectar-repeater-field__item__remove">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM12 10.5858L14.8284 7.75736L16.2426 9.17157L13.4142 12L16.2426 14.8284L14.8284 16.2426L12 13.4142L9.17157 16.2426L7.75736 14.8284L10.5858 12L7.75736 9.17157L9.17157 7.75736L12 10.5858Z" fill="currentColor"></path></svg>
+				</a>
+				<div>
+					<input name="color_value" class="wpb_vc_param_value wpb-textinput wpb-colorpicker" type="text" />
+				</div>
+			</div>
+		</div>';
+
+		$markup .= '<div class="nectar-repeater-field__items"></div>';
+		$markup .= '<a href="#" class="nectar-repeater-field__add"><span>' . __('Add Color', 'salient-core') . '</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 11V5H13V11H19V13H13V19H11V13H5V11H11Z" fill="currentColor"></path></svg></a>';
+		$markup .= '</div>';
+
+		return $markup;
+	}
+
+	/**
+	 * Create nectar textfield repeater field
+	 *
+	 * @since 16.2
+	 */
+	vc_add_shortcode_param('nectar_text_repeater', 'nectar_text_repeater_field');
+
+	function nectar_text_repeater_field($settings, $value) {
+		$markup = '<div class="nectar-repeater-field">';
+
+		if (!$value) {
+			$value = '';
+		}
+
+		$markup .= '<div class="nectar-repeater-field__save_data">
+			<input name="' . $settings['param_name'] . '" class="wpb_vc_param_value wpb-textinput ' . $settings['param_name'] . ' ' . $settings['type'] . '" type="hidden" value="' . esc_attr($value) . '"/>
+		</div>';
+
+		$markup .= '<div class="nectar-repeater-field__template">
+			<div class="nectar-repeater-field__item">
+
+				<a href="#" class="nectar-repeater-field__item__remove">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM12 10.5858L14.8284 7.75736L16.2426 9.17157L13.4142 12L16.2426 14.8284L14.8284 16.2426L12 13.4142L9.17157 16.2426L7.75736 14.8284L10.5858 12L7.75736 9.17157L9.17157 7.75736L12 10.5858Z" fill="currentColor"></path></svg>
+				</a>
+				<div>
+					<input name="text_value" class="wpb-textinput text" type="text" placeholder="' . __('Enter text value', 'salient-core') . '" />
+				</div>
+
+			</div>
+		</div>';
+
+		$markup .= '<div class="nectar-repeater-field__items"></div>';
+		$markup .= '<a href="#" class="nectar-repeater-field__add"><span>' . __('Add Text', 'salient-core') . '</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 11V5H13V11H19V13H13V19H11V13H5V11H11Z" fill="currentColor"></path></svg></a>';
+		$markup .= '</div>';
+
+		return $markup;
+	}
+
+	/**
+	 * Theme color dropdown + custom color param (grouped)
+	 *
+	 * Renders a select of theme colors and a conditional custom colorpicker.
+	 * Keeps existing styling logic intact by outputting a standard <select>
+	 * with option classes for Chosen-based color swatches.
+	 *
+	 * Settings:
+	 * - param_name (string) required: base param name, e.g. button_color
+	 * - include_transparent (bool) optional: include Transparent/default entry
+	 * - heading (string) optional: label above control
+	 *
+	 * @since 18.x
+	 */
+    vc_add_shortcode_param('nectar_theme_color', 'nectar_theme_color_field');
+    function nectar_theme_color_field($settings, $value) {
+		$param_name = isset($settings['param_name']) ? $settings['param_name'] : 'theme_color';
+		$include_transparent = !empty($settings['include_transparent']);
+
+		// Build theme color list similar to existing maps
+		$el_color_list = array(
+			esc_html__("Accent Color", "salient-core") => "accent-color",
+			esc_html__("Extra Color 1", "salient-core") => "extra-color-1",
+			esc_html__("Extra Color 2", "salient-core") => "extra-color-2",
+			esc_html__("Extra Color 3", "salient-core") => "extra-color-3",
+			esc_html__("Color Gradient 1", "salient-core") => "extra-color-gradient-1",
+			esc_html__("Color Gradient 2", "salient-core") => "extra-color-gradient-2",
+			esc_html__("Black", "salient-core") => "black",
+			esc_html__("White", "salient-core") => "white",
+		);
+
+		if ($include_transparent) {
+			$el_color_list = array_merge(array(
+				esc_html__("Transparent", "salient-core") => "default",
+			), $el_color_list);
+		}
+
+		$custom_colors = apply_filters('nectar_additional_theme_colors', array());
+		$el_color_list = array_merge($el_color_list, $custom_colors);
+
+        // Select markup with option classes for Chosen + CSS swatches
+        $select = '';
+        $select .= '<select name="' . esc_attr($param_name) . '" class="wpb_vc_param_value wpb-input wpb-select ' . esc_attr($param_name) . ' ' . esc_attr($settings['type']) . ' nectar-theme-color-selector">';
+		foreach ($el_color_list as $label => $val) {
+			$selected = ($value === $val) ? ' selected="selected"' : '';
+			$select .= '<option class="' . esc_attr($val) . '" value="' . esc_attr($val) . '"' . $selected . '>' . esc_html($label) . '</option>';
+		}
+		$select .= '</select>';
+
+        return '<div class="nectar-theme-color-param">' . $select . '</div>';
+	}
+
 
 }
 
@@ -1316,7 +1510,7 @@ function nectar_custom_maps() {
 						"Default" => "default",
 						"Row Reverse" => "reverse"
 					),
-					'description' => esc_html__( 'The order your columns will display in.', 'salient-core' ),
+					'description' => '',
 				),
 
 				array(
@@ -1360,6 +1554,7 @@ function nectar_custom_maps() {
 					"description" => ""
 				),
 
+
 				array(
 					"type" => "fws_image",
 					"group" => "Background",
@@ -1396,7 +1591,32 @@ function nectar_custom_maps() {
 					"dependency" => Array('element' => "mouse_based_parallax_bg", 'is_empty' => true)
 				),
 
+				array(
+					"type" => "checkbox",
+					"class" => "",
+					'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+					"group" => "Background",
+					"heading" => esc_html__("Preload Image", "salient-core" ),
+					"param_name" => "background_image_preload",
+					"value" => array("Preload" => "true" ),
+					"description" => "Enable to preload the background image for improved performance. Recommended for prominent, above-the-fold images.",
+					"dependency" => Array('element' => "bg_image", 'not_empty' => true)
+				),
 
+				array(
+					"type" => "dropdown",
+					"class" => "",
+					"group" => "Background",
+					'save_always' => true,
+					"heading" => esc_html__("Background Image Type", "salient-core" ),
+					"param_name" => "bg_image_type",
+					"description" => esc_html__("Choose how the background image is rendered. Using an image tag (`<img>`) is recommended for above-the-fold content as it improves performance and loading behavior. CSS background images are more flexible for design but load differently.", "salient-core" ),
+					"value" => array(
+						esc_html__("CSS Background Image", "salient-core" ) => "default",
+			  		 	esc_html__("Image Tag", "salient-core" ) => "img",
+					),
+					"dependency" => Array('element' => "bg_image", 'not_empty' => true)
+				),
 
 				array(
 					"type" => "checkbox",
@@ -1418,12 +1638,12 @@ function nectar_custom_maps() {
 					"heading" => esc_html__("Background Position", "salient-core" ),
 					"param_name" => "bg_position",
 					"value" => array(
-						 esc_html__("Left Top", "salient-core" ) => "left top",
+					 esc_html__("Center Center", "salient-core" ) => "center center",
+			  		 esc_html__("Center Top", "salient-core" ) => "center top",
+			  		 esc_html__("Center Bottom", "salient-core" ) => "center bottom",
+					 esc_html__("Left Top", "salient-core" ) => "left top",
 			  		 esc_html__("Left Center", "salient-core" ) => "left center",
 			  		 esc_html__("Left Bottom", "salient-core" ) => "left bottom",
-			  		 esc_html__("Center Top", "salient-core" ) => "center top",
-			  		 esc_html__("Center Center", "salient-core" ) => "center center",
-			  		 esc_html__("Center Bottom", "salient-core" ) => "center bottom",
 			  		 esc_html__("Right Top", "salient-core" ) => "right top",
 			  		 esc_html__("Right Center", "salient-core" ) => "right center",
 			  		 esc_html__("Right Bottom", "salient-core" ) => "right bottom",
@@ -1512,6 +1732,11 @@ function nectar_custom_maps() {
 						'not_empty' => true,
 					),
 				),
+
+				...SalientWPbakeryParamGroups::height_group('', [
+					'element' => 'full_height',
+					'is_empty' => true,
+				]),
 
 				array(
 					"type" => "checkbox",
@@ -2511,6 +2736,45 @@ function nectar_custom_maps() {
 
 				array(
 					"type" => "dropdown",
+					"class" => "",
+					'save_always' => true,
+			  		"edit_field_class" => "desktop row-position-display-device-group",
+					"heading" => '<span class="group-title">' . esc_html__("Position", "salient-core") . "</span>",
+					"param_name" => "row_position_desktop",
+					"value" => array(
+						esc_html__("Default", "salient-core") => "default",
+						esc_html__("Static", "salient-core") => "static"
+					)
+				),
+
+			 array(
+					"type" => "dropdown",
+					"class" => "",
+					'save_always' => true,
+			  		"edit_field_class" => "tablet row-position-display-device-group",
+					"heading" => '',
+					"param_name" => "row_position_tablet",
+					"value" => array(
+						esc_html__("Inherit", "salient-core") => "inherit",
+						esc_html__("Static", "salient-core") => "static"
+					)
+				),
+
+				array(
+					"type" => "dropdown",
+					"class" => "",
+					'save_always' => true,
+			  		"edit_field_class" => "phone row-position-display-device-group",
+					"heading" => '',
+					"param_name" => "row_position_phone",
+					"value" => array(
+						esc_html__("Inherit", "salient-core") => "inherit",
+						esc_html__("Static", "salient-core") => "static"
+					)
+				),
+
+				array(
+					"type" => "dropdown",
 					"heading" => esc_html__("Overflow Visibility", "salient-core"),
 					"param_name" => "overflow",
 					"value" => array(
@@ -2519,6 +2783,50 @@ function nectar_custom_maps() {
 					),
 					'save_always' => true
 				),
+
+
+				array(
+					"type" => "dropdown",
+					"class" => "",
+					"edit_field_class" => "desktop device-visibility-device-group",
+					"heading" => '<span class="group-title">' . esc_html__("Device Visibility", "salient-core") . "</span>",
+					"param_name" => "device_visibility_desktop",
+					"value" => array(
+						esc_html__("Visible", "salient-core") => "default",
+						esc_html__("Hidden", "salient-core") => "hidden"
+					),
+					'description' => '',
+				),
+
+				array(
+					"type" => "dropdown",
+					"class" => "",
+					"edit_field_class" => "tablet device-visibility-device-group",
+					"heading" => '',
+					"param_name" => "device_visibility_tablet",
+					"value" => array(
+						esc_html__("Inherit", "salient-core") => "inherit",
+						esc_html__("Visible", "salient-core") => "visible",
+						esc_html__("Hidden", "salient-core") => "hidden"
+					),
+					'description' => '',
+				),
+
+				array(
+					"type" => "dropdown",
+					"class" => "",
+					"edit_field_class" => "phone device-visibility-device-group",
+					"heading" => '',
+					"param_name" => "device_visibility_phone",
+					"value" => array(
+						esc_html__("Inherit", "salient-core") => "inherit",
+						esc_html__("Visible", "salient-core") => "visible",
+						esc_html__("Hidden", "salient-core") => "hidden"
+					),
+					'description' => '',
+				),
+
+
 
 				array(
 					"type" => "textfield",
@@ -2650,20 +2958,20 @@ function nectar_custom_maps() {
 					"type" => "dropdown",
 					"edit_field_class" => "col-md-6 col-md-6-last",
 					"class" => "",
-          "group" => "Color Overlay",
+          			"group" => "Color Overlay",
 					"heading" => esc_html__("Gradient Position", "salient-core"),
 					"param_name" => "advanced_gradient_radial_position",
-          "dependency" => Array('element' => "advanced_gradient_display_type", 'value' => array('radial')),
+          			"dependency" => Array('element' => "advanced_gradient_display_type", 'value' => array('radial')),
 					'value' => array(
 						esc_html__("Center", "salient-core") => "center",
 						esc_html__("Top Left", "salient-core") => "top left",
-            esc_html__("Top", "salient-core") => "top",
-            esc_html__("Top Right", "salient-core") => "top right",
-            esc_html__("Right", "salient-core") => "right",
-            esc_html__("Bottom Right", "salient-core") => "bottom right",
-            esc_html__("Bottom", "salient-core") => "bottom",
-            esc_html__("Bottom Left", "salient-core") => "bottom left",
-            esc_html__("Left", "salient-core") => "left",
+						esc_html__("Top", "salient-core") => "top",
+						esc_html__("Top Right", "salient-core") => "top right",
+						esc_html__("Right", "salient-core") => "right",
+						esc_html__("Bottom Right", "salient-core") => "bottom right",
+						esc_html__("Bottom", "salient-core") => "bottom",
+						esc_html__("Bottom Left", "salient-core") => "bottom left",
+						esc_html__("Left", "salient-core") => "left",
 					)
 				),
 
@@ -2768,7 +3076,7 @@ function nectar_custom_maps() {
 					"value" => "",
 					"group" => "Shape Divider",
 					"edit_field_class" => "desktop shape-divider-device-group",
-					"description" => esc_html__("Enter an optional custom height for your shape divider in pixels (px) or percent (%)", "salient-core")
+					"description" => ''
 				),
 
 				array(
@@ -2820,6 +3128,17 @@ function nectar_custom_maps() {
 						esc_html__("Zoom Out Slowly", "salient-core") => 'zoom-out-slow',
 						esc_html__("Clip Path Inset", "salient-core") => 'clip-path'
 					),
+				),
+
+				array(
+					"type" => "checkbox",
+					"class" => "",
+					"group" => "Animation",
+					'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+					"heading" => esc_html__("Color Change Section", "salient-core"),
+					"value" => array("Enable" => "true" ),
+					"param_name" => "color_change_section",
+					"description" => __("Allow this section to animate the color of the page background when it scrolls into view.", "salient-core")
 				),
 
 
@@ -3350,7 +3669,7 @@ function nectar_custom_maps() {
 				array(
 				 "type" => "nectar_group_header",
 				 "class" => "",
-				 "heading" => esc_html__("Spacing", "salient-core" ),
+				 "heading" => esc_html__("Spacing/Size", "salient-core" ),
 				 "param_name" => "group_header_1",
 				 "edit_field_class" => "first-field",
 				 "value" => ''
@@ -3929,6 +4248,7 @@ function nectar_custom_maps() {
 					"description" => ""
 				),
 
+				...SalientWPbakeryParamGroups::height_group(),
 
 
 				array(
@@ -3939,6 +4259,8 @@ function nectar_custom_maps() {
 				 "edit_field_class" => "",
 				 "value" => ''
 			 ),
+
+			 ...SalientWPbakeryParamGroups::layout_group(),
 
 			 array(
 				"type" => "dropdown",
@@ -3951,7 +4273,8 @@ function nectar_custom_maps() {
 					esc_html__('Stacked Vertically', 'salient-core') => 'default',
 					esc_html__('Inline Horizontal', 'salient-core') => 'horizontal',
 				),
-				"description" => esc_html__("Determines the direction to display elements within this column.", "salient-core")
+				"dependency" => Array('element' => "content_layout", 'value' => 'default'),
+				// "description" => esc_html__("Determines the direction to display elements within this column.", "salient-core")
 			),
 			array(
 				"type" => "dropdown",
@@ -3959,6 +4282,7 @@ function nectar_custom_maps() {
 				"param_name" => "column_element_direction_tablet",
 				"edit_field_class" => "tablet column-el-direction-device-group",
 				"heading" => '',
+				"dependency" => Array('element' => "content_layout", 'value' => 'default'),
 				"value" => array(
 					esc_html__('Default (Stacked Vertically)', 'salient-core') => 'default',
 					esc_html__('Inline Horizontal', 'salient-core') => 'horizontal',
@@ -3971,6 +4295,7 @@ function nectar_custom_maps() {
 				"param_name" => "column_element_direction_phone",
 				"edit_field_class" => "phone column-el-direction-device-group",
 				"heading" => '',
+				"dependency" => Array('element' => "content_layout", 'value' => 'default'),
 				"value" => array(
 					esc_html__('Default (Stacked Vertically)', 'salient-core') => 'default',
 					esc_html__('Inline Horizontal', 'salient-core') => 'horizontal',
@@ -3999,6 +4324,7 @@ function nectar_custom_maps() {
 				 "heading" => esc_html__("Column Element Spacing", "salient-core"),
 				 "param_name" => "column_element_spacing",
 				 'save_always' => true,
+				 "dependency" => Array('element' => "content_layout", 'value' => 'default'),
 				 "value" => array(
 					 esc_html__('Default', 'salient-core') => 'default',
 					 esc_html__('50px', 'salient-core') => '50px',
@@ -4019,6 +4345,7 @@ function nectar_custom_maps() {
 					"heading" => esc_html__("Centered Content", "salient-core"),
 					"value" => array("Centered Content Alignment" => "true" ),
 					"param_name" => "centered_text",
+					"dependency" => Array('element' => "content_layout", 'value' => 'default'),
 					"description" => ""
 				),
 
@@ -4073,7 +4400,7 @@ function nectar_custom_maps() {
 					"heading" => esc_html__("Sticky Content", "salient-core"),
 					"value" => array("Sticky Content" => "true" ),
 					"param_name" => "sticky_content",
-					"dependency" => Array('element' => "column_element_direction_desktop", 'value' => 'default'),
+					// "dependency" => Array('element' => "column_element_direction_desktop", 'value' => 'default'),
 					"description" => esc_html__("Enabling this will make the inner content of this column sticky when neighboring columns are taller.", "salient-core")
 				),
 
@@ -4103,6 +4430,17 @@ function nectar_custom_maps() {
 					"dependency" => Array('element' => "sticky_content_functionality", 'value' => array('css')),
 					"description" => ''
 				),
+
+				array(
+					"type" => "checkbox",
+					"class" => "",
+					'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+					"heading" => esc_html__("Sticky Column on Mobile", "salient-core"),
+					"value" => array("Sticky on Mobile" => "true" ),
+					"param_name" => "sticky_column_mobile",
+					"dependency" => Array('element' => "sticky_content_functionality", 'value' => array('css'))
+				),
+
 
 
 				array(
@@ -4203,6 +4541,31 @@ function nectar_custom_maps() {
 					"description" => ""
 				),
 
+				array(
+					"type" => "checkbox",
+					"class" => "",
+					'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+					"group" => "Background",
+					"heading" => esc_html__("Preload Image", "salient-core" ),
+					"param_name" => "background_image_preload",
+					"value" => array("Preload" => "true" ),
+					"description" => "Enable to preload the background image for improved performance. Recommended for prominent, above-the-fold images.",
+				),
+
+				array(
+					"type" => "dropdown",
+					"class" => "",
+					"group" => "Background",
+					'save_always' => true,
+					"heading" => esc_html__("Background Image Type", "salient-core" ),
+					"param_name" => "background_image_type",
+					"description" => esc_html__("Choose how the background image is rendered. Using an image tag (`<img>`) is recommended for above-the-fold content as it improves performance and loading behavior. CSS background images are more flexible for design but load differently.", "salient-core" ),
+					"value" => array(
+						esc_html__("CSS Background Image", "salient-core" ) => "default",
+			  		 	esc_html__("Image Tag", "salient-core" ) => "img",
+					),
+					"dependency" => Array('element' => "background_image", 'not_empty' => true)
+				),
 
 				array(
 					"type" => "dropdown",
@@ -4568,6 +4931,7 @@ function nectar_custom_maps() {
 						  "Hidden" => "hidden",
 					)
 				),
+
 
 				array(
 					"type" => "textfield",
@@ -6038,6 +6402,7 @@ function nectar_custom_maps() {
 					"description" => ""
 				),
 
+				...SalientWPbakeryParamGroups::height_group(),
 
 				array(
 				 "type" => "nectar_group_header",
@@ -6047,6 +6412,8 @@ function nectar_custom_maps() {
 				 "edit_field_class" => "",
 				 "value" => ''
 			 ),
+
+			 ...SalientWPbakeryParamGroups::layout_group(),
 
 			 array(
 				"type" => "dropdown",
@@ -6059,7 +6426,8 @@ function nectar_custom_maps() {
 					esc_html__('Stacked Vertically', 'salient-core') => 'default',
 					esc_html__('Inline Horizontal', 'salient-core') => 'horizontal',
 				),
-				"description" => esc_html__("Determines the direction to display elements within this column.", "salient-core")
+				"dependency" => Array('element' => "content_layout", 'value' => 'default'),
+				// "description" => esc_html__("Determines the direction to display elements within this column.", "salient-core")
 			),
 			array(
 				"type" => "dropdown",
@@ -6067,6 +6435,7 @@ function nectar_custom_maps() {
 				"param_name" => "column_element_direction_tablet",
 				"edit_field_class" => "tablet column-el-direction-device-group",
 				"heading" => '',
+				"dependency" => Array('element' => "content_layout", 'value' => 'default'),
 				"value" => array(
 					esc_html__('Default (Stacked Vertically)', 'salient-core') => 'default',
 					esc_html__('Inline Horizontal', 'salient-core') => 'horizontal',
@@ -6079,6 +6448,7 @@ function nectar_custom_maps() {
 				"param_name" => "column_element_direction_phone",
 				"edit_field_class" => "phone column-el-direction-device-group",
 				"heading" => '',
+				"dependency" => Array('element' => "content_layout", 'value' => 'default'),
 				"value" => array(
 					esc_html__('Default (Stacked Vertically)', 'salient-core') => 'default',
 					esc_html__('Inline Horizontal', 'salient-core') => 'horizontal',
@@ -6107,6 +6477,7 @@ function nectar_custom_maps() {
 				 "heading" => esc_html__("Column Element Spacing", "salient-core"),
 				 "param_name" => "column_element_spacing",
 				 'save_always' => true,
+				 "dependency" => Array('element' => "content_layout", 'value' => 'default'),
 				 "value" => array(
 					 esc_html__('Default', 'salient-core') => 'default',
 					 esc_html__('50px', 'salient-core') => '50px',
@@ -6335,7 +6706,7 @@ function nectar_custom_maps() {
 		      'std' => 'default',
 		    ),
 
-        array(
+        		array(
 					"type" => "checkbox",
 					"class" => "",
 					'group' => esc_html__( 'Background', 'salient-core' ),
@@ -7573,7 +7944,7 @@ function nectar_custom_maps() {
 				"Default" => "default",
 				"Reverse" => "reverse"
 			),
-			'description' => esc_html__( 'The order your columns will display in.', 'salient-core' ),
+			'description' => '',
 		));
 
 		vc_add_param("vc_row_inner", array(
@@ -7605,6 +7976,16 @@ function nectar_custom_maps() {
 			),
 			'description' => esc_html__( 'The order your columns will display in.','salient-core') . '<br /><br />' . esc_html__('Column Direction Reversing Guide:','salient-core'). '<br />'.esc_html__('Select','salient-core') . ' <b>'. esc_html__('Row Reverse','salient-core') . '</b> '.esc_html__('when columns are set to display inline.') .'<br/>' . esc_html__('Select','salient-core').' <b>'. esc_html__('Column Reverse','salient-core') .'</b> ' . esc_html__('when columns are stacking on top of each other. (Most common setup)', 'salient-core' ),
 		));
+
+		$vc_row_inner_height_group = SalientWPbakeryParamGroups::height_group();
+		foreach ( $vc_row_inner_height_group as $option ) {
+			vc_add_param("vc_row_inner", $option);
+		}
+
+		$backdrop_filter_group = SalientWPbakeryParamGroups::backdrop_filter_group(esc_html__('Design options', 'js_composer'), []);
+		foreach ( $backdrop_filter_group as $option ) {
+			vc_add_param("vc_row_inner", $option);
+		}
 
 
   vc_add_param("vc_row_inner", array(
@@ -8184,6 +8565,15 @@ function nectar_custom_maps() {
 	));
 
 	vc_add_param("vc_row_inner", array(
+		'type' => 'checkbox',
+		'heading' => esc_html__( 'Flex', 'salient-core' ),
+		'param_name' => 'flex_sizing',
+		'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+		'description' => esc_html__( 'Make this row automatically expand to fill any available space. Note: requires the parent column to be set to flex display.', 'salient-core' ),
+		'value' => array( esc_html__( 'Yes', 'salient-core' ) => 'true' )
+	));
+
+	vc_add_param("vc_row_inner", array(
 		"type" => "textfield",
 		"class" => "",
 		"heading" => "",
@@ -8211,6 +8601,48 @@ function nectar_custom_maps() {
 				  "Hidden" => "hidden",
 			),
 			'save_always' => true
+		));
+
+
+		vc_add_param("vc_row_inner", array(
+			"type" => "dropdown",
+			"class" => "",
+			"edit_field_class" => "desktop device-visibility-device-group",
+			"heading" => '<span class="group-title">' . esc_html__("Device Visibility", "salient-core") . "</span>",
+			"param_name" => "device_visibility_desktop",
+			"value" => array(
+				esc_html__("Visible", "salient-core") => "default",
+				esc_html__("Hidden", "salient-core") => "hidden"
+			),
+			'description' => '',
+		));
+
+		vc_add_param("vc_row_inner", array(
+			"type" => "dropdown",
+			"class" => "",
+			"edit_field_class" => "tablet device-visibility-device-group",
+			"heading" => '',
+			"param_name" => "device_visibility_tablet",
+			"value" => array(
+				esc_html__("Inherit", "salient-core") => "inherit",
+				esc_html__("Visible", "salient-core") => "visible",
+				esc_html__("Hidden", "salient-core") => "hidden"
+			),
+			'description' => '',
+		));
+
+		vc_add_param("vc_row_inner", array(
+			"type" => "dropdown",
+			"class" => "",
+			"edit_field_class" => "phone device-visibility-device-group",
+			"heading" => '',
+			"param_name" => "device_visibility_phone",
+			"value" => array(
+				esc_html__("Inherit", "salient-core") => "inherit",
+				esc_html__("Visible", "salient-core") => "visible",
+				esc_html__("Hidden", "salient-core") => "hidden"
+			),
+			'description' => '',
 		));
 
     vc_add_param("vc_row_inner", array(
@@ -8339,26 +8771,15 @@ function nectar_custom_maps() {
 	// Global Section
 	$global_sections = apply_filters('nectar_global_sections_enabled', true);
 	if( false !== $global_sections ) {
-		class WPBakeryShortCode_Nectar_Global_Section extends WPBakeryShortCode { }
+		class WPBakeryShortCode_Nectar_Global_Section extends WPBakeryShortCode {}
 	}
+
+	// VC Section
+	vc_lean_map('vc_section', null, SALIENT_CORE_ROOT_DIR_PATH . 'includes/nectar_maps/vc_section.php');
 
 
 	// Split Line Heading
-	class WPBakeryShortCode_Split_Line_Heading extends WPBakeryShortCode {
-    /*
-    protected function paramsHtmlHolders( $atts ) {
-      $inner = '';
-      if ( isset( $this->settings['params'] ) && is_array( $this->settings['params'] ) ) {
-
-        foreach ( $this->settings['params'] as $param ) {
-          $param_value = isset( $atts[ $param['param_name'] ] ) ? $atts[ $param['param_name'] ] : '';
-          $inner .= $this->singleParamHtmlHolder( $param, $param_value );
-        }
-      }
-
-      return $inner;
-    }*/
-  }
+	class WPBakeryShortCode_Split_Line_Heading extends WPBakeryShortCode {}
 
 	vc_lean_map('split_line_heading', null, SALIENT_CORE_ROOT_DIR_PATH . 'includes/nectar_maps/split_line_heading.php');
 
@@ -8702,6 +9123,78 @@ function nectar_custom_maps() {
 	class WPBakeryShortCode_Nectar_Lottie extends WPBakeryShortCode { }
 	vc_lean_map('nectar_lottie', null, SALIENT_CORE_ROOT_DIR_PATH . 'includes/nectar_maps/nectar_lottie.php');
 
+	// Image Trail
+	class WPBakeryShortCode_Nectar_Content_Trail extends WPBakeryShortCode {
+		/**
+		 * WPBakeryShortCode_Vc_gallery constructor.
+		 *
+		 * @param array $settings
+		 */
+		public function __construct( $settings ) {
+			parent::__construct( $settings );
+		}
+
+
+		/**
+		 * Add params html holders.
+		 *
+		 * @param array $param
+		 * @param string $value
+		 * @return string
+		 */
+		public function singleParamHtmlHolder( $param, $value ) {
+			$output = '';
+			// Compatibility fixes.
+			$old_names = array(
+				'yellow_message',
+				'blue_message',
+				'green_message',
+				'button_green',
+				'button_grey',
+				'button_yellow',
+				'button_blue',
+				'button_red',
+				'button_orange',
+			);
+			$new_names = array(
+				'alert-block',
+				'alert-info',
+				'alert-success',
+				'btn-success',
+				'btn',
+				'btn-info',
+				'btn-primary',
+				'btn-danger',
+				'btn-warning',
+			);
+			$value = str_ireplace( $old_names, $new_names, $value );
+			$param_name = isset( $param['param_name'] ) ? $param['param_name'] : '';
+			$type = isset( $param['type'] ) ? $param['type'] : '';
+			$class = isset( $param['class'] ) ? $param['class'] : '';
+
+			if ( isset( $param['holder'] ) && 'hidden' !== $param['holder'] ) {
+				$output .= '<' . $param['holder'] . ' class="wpb_vc_param_value ' . $param_name . ' ' . $type . ' ' . $class . '" name="' . $param_name . '">' . $value . '</' . $param['holder'] . '>';
+			}
+			if ( 'images' === $param_name ) {
+				$images_ids = empty( $value ) ? array() : explode( ',', trim( $value ) );
+				$output .= '<ul class="attachment-thumbnails' . ( empty( $images_ids ) ? ' image-exists' : '' ) . '" data-name="' . $param_name . '">';
+				foreach ( $images_ids as $image ) {
+					$img = wpb_getImageBySize( [
+						'attach_id' => (int) $image,
+						'thumb_size' => 'thumbnail',
+					] );
+					$output .= ( $img ? '<li>' . $img['thumbnail'] . '</li>' : '<li><img width="150" height="150" test="' . $image . '" src="' . esc_url( vc_asset_url( 'vc/blank.gif' ) ) . '" class="attachment-thumbnail" alt="" title="" /></li>' );
+				}
+				$output .= '</ul>';
+				$output .= '<a href="#" class="column_edit_trigger' . ( ! empty( $images_ids ) ? ' image-exists' : '' ) . '">' . esc_html__( 'Add images', 'js_composer' ) . '</a>';
+
+			}
+
+			return $output;
+		}
+	 }
+	vc_lean_map('nectar_content_trail', null, SALIENT_CORE_ROOT_DIR_PATH . 'includes/nectar_maps/nectar_content_trail.php');
+
 	// Circle Images
 	class WPBakeryShortCode_Nectar_Circle_Images extends WPBakeryShortCode { }
 	vc_lean_map('nectar_circle_images', null, SALIENT_CORE_ROOT_DIR_PATH . 'includes/nectar_maps/nectar_circle_images.php');
@@ -8849,6 +9342,7 @@ function nectar_custom_maps() {
 
 	}
 	vc_lean_map('nectar_sticky_media_section', null, SALIENT_CORE_ROOT_DIR_PATH . 'includes/nectar_maps/nectar_sticky_media_section.php');
+
 
 
 	require_once vc_path_dir('SHORTCODES_DIR', 'vc-accordion.php');
@@ -9099,10 +9593,13 @@ function nectar_custom_maps() {
 			    "5px" => "5px",
 			    "10px" => "10px",
 			    "15px" => "15px",
-					"20px" => "20px",
-					"25px" => "25px",
-					"30px" => "30px",
-					"40px" => "40px",
+				"20px" => "20px",
+				"25px" => "25px",
+				"30px" => "30px",
+				"40px" => "40px",
+				"50px" => "50px",
+				"60px" => "60px",
+				"70px" => "70px"
 			),
 		  'save_always' => true,
 		  "dependency" => Array('element' => "type", 'value' => array('flickity_style','flickity_static_height_style'))
@@ -9309,17 +9806,71 @@ function nectar_custom_maps() {
 	      "param_name" => "flickity_autoplay",
 	      "description" => esc_html__("Will cause your images to auto play until user interaction", "salient-core"),
 	      "value" => Array(esc_html__("Yes, please", "salient-core") => 'true'),
-				'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+			'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
 	      "dependency" => Array('element' => "type", 'value' => array('flickity_style', 'flickity_static_height_style'))
 	  ));
 
 	  vc_add_param("vc_gallery",array(
-	      "type" => 'textfield',
-	      "heading" => esc_html__("Auto Play Duration", "salient-core"),
-	      "param_name" => "flickity_autoplay_dur",
-	      "description" => esc_html__("Enter a custom duration in milliseconds between auto play advances e.g. 5000", "salient-core"),
-	      "dependency" => Array('element' => "type", 'value' => array('flickity_style', 'flickity_static_height_style'))
-	  ));
+		"type" => "dropdown",
+		"class" => "",
+		"heading" => esc_html__("Slider Transition Type", 'salient-core'),
+		'save_always' => true,
+		"param_name" => "flickity_autorotate_type",
+		"value" => array(
+			esc_html__("Default","salient-core") => "default",
+			esc_html__("Ticker Movement","salient-core") => "ticker",
+		),
+		"dependency" => array('element' => "flickity_autoplay", 'not_empty' => true),
+		"description" => ''
+	));
+
+	vc_add_param("vc_gallery",array(
+		"type" => "dropdown",
+		"class" => "",
+		"heading" => esc_html__("Ticker Movement Speed", 'salient-core'),
+		'save_always' => true,
+		"param_name" => "flickity_ticker_speed",
+		"value" => array(
+			esc_html__("Slow",'salient-core') => 'slow',
+			esc_html__("Medium",'salient-core') => 'medium',
+			esc_html__("Fast",'salient-core') => 'fast',
+		),
+		"dependency" => array('element' => "flickity_autorotate_type", 'value' => 'ticker'),
+		"description" => ''
+	));
+
+	vc_add_param("vc_gallery",array(
+		"type" => 'checkbox',
+		"heading" => esc_html__("Pause Autorotate On Hover", "salient-core"),
+		"param_name" => "flickity_autorotate_pause_on_hover",
+		"description" => '',
+		"value" => Array(esc_html__("Yes, please", "salient-core") => 'true'),
+		'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+		"dependency" => array('element' => "flickity_autorotate_type", 'value' => 'ticker'),
+	));
+
+	vc_add_param("vc_gallery",
+		array(
+			"type" => 'textfield',
+			"heading" => esc_html__("Auto Play Duration", "salient-core"),
+			"param_name" => "flickity_autoplay_dur",
+			"description" => esc_html__("Enter a custom duration in milliseconds between auto play advances e.g. 5000", "salient-core"),
+			"dependency" => Array(
+				'element' => "flickity_autorotate_type",
+				'value' => 'default'
+			)
+		)
+	);
+
+	vc_add_param("vc_gallery",array(
+		"type" => 'checkbox',
+		"heading" => esc_html__("Mask Edges", "salient-core"),
+		"param_name" => "flickity_mask_edges",
+		"description" => esc_html__("This will mask the edges of the carousel.", "salient-core"),
+		'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+		"dependency" => Array('element' => "type", 'value' => array('flickity_style', 'flickity_static_height_style')),
+		"value" => Array(esc_html__("Yes, please", "salient-core") => 'yes')
+	));
 
 	vc_add_param("vc_gallery",array(
       "type" => "dropdown",
@@ -9418,13 +9969,24 @@ function nectar_custom_maps() {
 	  ));
 		vc_add_param("vc_gallery",array(
 	      "type" => 'checkbox',
-	      "heading" => esc_html__("Disable Autorotate?", "salient-core"),
+	      "heading" => esc_html__("Disable Auto Rotate?", "salient-core"),
 	      "param_name" => "disable_auto_rotate",
 	      "description" => esc_html__("This will stop the slider from automatically rotating.", "salient-core"),
 	      "value" => Array(esc_html__("Yes, please", "salient-core") => 'true'),
 				'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
 	      "dependency" => Array('element' => "type", 'value' => array('nectarslider_style','flexslider_style'))
 	  ));
+
+	  vc_add_param("vc_gallery",
+		array(
+			"type" => 'textfield',
+			"heading" => esc_html__("Auto Rotate Duration", "salient-core"),
+			"param_name" => "nectar_slider_autorotate_dur",
+			"description" => esc_html__("Enter a custom duration in milliseconds between auto play advances e.g. 5000", "salient-core")
+		)
+	);
+
+
 	  vc_add_param("vc_gallery",array(
 	      "type" => 'checkbox',
 	      "heading" => esc_html__("Hide Arrow Navigation?", "salient-core"),
@@ -9756,11 +10318,73 @@ function nectar_custom_maps() {
 	vc_lean_map('nectar_scrolling_text', null, SALIENT_CORE_ROOT_DIR_PATH . 'includes/nectar_maps/nectar_scrolling_text.php');
 
 
-
 	//Nectar Video Player - Self Hosted
 	class WPBakeryShortCode_Nectar_Video_Player_Self_Hosted extends WPBakeryShortCode { }
 
 	vc_lean_map('nectar_video_player_self_hosted', null, SALIENT_CORE_ROOT_DIR_PATH . 'includes/nectar_maps/nectar_video_player_self_hosted.php');
+
+
+	// Chat Thread
+	class WPBakeryShortCode_Nectar_Chat_Thread extends WPBakeryShortCodesContainer {
+
+		public function getColumnControls( $controls = 'full', $extended_css = '' ) {
+			$controls_html = array();
+
+			$controls_html['start'] = '<div class="vc_controls vc_controls-visible controls_column' . ( ! empty( $extended_css ) ? " {$extended_css}" : '' ) . '">';
+			$controls_html['end'] = '</div>';
+
+			if ( 'bottom-controls' === $extended_css ) {
+				$controls_html['title'] = sprintf( esc_attr__( 'Append to %s', 'js_composer' ), $this->settings( 'name' ) );
+			} else {
+				$controls_html['title'] = sprintf( esc_attr__( 'Prepend to %s', 'js_composer' ), $this->settings( 'name' ) );
+			}
+
+			$controls_html['move'] = '<a class="vc_control column_move vc_column-move" data-vc-control="move" href="#" title="' . sprintf( esc_attr__( 'Move %s', 'js_composer' ), $this->settings( 'name' ) ) . '"><i class="vc-composer-icon vc-c-icon-dragndrop"></i> '.$this->settings( 'name' ) .'</a>';
+			$moveAccess = vc_user_access()->part( 'dragndrop' )->checkStateAny( true, null )->get();
+			if ( ! $moveAccess ) {
+				$controls_html['move'] = '';
+			}
+			$controls_html['add'] = '<a class="vc_control column_add" data-vc-control="add" href="#" title="' . $controls_html['title'] . '"><i class="vc-composer-icon vc-c-icon-add"></i></a>';
+			$controls_html['edit'] = '<a class="vc_control column_edit" data-vc-control="edit" href="#" title="' . sprintf( esc_html__( 'Edit %s', 'js_composer' ), $this->settings( 'name'  ) ) . '"><i class="vc-composer-icon vc-c-icon-mode_edit"></i></a>';
+			$controls_html['clone'] = '<a class="vc_control column_clone" data-vc-control="clone" href="#" title="' . sprintf( esc_html__( 'Clone %s', 'js_composer' ), $this->settings( 'name' ) ) . '"><i class="vc-composer-icon vc-c-icon-content_copy"></i></a>';
+			$controls_html['delete'] = '<a class="vc_control column_delete" data-vc-control="delete" href="#" title="' . sprintf( esc_html__( 'Delete %s', 'js_composer' ), $this->settings( 'name'  ) ) . '"><i class="vc-composer-icon vc-c-icon-delete_empty"></i></a>';
+			$controls_html['full'] = $controls_html['move'] . $controls_html['add'] . $controls_html['edit'] . $controls_html['clone'] . $controls_html['delete'];
+
+			$editAccess = vc_user_access_check_shortcode_edit( $this->shortcode );
+			$allAccess = vc_user_access_check_shortcode_all( $this->shortcode );
+
+			if ( ! empty( $controls ) ) {
+				if ( is_string( $controls ) ) {
+					$controls = array( $controls );
+				}
+				$controls_string = $controls_html['start'];
+				foreach ( $controls as $control ) {
+					if ( ( $editAccess && 'edit' === $control ) || $allAccess ) {
+						if ( isset( $controls_html[ $control ] ) ) {
+							$controls_string .= $controls_html[ $control ];
+						}
+					}
+				}
+
+				return $controls_string . $controls_html['end'];
+			}
+
+			if ( $allAccess ) {
+				return $controls_html['start'] . $controls_html['full'] . $controls_html['end'];
+			} elseif ( $editAccess ) {
+				return $controls_html['start'] . $controls_html['edit'] . $controls_html['end'];
+			}
+
+			return $controls_html['start'] . $controls_html['end'];
+		}
+	}
+
+	vc_lean_map('nectar_chat_thread', null, SALIENT_CORE_ROOT_DIR_PATH . 'includes/nectar_maps/nectar_chat_thread.php');
+
+	class WPBakeryShortCode_Nectar_Chat_Thread_Bubble extends WPBakeryShortCode { }
+	vc_lean_map('nectar_chat_thread_bubble', null, SALIENT_CORE_ROOT_DIR_PATH . 'includes/nectar_maps/nectar_chat_thread_bubble.php');
+
+
 
 
 
@@ -12621,23 +13245,48 @@ add_filter( 'vc_iconpicker-type-nectarbrands', 'vc_iconpicker_type_nectar_brands
  *
  * @since 1.0
  */
+
+
 function vc_iconpicker_type_nectar_brands( $icons ) {
 	$brand_icons = array(
 	  array('nectar-brands-applemusic' => 'nectar-brands-applemusic'),
-	  array('nectar-brands-houzz' => 'nectar-brands-houzz'),
-	  array('nectar-brands-twitch' => 'nectar-brands-twitch'),
 	  array('nectar-brands-artstation' => 'nectar-brands-artstation'),
-	  array('nectar-brands-discord' => 'nectar-brands-discord'),
-	  array('nectar-brands-messenger' => 'nectar-brands-messenger'),
-	  array('nectar-brands-tiktok' => 'nectar-brands-tiktok'),
-	  array('nectar-brands-patreon' => 'nectar-brands-patreon'),
-	  array('nectar-brands-threads' => 'nectar-brands-threads'),
-	  array('nectar-brands-medium' => 'nectar-brands-medium'),
-	  array('nectar-brands-trustpilot' => 'nectar-brands-trustpilot'),
-	  array('nectar-brands-mastodon' => 'nectar-brands-mastodon'),
-	  array('nectar-brands-x-twitter' => 'nectar-brands-x-twitter'),
+	  array('nectar-brands-behance' => 'nectar-brands-behance'),
 	  array('nectar-brands-bluesky' => 'nectar-brands-bluesky'),
+	  array('nectar-brands-deviantart' => 'nectar-brands-deviantart'),
+	  array('nectar-brands-discord' => 'nectar-brands-discord'),
+	  array('nectar-brands-dribbble' => 'nectar-brands-dribbble'),
+	  array('nectar-brands-email' => 'nectar-brands-email'),
+	  array('nectar-brands-facebook' => 'nectar-brands-facebook'),
+	  array('nectar-brands-flickr' => 'nectar-brands-flickr'),
+	  array('nectar-brands-github' => 'nectar-brands-github'),
 	  array('nectar-brands-googlepay' => 'nectar-brands-googlepay'),
+	  array('nectar-brands-houzz' => 'nectar-brands-houzz'),
+	  array('nectar-brands-instagram' => 'nectar-brands-instagram'),
+	  array('nectar-brands-mastodon' => 'nectar-brands-mastodon'),
+	  array('nectar-brands-medium' => 'nectar-brands-medium'),
+	  array('nectar-brands-messenger' => 'nectar-brands-messenger'),
+	  array('nectar-brands-mixcloud' => 'nectar-brands-mixcloud'),
+	  array('nectar-brands-patreon' => 'nectar-brands-patreon'),
+	  array('nectar-brands-phone' => 'nectar-brands-phone'),
+	  array('nectar-brands-pinterest' => 'nectar-brands-pinterest'),
+	  array('nectar-brands-reddit' => 'nectar-brands-reddit'),
+	  array('nectar-brands-rss' => 'nectar-brands-rss'),
+	  array('nectar-brands-snapchat' => 'nectar-brands-snapchat'),
+	  array('nectar-brands-soundcloud' => 'nectar-brands-soundcloud'),
+	  array('nectar-brands-spotify' => 'nectar-brands-spotify'),
+	  array('nectar-brands-stackexchange' => 'nectar-brands-stackexchange'),
+	  array('nectar-brands-strava' => 'nectar-brands-strava'),
+	  array('nectar-brands-threads' => 'nectar-brands-threads'),
+	  array('nectar-brands-tiktok' => 'nectar-brands-tiktok'),
+	  array('nectar-brands-trustpilot' => 'nectar-brands-trustpilot'),
+	  array('nectar-brands-tumblr' => 'nectar-brands-tumblr'),
+	  array('nectar-brands-twitch' => 'nectar-brands-twitch'),
+	  array('nectar-brands-vimeo' => 'nectar-brands-vimeo'),
+	  array('nectar-brands-vk' => 'nectar-brands-vk'),
+	  array('nectar-brands-x-twitter' => 'nectar-brands-x-twitter'),
+	  array('nectar-brands-yelp' => 'nectar-brands-yelp'),
+	  array('nectar-brands-youtube' => 'nectar-brands-youtube'),
 	);
 
 	return array_merge( $icons, $brand_icons );

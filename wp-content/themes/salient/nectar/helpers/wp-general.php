@@ -73,6 +73,28 @@ function nectar_custom_wpkses_post_tags( $tags, $context ) {
 			'frameborder'     => true,
 			'allowfullscreen' => true,
 		);
+		$tags['img'] = array(
+			'src' => true,
+			'alt' => true,
+			'class' => true,
+			'style' => true,
+			'width' => true,
+			'height' => true,
+			'srcset' => true,
+			'sizes' => true,
+			'loading' => true,
+			'fetchpriority' => true,
+			'data-nectar-img-src' => true,
+			'data-nectar-img-srcset' => true
+		);
+		$tags['picture'] = array();
+		$tags['source'] = array(
+			'media' => true,
+			'srcset' => true,
+			'loading' => true,
+			'data-nectar-img-src' => true,
+			'data-nectar-img-srcset' => true
+		);
 	}
 	return $tags;
 }
@@ -178,7 +200,7 @@ function nectar_use_flexbox_grid() {
 
 
 /**
- * Allow users to enable the old double 
+ * Allow users to enable the old double
  * mobile menu functionality via a child
  *
  * @since 13.0

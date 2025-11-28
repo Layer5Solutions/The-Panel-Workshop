@@ -188,6 +188,9 @@ if(!function_exists('nectar_post_grid_item_markup')) {
           if( !isset($atts['enable_gallery_lightbox'])) {
             $atts['enable_gallery_lightbox'] = '0';
           }
+          if( !isset($atts['remove_links'])) {
+            $atts['remove_links'] = '0';
+          }
           if( !isset($atts['hover_effect'])) {
             $atts['hover_effect'] = 'zoom';
           }
@@ -196,6 +199,9 @@ if(!function_exists('nectar_post_grid_item_markup')) {
           }
           if( !isset($atts['vertical_list_read_more'])) {
             $atts['vertical_list_read_more'] = '';
+          }
+          if( !isset($atts['vertical_list_read_more_style'])) {
+            $atts['vertical_list_read_more_style'] = 'text';
           }
           if( !isset($atts['category_position'])) {
             $atts['category_position'] = 'default';
@@ -208,6 +214,9 @@ if(!function_exists('nectar_post_grid_item_markup')) {
           }
           if( !isset($atts['parallax_scrolling'])) {
             $atts['parallax_scrolling'] = '';
+          }
+          if( !isset($atts['content_next_to_image_excerpt_pos'])) {
+            $atts['content_next_to_image_excerpt_pos'] = 'default';
           }
           if ( !isset($atts['custom_fields']) ) {
             $atts['custom_fields'] = '';
@@ -249,6 +258,9 @@ if(!function_exists('nectar_post_grid_item_markup')) {
           // Handle Heading Tag.
           $heading_tag = 'h3';
           switch( $atts['heading_tag'] ) {
+            case 'h1':
+              $heading_tag = 'h1';
+              break;
             case 'h2':
               $heading_tag = 'h2';
               break;
@@ -273,7 +285,8 @@ if(!function_exists('nectar_post_grid_item_markup')) {
 
           // Vertical list.
           if( 'vertical_list' === $atts['grid_style'] &&
-              'featured_image' != $atts['vertical_list_hover_effect']) {
+              'featured_image' != $atts['vertical_list_hover_effect'] &&
+              'featured_image_follow' != $atts['vertical_list_hover_effect']) {
                 $skip_image = true;
           }
 
@@ -305,13 +318,13 @@ if(!function_exists('nectar_post_grid_item_markup')) {
               if( 'lazy-load' === $atts['image_loading'] && NectarLazyImages::activate_lazy() ||
               ( property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $atts['image_loading']) ) {
 
-                $regular_image_markup = nectar_lazy_loaded_image_markup(get_post_thumbnail_id( $post->ID ), $image_size);
+                $regular_image_markup = nectar_lazy_loaded_image_markup(get_post_thumbnail_id( $post->ID ), $image_size, 'nectar-post-grid-item-bg__media');
 
               }
 
               // No Lazy Load.
               else {
-                $regular_image_markup = get_the_post_thumbnail($post->ID, $image_size);
+                $regular_image_markup = get_the_post_thumbnail($post->ID, $image_size, '', array( 'class' => 'nectar-post-grid-item-bg__media' ));
               }
 
             } // endif has featured img.
@@ -357,7 +370,7 @@ if(!function_exists('nectar_post_grid_item_markup')) {
 
                   $output .= '<a '.$link_style_attr.'class="' . esc_attr( $category->slug ) . ' style-'.esc_attr( $category_style ).'" href="' . esc_url( get_category_link( $category->term_id ) ) . '">' . esc_html( $category->name ) . '</a>';
                 }
-                $category_markup .=  trim( $output );
+                $category_markup .= apply_filters('nectar_post_grid_category_markup', trim( $output ), $atts);
               }
 
               $category_markup .= '</span>';
@@ -478,13 +491,13 @@ if(!function_exists('nectar_post_grid_item_markup')) {
               if( 'lazy-load' === $atts['image_loading'] && NectarLazyImages::activate_lazy() ||
                  ( property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $atts['image_loading'] ) ) {
 
-                $regular_image_markup .= '<img class="nectar-lazy" data-nectar-img-src="'.nectar_ssl_check( esc_url( $custom_thumbnail ) ).'" alt="'. esc_attr(get_the_title()) .'" />';
+                $regular_image_markup .= '<img class="nectar-lazy nectar-post-grid-item-bg__media" data-nectar-img-src="'.nectar_ssl_check( esc_url( $custom_thumbnail ) ).'" alt="'. esc_attr(get_the_title()) .'" />';
 
               }
 
               // Regular load.
               else {
-                $regular_image_markup .= '<img class="skip-lazy" src="'.nectar_ssl_check( esc_url( $custom_thumbnail ) ).'" alt="'. esc_attr(get_the_title()) .'" />';
+                $regular_image_markup .= '<img class="skip-lazy nectar-post-grid-item-bg__media" src="'.nectar_ssl_check( esc_url( $custom_thumbnail ) ).'" alt="'. esc_attr(get_the_title()) .'" />';
 
               }
 
@@ -500,13 +513,13 @@ if(!function_exists('nectar_post_grid_item_markup')) {
               if( 'lazy-load' === $atts['image_loading'] && NectarLazyImages::activate_lazy() ||
                   ( property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $atts['image_loading'] ) ) {
 
-                  $regular_image_markup = nectar_lazy_loaded_image_markup($thumbnail_id, $image_size);
+                  $regular_image_markup = nectar_lazy_loaded_image_markup($thumbnail_id, $image_size, 'nectar-post-grid-item-bg__media');
 
               }
 
               // Regular Load.
               else {
-                  $regular_image_markup .= wp_get_attachment_image($thumbnail_id, $image_size);
+                  $regular_image_markup .= wp_get_attachment_image($thumbnail_id, $image_size, '', array( 'class' => 'nectar-post-grid-item-bg__media' ));
               }
 
             } // End Featured Img.
@@ -516,9 +529,9 @@ if(!function_exists('nectar_post_grid_item_markup')) {
               $thumbnail_id = get_post_thumbnail_id( $post->ID );
               if( 'lazy-load' === $atts['image_loading'] && NectarLazyImages::activate_lazy() ||
                   ( property_exists('NectarLazyImages', 'global_option_active') && true === NectarLazyImages::$global_option_active && 'skip-lazy-load' !== $atts['image_loading'] ) ) {
-                    $regular_image_markup .= nectar_lazy_loaded_video_markup($project_video_src, 'video/mp4', 'nectar-post-grid-item-bg__video');
+                    $regular_image_markup .= nectar_lazy_loaded_video_markup($project_video_src, 'video/mp4', 'nectar-post-grid-item-bg__media nectar-post-grid-item-bg__video');
                   } else {
-                    $regular_image_markup .= '<video class="nectar-post-grid-item-bg__video" preload="auto" loop autoplay muted playsinline>
+                    $regular_image_markup .= '<video class="nectar-post-grid-item-bg__media nectar-post-grid-item-bg__video" preload="auto" loop autoplay muted playsinline>
                       <source src="'.esc_url($project_video_src).'" type="video/mp4">
                     </video>';
                   }
@@ -551,7 +564,7 @@ if(!function_exists('nectar_post_grid_item_markup')) {
                   }
 
                 }
-                $category_markup .=  trim( $output );
+                $category_markup .= apply_filters('nectar_post_grid_category_markup', trim( $output ), $atts);
               }
 
               $category_markup .= '</span>';
@@ -569,11 +582,14 @@ if(!function_exists('nectar_post_grid_item_markup')) {
               $excerpt_markup = (!empty($project_excerpt)) ? '<div class="nectar-post-grid-item__excerpt-wrap item-meta-extra"><span class="meta-excerpt">' . wp_kses_post($project_excerpt) . '</span></div>' : '';
             }
 
+
+
             // Permalink.
             $custom_project_link = get_post_meta($post->ID, '_nectar_external_project_url', true);
             $lightbox_only_item  = get_post_meta($post->ID, '_nectar_portfolio_lightbox_only_grid_item', true);
 
             $post_perma = ( !empty($custom_project_link) ) ? $custom_project_link : get_the_permalink();
+
 
             // Lightbox item.
             if( !empty( $lightbox_only_item ) && 'on' === $lightbox_only_item || 'yes' === $atts['enable_gallery_lightbox'] ) {
@@ -591,7 +607,8 @@ if(!function_exists('nectar_post_grid_item_markup')) {
 
               } else if( empty($custom_project_link) ) {
 
-                $featured_image_full_src = wp_get_attachment_image_src( $thumbnail_id, 'full');
+                $thumb_id = get_post_thumbnail_id( $post->ID );
+                $featured_image_full_src = wp_get_attachment_image_src( $thumb_id, 'full');
 
                 if( $featured_image_full_src && !empty($featured_image_full_src) ) {
                   $post_perma = $featured_image_full_src[0];
@@ -609,10 +626,46 @@ if(!function_exists('nectar_post_grid_item_markup')) {
 
           }
 
+
+          $excerpt_under_image = false;
+          if( 'content_next_to_image' === $atts['grid_style'] && 'below_image' === $atts['content_next_to_image_excerpt_pos'] ) {
+            $excerpt_under_image = true;
+          }
+
+
+           // Read More.
+           $read_more_markup = '';
+
+           if( $atts['vertical_list_read_more'] === 'yes' ) {
+             if ( $atts['vertical_list_read_more_style'] === 'arrow' ) {
+               $read_more_markup .= '<svg class="nectar-post-grid-item__arrow" stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="60 58 140 140" height="200px" width="200px" xmlns="http://www.w3.org/2000/svg"><path d="M198,64V168a6,6,0,0,1-12,0V78.48L68.24,196.24a6,6,0,0,1-8.48-8.48L177.52,70H88a6,6,0,0,1,0-12H192A6,6,0,0,1,198,64Z"></path></svg>';
+             } else {
+               if( 'yes' !== $atts['remove_links'] ) {
+                 $read_more_markup .= '<div class="nectar-link-underline"><a href="'. esc_attr($post_perma) .'" class="nectar-underline"><span>'.esc_html__('Read More','salient-core').'</span></a></div>';
+               }
+               else {
+                 $read_more_markup .= '<span class="nectar-inherit-label">'.esc_html__('Read More','salient-core').'</span>';
+               }
+             }
+           }
+           else if( $atts['read_more_button'] === 'yes') {
+            if ( $excerpt_under_image ) {
+              $read_more_markup .= '<a href="'. esc_attr($post_perma) .'">';
+            }
+             $read_more_markup .= '<span class="nectar-post-grid-item__read-more nectar-cta nectar-inherit-label" data-triggered-by=".nectar-post-grid-item" data-style="curved-arrow-animation">
+               <span class="link_text">';
+             $read_more_markup .= esc_html__('Read More', 'salient-core') . nectar_get_curved_arrow_markup();
+             $read_more_markup .= '</span></span>';
+             if ( $excerpt_under_image ) {
+              $read_more_markup .= '</a>';
+            }
+           }
+
           $merge_category_with_meta = false;
           if ( $atts['display_type'] === 'stack' ) {
             $merge_category_with_meta = true;
           }
+
 
           $bg_overlay_markup = (isset($atts['color_overlay']) && !empty($atts['color_overlay'])) ? 'style=" background-color: '. esc_attr($atts['color_overlay']) .';"' : '';
           $custom_fields_markup = nectar_post_grid_custom_fields_markup($atts['custom_fields']);
@@ -620,6 +673,12 @@ if(!function_exists('nectar_post_grid_item_markup')) {
           if( $custom_fields_markup ) {
             $custom_class_name .= ' nectar-post-grid-item__custom-fields-'.esc_attr($atts['custom_fields_location']);
           }
+
+          if( has_filter('nectar_post_grid_excerpt') ) {
+            $post_type_in_use = ($atts['post_type'] === 'custom' ) ? $atts['cpt_name'] : $atts['post_type'];
+            $excerpt_markup = apply_filters('nectar_post_grid_excerpt', $excerpt_markup, $post_type_in_use);
+          }
+
 
           /****************** Output Markup ******************/
           $markup .= '<div class="nectar-post-grid-item'.esc_attr($custom_class_name).'"'.$card_color_style.' data-post-id="'.esc_attr($post->ID).'" data-has-img="'.esc_attr($has_image).'"> <div class="inner">';
@@ -629,8 +688,14 @@ if(!function_exists('nectar_post_grid_item_markup')) {
           $parallax_el_markup_close = '';
 
           if( 'yes' === $atts['parallax_scrolling'] ) {
-            $parallax_el_markup_open = '<div class="nectar-el-parallax-scroll" data-scroll-animation="true" data-scroll-animation-mobile="true" data-scroll-animation-intensity="-0.75" data-scroll-animation-lerp="1">';
+            $parallax_el_markup_open = '<div class="nectar-el-parallax-scroll__wrap"><div class="nectar-el-parallax-scroll" data-scroll-animation="true" data-scroll-animation-mobile="true" data-scroll-animation-intensity="-0.75" data-scroll-animation-lerp="1">';
             $parallax_el_markup_close = '</div>';
+
+            if( $excerpt_under_image && 'yes' === $atts['parallax_scrolling'] ) {
+              $parallax_el_markup_close .= $excerpt_markup;
+              $parallax_el_markup_close .= $read_more_markup;
+            }
+            $parallax_el_markup_close .= '</div>';
           }
 
             $markup .= '<div class="nectar-post-grid-item-bg-wrap">'.$parallax_el_markup_open.'<div class="nectar-post-grid-item-bg-wrap-inner">';
@@ -639,12 +704,20 @@ if(!function_exists('nectar_post_grid_item_markup')) {
               'vertical_list' !== $atts['grid_style'] &&
               'content_under_image' !== $atts['grid_style']
             ) {
-              $markup .= '<a class="bg-wrap-link" href="'. esc_attr($post_perma) .'"><span class="screen-reader-text">'.get_the_title().'</span></a>';
+              if( 'yes' !== $atts['remove_links'] ) {
+                $markup .= '<a class="bg-wrap-link" href="'. esc_attr($post_perma) .'"><span class="screen-reader-text">'.get_the_title().'</span></a>';
+              }
             }
 
             $markup .= $secondary_image_markup . '<div class="nectar-post-grid-item-bg">'.apply_filters('nectar_post_grid_item_image', $regular_image_markup).'</div>';
 
-            $markup .= '</div></div>';
+            $markup .= '</div>';
+            if( $excerpt_under_image && 'yes' !== $atts['parallax_scrolling'] ) {
+              $markup .= $excerpt_markup;
+              $markup .= $read_more_markup;
+            }
+            $markup .= '</div>';
+
             $markup .= $parallax_el_markup_close;
 
 
@@ -673,7 +746,9 @@ if(!function_exists('nectar_post_grid_item_markup')) {
             $markup .= '<span class="nectar-post-grid__arrow-indicator"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="60 58 140 140" height="200px" width="200px" xmlns="http://www.w3.org/2000/svg"><path d="M198,64V168a6,6,0,0,1-12,0V78.48L68.24,196.24a6,6,0,0,1-8.48-8.48L177.52,70H88a6,6,0,0,1,0-12H192A6,6,0,0,1,198,64Z"></path></svg></span>';
           }
 
-          $markup .= '<a class="nectar-post-grid-link'.$link_classes_escaped.'" href="'. esc_attr($post_perma) .'" '.$link_attrs_escaped.'><span class="screen-reader-text">'.get_the_title().'</span></a>';
+          if( 'yes' !== $atts['remove_links'] ) {
+            $markup .= '<a class="nectar-post-grid-link'.$link_classes_escaped.'" href="'. esc_attr($post_perma) .'" '.$link_attrs_escaped.'><span class="screen-reader-text">'.get_the_title().'</span></a>';
+          }
 
           if ( !$merge_category_with_meta ) {
             $markup .= $category_markup;
@@ -713,12 +788,12 @@ if(!function_exists('nectar_post_grid_item_markup')) {
           }
 
 
-          if( has_filter('nectar_post_grid_excerpt') ) {
-            $post_type_in_use = ($atts['post_type'] === 'custom' ) ? $atts['cpt_name'] : $atts['post_type'];
-            $excerpt_markup = apply_filters('nectar_post_grid_excerpt', $excerpt_markup, $post_type_in_use);
-          }
 
-          if( 'vertical_list' !== $atts['grid_style'] && in_array($atts['category_position'], array('default','overlaid')) ) {
+
+          if( 'vertical_list' !== $atts['grid_style'] &&
+            in_array($atts['category_position'], array('default','overlaid')) &&
+            !$excerpt_under_image
+          ) {
             $markup .= $excerpt_markup;
           }
 
@@ -829,7 +904,10 @@ if(!function_exists('nectar_post_grid_item_markup')) {
 
 
           // excerpt.
-          if( 'vertical_list' !== $atts['grid_style'] && $atts['category_position'] === 'below_title' ) {
+          if( 'vertical_list' !== $atts['grid_style'] &&
+            $atts['category_position'] === 'below_title' &&
+            !$excerpt_under_image
+          ) {
             $markup .= $excerpt_markup;
           }
 
@@ -846,21 +924,18 @@ if(!function_exists('nectar_post_grid_item_markup')) {
           }
 
           // Read More.
-          if( $atts['vertical_list_read_more'] === 'yes' ) {
-            $markup .= '<div class="nectar-link-underline"><a href="'. esc_attr($post_perma) .'" class="nectar-underline"><span>'.esc_html__('Read More','salient-core').'</span></a></div>';
-          }
-          else if( $atts['read_more_button'] === 'yes') {
-            $markup .= '<span class="nectar-post-grid-item__read-more nectar-cta nectar-inherit-label" data-triggered-by=".nectar-post-grid-item" data-style="curved-arrow-animation">
-                <span class="link_text">';
-              $markup .= esc_html__('Read More', 'salient-core') . nectar_get_curved_arrow_markup();
-              $markup .= '</span></span>';
+          if ( !$excerpt_under_image ) {
+            $markup .= $read_more_markup;
           }
 
 
           $markup .= '</div>';
 
           $markup .= '</div>';
-          $markup .= '</div></div>';
+
+          $markup .= '</div>';
+
+          $markup .= '</div>';
       }
 
       return $markup;

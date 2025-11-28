@@ -20,7 +20,7 @@ $shortcodes = $grid_item->shortcodes();
 $modules = vc_modules_manager()->get_settings();
 
 if ( vc_user_access()->part( 'presets' )->can()->get() ) {
-	require_once vc_path_dir( 'AUTOLOAD_DIR', 'class-vc-settings-presets.php' );
+	require_once vc_path_dir( 'CORE_DIR', 'presets/class-vc-settings-presets.php' );
 	$vc_vendor_settings_presets = Vc_Settings_Preset::listDefaultVendorSettingsPresets();
 	$vc_all_presets = Vc_Settings_Preset::listAllPresets();
 } else {

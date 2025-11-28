@@ -145,3 +145,7 @@ div[data-style*="minimal"] .toggle.open i:after{
   transform:scale(1,0);
   -webkit-transform:scale(1,0)
 }
+
+.toggle .img-with-aniamtion-wrap .hover-wrap {
+  margin-bottom: 0;
+}

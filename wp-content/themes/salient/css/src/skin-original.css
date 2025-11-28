@@ -5,6 +5,31 @@ Description: Theme Skin set to "Original" in theme options
 
 
 
+body[data-hhun="1"].original #header-outer.detached:not(.side-widget-open){
+   transform:translateY(0);
+ }
+
+ body[data-hhun="1"].original #header-outer[data-remove-border="true"].detached:not(.side-widget-open){
+   border-color:rgba(255,255,255,0)
+ }
+
+ .original #slide-out-widget-area[class*="slide-out-from-right"] {
+    display: block;
+ }
+
+ body.original .slide-out-hover-icon-effect.small .lines-button {
+   top: 10px;
+ }
+
+ body.original #header-outer[data-has-menu="true"] .lines-button {
+   top:10px
+ }
+
+ body.original .comment-list .pingback .comment-body {
+	padding-left: 25px;
+}
+
+
 .original #top nav ul #search-btn >div,
 .original #top nav ul #nectar-user-account >div,
 .original #top nav ul .nectar-woo-cart >div,
@@ -135,9 +160,9 @@ Description: Theme Skin set to "Original" in theme options
     z-index:0
 }
 
-.nectar-button[class*="extra-color-gradient"] .hover { 
-  padding: inherit; 
-  top: 0; 
+.nectar-button[class*="extra-color-gradient"] .hover {
+  padding: inherit;
+  top: 0;
 }
 
 .nectar-button.extra-color-gradient-1:hover .hover,
@@ -518,12 +543,12 @@ body.original .bypostauthor .comment-body:before {
    left: 0!important;
    margin: 0!important;
  }
- 
+
  #slide-out-widget-area.slide-out-from-right .nectar-global-section .container {
     padding: 0;
  }
 
- 
+
 #slide-out-widget-area.slide-out-from-right .off-canvas-menu-container li {
   margin-top: 3px;
   margin-bottom: 3px;

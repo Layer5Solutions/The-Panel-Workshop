@@ -330,19 +330,18 @@ abstract class WPBakeryShortCode {
 	 * Prints out the styles needed to render the element icon for the back end interface.
 	 * Only performed if the 'icon' setting is a valid URL.
 	 *
-	 * @return void
 	 * @since  4.2
-	 * @modified 4.4
-	 * @author Benjamin Intal
+	 * @return void
 	 */
 	public function printIconStyles() {
 		if ( ! filter_var( $this->settings( 'icon' ), FILTER_VALIDATE_URL ) ) {
 			return;
 		}
-		$first_tag = 'style';
-		echo '
-            <' . esc_attr( $first_tag ) . '>
-                .vc_el-container #' . esc_attr( $this->settings['base'] ) . ' .vc_element-icon,
+
+		wp_register_style( 'wpb-register-elements-icons', false, [], WPB_VC_VERSION );
+		wp_enqueue_style( 'wpb-register-elements-icons' );
+
+		$style = '.vc_el-container #' . esc_attr( $this->settings['base'] ) . ' .vc_element-icon,
                 .wpb_' . esc_attr( $this->settings['base'] ) . ' > .wpb_element_wrapper > .wpb_element_title > .vc_element-icon,
                 .vc_el-container > #' . esc_attr( $this->settings['base'] ) . ' > .vc_element-icon,
                 .vc_el-container > #' . esc_attr( $this->settings['base'] ) . ' > .vc_element-icon[data-is-container="true"],
@@ -351,7 +350,8 @@ abstract class WPBakeryShortCode {
                 .compose_mode .vc_helper.vc_helper-' . esc_attr( $this->settings['base'] ) . ' > .vc_element-icon[data-is-container="true"],
                 .vc_helper.vc_helper-' . esc_attr( $this->settings['base'] ) . ' > .vc_element-icon[data-is-container="true"],
                 .wpb_' . esc_attr( $this->settings['base'] ) . ' > .wpb_element_wrapper > .wpb_element_title > .vc_element-icon,
-                .wpb_' . esc_attr( $this->settings['base'] ) . ' > .wpb_element_wrapper > .wpb_element_title > .vc_element-icon[data-is-container="true"] {
+                .wpb_' . esc_attr( $this->settings['base'] ) . ' > .wpb_element_wrapper > .wpb_element_title > .vc_element-icon[data-is-container="true"],
+                [title="' . esc_attr( $this->settings['base'] ) . '"] > .vc_element-icon {
                     background-position: 0 0;
                     background-image: url(' . esc_url( $this->settings['icon'] ) . ');
                     -webkit-background-size: contain;
@@ -359,8 +359,9 @@ abstract class WPBakeryShortCode {
                     -ms-background-size: contain;
                     -o-background-size: contain;
                     background-size: contain;
-                }
-            </' . esc_attr( $first_tag ) . '>';
+                }';
+
+		wp_add_inline_style( 'wpb-register-elements-icons', $style );
 	}
 
 	/**
@@ -597,7 +598,7 @@ abstract class WPBakeryShortCode {
 	 * @return bool
 	 */
 	public function isEditor() {
-		return vc_is_editor();
+		return vc_is_frontend_editor();
 	}
 
 	/**

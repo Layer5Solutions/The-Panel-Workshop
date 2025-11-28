@@ -176,7 +176,7 @@ class WPBakeryShortCode_VC_Accordion_Tab extends WPBakeryShortCode_VC_Tab {
 
 
 
-/* nectar addition */ 
+/* nectar addition */
 
 Class WPBakeryShortCode_Toggle extends WPBakeryShortCode_VC_Tab {
 	protected $controls_css_settings = 'tc vc_control-container';
@@ -277,7 +277,7 @@ Class WPBakeryShortCode_Toggle extends WPBakeryShortCode_VC_Tab {
 			if ( isset( $this->settings['params'] ) ) {
 				$inner = '';
 				foreach ( $this->settings['params'] as $param ) {
-					$param_value = isset( $$param['param_name'] ) ? $$param['param_name'] : '';
+					$param_value = isset( ${$param['param_name']} ) ? ${$param['param_name']} : '';
 					if ( is_array( $param_value ) ) {
 						// Get first element from the array
 						reset( $param_value );
@@ -308,4 +308,4 @@ Class WPBakeryShortCode_Toggle extends WPBakeryShortCode_VC_Tab {
 
 }
 
-/* nectar addition end */ 
+/* nectar addition end */

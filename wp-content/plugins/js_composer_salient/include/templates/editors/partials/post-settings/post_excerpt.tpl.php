@@ -26,6 +26,9 @@ $excerpt = $post->post_excerpt;
 		}
 		?>
 
-		<textarea name="post_excerpt" class="wpb_vc_param_value wpb-textarea textarea vc_post_excerpt" id="vc_post_excerpt"><?php echo esc_attr( $excerpt ); ?></textarea>
+		<textarea name="post_excerpt" class="wpb_vc_param_value wpb-textarea textarea vc_post_excerpt" id="vc_post_excerpt"><?php
+		// nectar addition - core bugfix changing esc_attr to wp_kses_post
+		echo wp_kses_post( $excerpt );
+		?></textarea>
 	</div>
 </div>

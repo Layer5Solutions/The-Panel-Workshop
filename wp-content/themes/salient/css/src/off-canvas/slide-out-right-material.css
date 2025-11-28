@@ -18,7 +18,7 @@ body.material-ocm-open #slide-out-widget-area.slide-out-from-right .inner-wrap {
 
 
 body[data-slide-out-widget-area-style="slide-out-from-right"] #slide-out-widget-area .off-canvas-social-links li:first-child a {
-  padding-left: 0;
+  margin-left: 0!important;
 }
 body[data-slide-out-widget-area-style="slide-out-from-right"] #slide-out-widget-area .off-canvas-social-links li a i:after {
   z-index: 10000;
@@ -32,7 +32,7 @@ body[data-slide-out-widget-area-style="slide-out-from-right"] #slide-out-widget-
   width: auto;
   line-height: 38px;
   opacity: 1;
-  padding: 0 14px;
+  margin: 0 calc( var(--nectar-dynamic-social-icon-gap, 14px) / 2)!important;
   box-sizing: content-box;
   text-align: center;
 }

@@ -189,10 +189,14 @@ body #header-outer[data-format="centered-menu-bottom-bar"] #header-secondary-out
 
 #header-secondary-outer #social{
     float:left;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
      position: relative;
 }
 #header-secondary-outer #social li{
-    float:left
+    float:left;
+    height: 100%;
 }
 #header-secondary-outer #social li a {
     line-height:20px
@@ -206,8 +210,12 @@ body #header-outer[data-format="centered-menu-bottom-bar"] #header-secondary-out
 
  #header-secondary-outer #social li a{
     position:relative;
-    padding:8px 10px 8px 10px;
-    height:16px;
+    padding:0 10px 0 10px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     box-sizing: content-box;
 }
 
@@ -308,6 +316,7 @@ body[data-header-color="dark"] #header-secondary-outer nav >ul >li >a .sf-sub-in
  body.material #header-secondary-outer nav >ul {
      height: auto;
      padding: 6px 0;
+     min-height: 40px;
 }
  body.material #header-secondary-outer nav >.sf-menu {
      padding: 9px 0 8px 0;
@@ -389,7 +398,7 @@ body[data-header-color="dark"] #header-secondary-outer nav >ul >li >a .sf-sub-in
   body[data-dropdown-style] #header-secondary-outer[data-mobile="display_full"] .sf-menu > li ul {
     display: none!important;
   }
-  
+
   #header-secondary-outer {
     top: -13px;
   }
@@ -427,7 +436,7 @@ body[data-header-color="dark"] #header-secondary-outer nav >ul >li >a .sf-sub-in
 }
 
 @media only screen and (max-width: 999px) {
-  
+
   body[data-header-format] #header-secondary-outer {
     height: auto;
   }
@@ -438,6 +447,12 @@ body[data-header-color="dark"] #header-secondary-outer nav >ul >li >a .sf-sub-in
     width: 100%;
     text-align: center;
     height: auto;
+  }
+
+  #header-secondary-outer #social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   #header-secondary-outer nav > ul > li > a .sf-sub-indicator {
@@ -462,12 +477,12 @@ body[data-header-color="dark"] #header-secondary-outer nav >ul >li >a .sf-sub-in
     text-align: left;
   }
 
-  #header-secondary-outer #social li > a {
+  /* #header-secondary-outer #social li > a {
     height: 15px;
-  }
+  } */
 
   body:not(.material) #header-secondary-outer nav .sf-menu {
     border-top: 1px solid #DDDDDD;
   }
-  
+
 }

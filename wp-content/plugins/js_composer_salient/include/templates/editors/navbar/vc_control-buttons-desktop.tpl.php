@@ -11,10 +11,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 
 <li class="vc_pull-right vc_hide-mobile vc_save-backend">
-	<a class="vc_btn vc_btn-white vc_btn-sm vc_navbar-btn vc_control-preview">
+	<a class="vc_btn vc_btn-white vc_btn-sm vc_navbar-btn vc_control-preview" title="<?php echo esc_attr( wpb_get_title_with_shortcut( 'Preview' ) ); ?>">
 		<?php esc_html_e( 'Preview', 'js_composer' ); ?>
 	</a>
-	<a class="vc_btn vc_btn-sm vc_navbar-btn vc_btn-white vc_control-save" id="wpb-save-post">
+	<a class="vc_btn vc_btn-sm vc_navbar-btn vc_btn-white vc_control-save" id="wpb-save-post" title="<?php echo esc_attr( wpb_get_title_with_shortcut( $save_text ) ); ?>">
 		<?php echo esc_html( $save_text ); ?>
 	</a>
 </li>

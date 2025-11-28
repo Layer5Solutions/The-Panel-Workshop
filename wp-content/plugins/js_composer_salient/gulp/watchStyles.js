@@ -45,6 +45,7 @@ function watchModuleCssMainFile ( done ) {
 		});
 }
 
+/* eslint-disable */
 module.exports = {
 	watchLess,
 	watchFontLibs,
@@ -52,3 +53,4 @@ module.exports = {
 	watchModuleCssFiles,
 	watchModuleCssMainFile
 };
+/* eslint-enable */

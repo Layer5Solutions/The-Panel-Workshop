@@ -58,25 +58,36 @@
      	}
 
 
-      add_action( 'admin_notices', array($this, 'admin_notification_content') );
+     add_action( 'admin_notices', array($this, 'admin_notification_content') );
 
-      global $Salient_Core;
-      wp_register_script( 'nectar-global-sections-notice-update', SALIENT_CORE_PLUGIN_PATH .'/includes/global-sections/js/admin-notices.js', array( 'jquery' ), $Salient_Core->plugin_version);
-  	  wp_localize_script( 'nectar-global-sections-notice-update', 'notice_params', array(
-  	      'ajaxurl' => esc_url(get_admin_url()) . 'admin-ajax.php',
-  	  ));
+     global $Salient_Core;
+     wp_register_script( 'nectar-global-sections-notice-update', SALIENT_CORE_PLUGIN_PATH .'/includes/global-sections/js/admin-notices.js', array( 'jquery' ), $Salient_Core->plugin_version);
+     $nonce = wp_create_nonce( 'nectar_dismiss_global_sections_notice' );
+     wp_localize_script( 'nectar-global-sections-notice-update', 'notice_params', array(
+         'ajaxurl' => esc_url(get_admin_url()) . 'admin-ajax.php',
+         'nonce'   => $nonce,
+     ));
 
-  	  wp_enqueue_script(  'nectar-global-sections-notice-update' );
+     wp_enqueue_script(  'nectar-global-sections-notice-update' );
 
     }
 
   /**
    * Admin notification dismiss.
    */
-   public function nectar_dismiss_global_sections_notice() {
-       update_option( 'nectar_dismiss_global_sections_notice', 'true' );
-       wp_die();
-   }
+  public function nectar_dismiss_global_sections_notice() {
+      if ( ! current_user_can( 'manage_options' ) ) {
+        wp_send_json_error( array( 'message' => 'forbidden' ), 403 );
+      }
+
+      $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+      if ( ! wp_verify_nonce( $nonce, 'nectar_dismiss_global_sections_notice' ) ) {
+        wp_send_json_error( array( 'message' => 'invalid_nonce' ), 400 );
+      }
+
+      update_option( 'nectar_dismiss_global_sections_notice', 'true' );
+      wp_send_json_success();
+  }
 
    /**
     * Admin notification content.
@@ -266,19 +277,27 @@
       */
      public function nectar_hook_before_container_wrap_close_hook() {
 
-        $nectar_options = NectarThemeManager::$options;
-        $id = $nectar_options['global-section-above-footer'];
+       $nectar_options = NectarThemeManager::$options;
+       $id = ( isset( $nectar_options['global-section-above-footer'] ) ) ? intval( $nectar_options['global-section-above-footer'] ) : 0;
 
-        echo '<div class="nectar-global-section before-footer" role="contentinfo"><div class="container normal-container row">' . do_shortcode('[nectar_global_section id="'.intval($id).'"]') . '</div></div>';
+       if ( $id <= 0 || 'salient_g_sections' !== get_post_type( $id ) ) {
+         return;
+       }
+
+       echo '<div class="nectar-global-section before-footer" role="contentinfo"><div class="container normal-container row">' . do_shortcode('[nectar_global_section id="'.intval($id).'"]') . '</div></div>';
 
      }
 
      public function nectar_hook_global_section_after_header_navigation_hook() {
 
-        $nectar_options = NectarThemeManager::$options;
-        $id = $nectar_options['global-section-after-header-navigation'];
+       $nectar_options = NectarThemeManager::$options;
+       $id = ( isset( $nectar_options['global-section-after-header-navigation'] ) ) ? intval( $nectar_options['global-section-after-header-navigation'] ) : 0;
 
-        echo '<div class="nectar-global-section after-nav" role="contentinfo"><div class="container normal-container row">' .do_shortcode('[nectar_global_section id="'.intval($id).'"]') . '</div></div>';
+       if ( $id <= 0 || 'salient_g_sections' !== get_post_type( $id ) ) {
+         return;
+       }
+
+       echo '<div class="nectar-global-section after-nav" role="contentinfo"><div class="container normal-container row">' .do_shortcode('[nectar_global_section id="'.intval($id).'"]') . '</div></div>';
 
      }
 
@@ -331,6 +350,7 @@
 
           $section_id = intval($id);
           $section_id = apply_filters('wpml_object_id', $section_id, 'post', true);
+          $global_section_markup = '';
 
           if( $section_id === 0 ) {
             return;
@@ -378,10 +398,10 @@
                 echo '<style type="text/css" data-type="nectar-global-section-dynamic-css">'. $dynamic_css .'</style>';
               }
               // TODO: loop through blocks and enqueue core style for each block found.
-                // Output section.
+              // Output section.
               echo do_shortcode($section_content);
 
-              $global_section_markup .=  ob_get_contents();
+              $global_section_markup .= ob_get_contents();
               ob_end_clean();
 
               return $global_section_markup;

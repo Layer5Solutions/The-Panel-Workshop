@@ -120,7 +120,44 @@ return array(
       "description" => esc_html__("Determine whether to load the image on page load or to use a lazy load method for higher performance.", "salient-core"),
       'std' => 'default',
     ),
-    
+
+    array(
+			"type" => "fws_image",
+			"heading" => esc_html__("Item Background Image", "salient-core"),
+			"param_name" => "flickity_bg_image_url",
+      "edit_field_class" => "flickity_specific_field vc_col-xs-12",
+			"value" => "",
+			"description" => esc_html__("Select an image from the media library.", "salient-core")
+		),
+    array(
+      "type" => "dropdown",
+      "class" => "",
+      'save_always' => true,
+      "heading" => esc_html__("Item Background Loading", "salient-core"),
+      "param_name" => "flickity_bg_image_loading",
+      "edit_field_class" => "flickity_specific_field vc_col-xs-12",
+      "value" => array(
+        "Default" => "default",
+        "Skip Lazy Load" => "skip-lazy-load",
+        "Lazy Load" => "lazy-load",
+      ),
+      "description" => esc_html__("Determine whether to load the image on page load or to use a lazy load method for higher performance.", "salient-core"),
+      'std' => 'default',
+    ),
+
+
+    ...SalientWPbakeryParamGroups::background_video_group('', [], ' flickity_specific_field'),
+
+    array(
+      "type" => "checkbox",
+      "class" => "",
+      'edit_field_class' => 'flickity_specific_field vc_col-xs-12 salient-fancy-checkbox',
+      "heading" => esc_html__("Background Gradient Blur", "salient-core"),
+      "value" => array("Yes, please" => "true" ),
+      "param_name" => "flickity_background_image_gradient_blur",
+      "description" => esc_html__("Enabling this will add a gradient blur to the background layer.", 'salient-core')
+    ),
+
     array(
       "type" => "checkbox",
       "class" => "",
@@ -140,6 +177,43 @@ return array(
       "placeholder" => '',
 			"description" => ''
 		),
+
+    ...SalientWPbakeryParamGroups::layout_group('', 'all', ' flickity_specific_field'),
+
+    array(
+      "type" => "textfield",
+      "heading" => esc_html__("Carousel Item Link URL", "salient-core"),
+      "param_name" => "flickity_item_url",
+      'edit_field_class' => 'flickity_specific_field vc_col-xs-12',
+      "admin_label" => false,
+      "description" => esc_html__("The URL that will be used for the carousel item link", "salient-core")
+    ),
+    array(
+      "type" => "textfield",
+      "class" => "",
+      "heading" => esc_html__("Carousel Item Aria Label Text", "salient-core"),
+      "param_name" => "flickity_item_aria_label_text",
+      "admin_label" => false,
+      'edit_field_class' => 'flickity_specific_field vc_col-xs-12',
+      "description" => esc_html__('Optional text to describe the link that will be used for screen reader accessibility.', 'salient-core'),
+    ),
+    array(
+      "type" => "dropdown",
+      "heading" => esc_html__("Carousel Item Link Type", "salient-core"),
+      "param_name" => "flickity_item_link_type",
+      'edit_field_class' => 'flickity_specific_field vc_col-xs-12',
+      "value" => array(
+        esc_html__('Regular (open in same tab)', 'salient-core') => 'regular',
+        esc_html__('Open In New Tab', 'salient-core') => 'new_tab',
+        esc_html__('Open Video Lightbox', 'salient-core') => 'video_lightbox',
+        esc_html__('Open Image Lightbox', 'salient-core') => 'image_lightbox',
+      ),
+      'save_always' => true,
+      "admin_label" => false,
+      "description" => esc_html__("Please select the type of link you will be using.", "salient-core")
+    ),
+
+    ...SalientWpbakeryParamGroups::color_layer_group(esc_html__("Color Overlay", "salient-core"), [], ' flickity_specific_field'),
 
     array(
       "type" => "tab_id",

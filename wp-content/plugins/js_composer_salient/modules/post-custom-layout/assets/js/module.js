@@ -11,6 +11,10 @@ jQuery( document ).ready( function ( $ ) {
 	});
 
 	function selectLayout ( e ) {
+		if ( window.vc_mode === 'admin_page' ) {
+			// prevent page jump in backend editor.
+			e.preventDefault();
+		}
 		var selectedLayout = $( e.currentTarget );
 		var layoutName = selectedLayout.attr( 'data-post-custom-layout' );
 		var editorWrapper = $( '#wpb_wpbakery' );

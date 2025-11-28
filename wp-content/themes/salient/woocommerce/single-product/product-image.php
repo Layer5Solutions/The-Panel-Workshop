@@ -59,16 +59,24 @@ if( in_array($product_gallery_style, array('ios_slider','left_thumb_sticky','lef
 	$slider_wrap_class            = 'slider';
 	$slider_slide_class           = 'slide';
 
+
 	$wrapper_classes   = apply_filters( 'woocommerce_single_product_image_gallery_classes', array(
 		'woocommerce-product-gallery',
 		'woocommerce-product-gallery--' . ( has_post_thumbnail() ? 'with-images' : 'without-images' ),
 		'images'
 	) );
 
+	// Add click event class for left_thumb_sticky gallery style.
+	if ( 'left_thumb_sticky' === $product_gallery_style ) {
+		$click_event = (isset($nectar_options['single_product_left_thumb_sticky_click_event']) && !empty($nectar_options['single_product_left_thumb_sticky_click_event'])) ? $nectar_options['single_product_left_thumb_sticky_click_event'] : 'default';
+		$wrapper_classes[] = 'click-event--' . $click_event;
+	}
+
 	?>
     <div class="<?php echo esc_attr( implode( ' ', array_map( 'sanitize_html_class', $wrapper_classes ) ) ); ?>" data-has-gallery-imgs="<?php echo esc_attr( $has_gallery_imgs ); ?>">
 
     	<div class="<?php echo esc_attr($slider_container_class); ?> product-slider">
+
 
 				<div class="<?php echo esc_attr($slider_wrap_class); ?> generate-markup">
 
@@ -93,24 +101,29 @@ if( in_array($product_gallery_style, array('ios_slider','left_thumb_sticky','lef
 
 					?>
 
-	        <div class="<?php echo esc_attr($slider_slide_class); ?>">
-	        	<?php
-						$main_image_markup = '<div data-thumb="'. get_the_post_thumbnail_url( $post->ID, $gallery_thumbnail_size ) .'" class="woocommerce-product-gallery__image easyzoom">
-	          	<a href="' . esc_url( $img_link ). '" class="no-ajaxy">'.get_the_post_thumbnail( $post->ID, 'shop_single', $attributes ) . '</a>
-	          </div>';
-						echo apply_filters( 'woocommerce_single_product_image_thumbnail_html', $main_image_markup, $product->get_image_id() );
-						?>
-	        </div>
+	        <?php
+				// For left_thumb_sticky, apply slide class directly to gallery image to fix lightbox indexing.
+				if ( 'left_thumb_sticky' === $product_gallery_style ) {
+					$main_image_markup = '<div data-thumb="'. get_the_post_thumbnail_url( $post->ID, $gallery_thumbnail_size ) .'" class="woocommerce-product-gallery__image easyzoom '. esc_attr($slider_slide_class) .'">
+		          	<a href="' . esc_url( $img_link ). '" class="no-ajaxy">'.get_the_post_thumbnail( $post->ID, 'woocommerce_single', $attributes ) . '</a>
+		          </div>';
+				} else {
+					$main_image_markup = '<div class="'. esc_attr($slider_slide_class) .'"><div data-thumb="'. get_the_post_thumbnail_url( $post->ID, $gallery_thumbnail_size ) .'" class="woocommerce-product-gallery__image easyzoom">
+		          	<a href="' . esc_url( $img_link ). '" class="no-ajaxy">'.get_the_post_thumbnail( $post->ID, 'woocommerce_single', $attributes ) . '</a>
+		          </div></div>';
+				}
+				echo apply_filters( 'woocommerce_single_product_image_thumbnail_html', $main_image_markup, $product->get_image_id() );
+				?>
 
-					<?php
-					}
-					else {
-						echo '<div class="'.esc_attr($slider_slide_class).'">'.apply_filters( 'woocommerce_single_product_image_html', sprintf( '<img src="%s" alt="%s" />', wc_placeholder_img_src( 'woocommerce_single' ), __( 'Placeholder', 'woocommerce' ) ), $post->ID ) .'</div>';
-					}
+				<?php
+				}
+				else {
+					echo '<div class="'.esc_attr($slider_slide_class).'">'.apply_filters( 'woocommerce_single_product_image_html', sprintf( '<img src="%s" alt="%s" />', wc_placeholder_img_src( 'woocommerce_single' ), __( 'Placeholder', 'woocommerce' ) ), $post->ID ) .'</div>';
+				}
 
-					if ( $product_attach_ids ) {
+				if ( $product_attach_ids ) {
 
-						foreach ($product_attach_ids as $product_attach_id) {
+					foreach ($product_attach_ids as $product_attach_id) {
 
 							$img_link = wp_get_attachment_url( $product_attach_id );
 
@@ -118,21 +131,28 @@ if( in_array($product_gallery_style, array('ios_slider','left_thumb_sticky','lef
 								continue;
 							}
 
+							$full_size_image   = wp_get_attachment_image_src( $product_attach_id, 'full' );
+							$thumbnail_image   = wp_get_attachment_image_src( $product_attach_id, $gallery_thumbnail_size );
+						$attributes = array(
+							'data-caption'            => get_post_field( 'post_excerpt', $product_attach_id ),
+							'data-src'                => $full_size_image[0],
+							'data-large_image'        => $full_size_image[0],
+							'data-large_image_width'  => $full_size_image[1],
+							'data-large_image_height' => $full_size_image[2],
+						);
 
-								$full_size_image   = wp_get_attachment_image_src( $product_attach_id, 'full' );
-								$attributes = array(
-									'data-caption'            => get_post_field( 'post_excerpt', $product_attach_id ),
-									'data-src'                => $full_size_image[0],
-									'data-large_image'        => $full_size_image[0],
-									'data-large_image_width'  => $full_size_image[1],
-									'data-large_image_height' => $full_size_image[2],
-								);
+					// For left_thumb_sticky, apply slide class directly to gallery image to fix lightbox indexing.
+					if ( 'left_thumb_sticky' === $product_gallery_style ) {
+						echo '<div class="woocommerce-product-gallery__image easyzoom '. esc_attr($slider_slide_class) .'" data-thumb="'. esc_url( $thumbnail_image[0] ) .'"><a href="'. wp_get_attachment_url($product_attach_id) .'" class="no-ajaxy">';
+						echo wp_get_attachment_image($product_attach_id, 'woocommerce_single', false, $attributes);
+						echo '</a></div>';
+					} else {
+						echo '<div class="'.esc_attr($slider_slide_class).'"><div class="woocommerce-product-gallery__image easyzoom" data-thumb="'. esc_url( $thumbnail_image[0] ) .'"><a href="'. wp_get_attachment_url($product_attach_id) .'" class="no-ajaxy">';
+						echo wp_get_attachment_image($product_attach_id, 'woocommerce_single', false, $attributes);
+						echo '</a></div></div>';
+					}
 
-							echo '<div class="'.esc_attr($slider_slide_class).'"><div class="woocommerce-product-gallery__image easyzoom" data-thumb="'. get_the_post_thumbnail_url( $post->ID, $gallery_thumbnail_size ) .'"><a href="'. wp_get_attachment_url($product_attach_id) .'" class="no-ajaxy">';
-							echo wp_get_attachment_image($product_attach_id, 'shop_single', false, $attributes);
-							echo '</a></div></div>';
-
-						}
+				}
 					}
 				?>
 
@@ -246,13 +266,7 @@ else if( 'two_column_images' === $product_gallery_style ) {
 
 				echo '<div class="woocommerce-product-gallery__image"><a href="'. wp_get_attachment_url($product_attach_id) .'" class="no-ajaxy">';
 
-				$gallery_img_size = 'shop_single';
-				if( isset( $nectar_options['single_product_custom_image_dimensions'] ) &&
-					'1' === $nectar_options['single_product_custom_image_dimensions'] ) {
-
-					$gallery_img_size = 'woocommerce_single';
-				}
-
+				$gallery_img_size = 'woocommerce_single';
 				echo wp_get_attachment_image($product_attach_id, $gallery_img_size, false, $attributes);
 				echo '</a></div>';
 
@@ -268,7 +282,6 @@ else if( 'two_column_images' === $product_gallery_style ) {
 // Default WooCommerce gallery functionality.
 else { ?>
 
-	<div class="images">
 
 	<?php
 	// Note: `wc_get_gallery_image_html` was added in WC 3.3.2 and did not exist prior.
@@ -312,6 +325,5 @@ else { ?>
 
 	} ?>
 
-	 </div><!--images-->
 
  <?php } ?>

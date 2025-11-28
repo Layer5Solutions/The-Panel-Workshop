@@ -28,6 +28,7 @@ $badge_params = array(
 		"type" => "dropdown",
 		"class" => "",
 		'save_always' => true,
+		'group' => esc_html__('Typography', 'salient-core'),
 		"heading" => esc_html__("Inherit Typography From", "salient-core"),
 		"param_name" => "display_tag",
 		"value" => array(
@@ -42,11 +43,12 @@ $badge_params = array(
 			"H1" => "h1",
 		)
 	),
+	...SalientWPbakeryParamGroups::font_sizing_group('font_size_desktop', esc_html__('Font Size', 'salient-core'), esc_html__('Typography', 'salient-core')),
 	array(
 		'type' => 'dropdown',
 		'heading' => __('Badge Style', 'salient-core'),
 		'value' => array(
-			esc_html__('Colored Background', 'salient-core') => 'default',
+			esc_html__('Default', 'salient-core') => 'default',
 			esc_html__('Minimal Line', 'salient-core') => 'line',
 		),
 		'save_always' => true,
@@ -100,6 +102,7 @@ $badge_params = array(
 		"value" => "",
 		"description" => '',
 	),
+	...SalientWPbakeryParamGroups::backdrop_filter_group('', []),
 	array(
 		"type" => "dropdown",
 		"heading" => esc_html__("Padding Amount", "salient-core"),
@@ -117,6 +120,49 @@ $badge_params = array(
 		)
 	),
 
+
+	array(
+		"type" => "checkbox",
+		"class" => "",
+		"heading" => esc_html__("Border", 'salient-core'),
+		"param_name" => "border",
+		"value" => Array(esc_html__("Yes", 'js_composer') => 'true'),
+		"description" => "",
+		'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+		"dependency" => array('element' => "badge_style", 'value' => array('default'))
+	),
+	array(
+		'type' => 'nectar_range_slider',
+		'heading' => esc_html__('Border Width', 'salient-core'),
+		'param_name' => 'border_width',
+		'value' => '1',
+		'options' => array(
+			'min' => '1',
+			'max' => '5',
+			'step' => '1',
+			'suffix' => 'px'
+		),
+		'description' => '',
+		'dependency' => array(
+			'element' => 'border',
+			'value' => array('true'),
+		),
+	),
+	array(
+		"type" => "colorpicker",
+		"class" => "",
+		'heading' => esc_html__('Border Color', 'salient-core'),
+		"param_name" => "border_color",
+		"value" => "",
+		"description" => '',
+		'dependency' => array(
+			'element' => 'border',
+			'value' => array('true'),
+		),
+	),
+
+
+
 	array(
 		"type" => "dropdown",
 		"heading" => esc_html__("Border Radius", "salient-core"),
@@ -132,7 +178,9 @@ $badge_params = array(
 			esc_html__("5px", "salient-core") => "5px",
 			esc_html__("10px", "salient-core") => "10px",
 			esc_html__("15px", "salient-core") => "15px",
-			esc_html__("20px", "salient-core") => "20px"
+			esc_html__("20px", "salient-core") => "20px",
+			esc_html__("50px", "salient-core") => "50px",
+			esc_html__("100px", "salient-core") => "100px",
 		),
 	),
 

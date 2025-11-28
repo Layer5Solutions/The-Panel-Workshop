@@ -97,6 +97,10 @@ function nectar_hook_before_secondary_header() {
 	do_action( 'nectar_hook_before_secondary_header' );
 }
 
+function nectar_hook_before_secondary_header_before_scrolling() {
+	do_action( 'nectar_hook_before_secondary_header_before_scrolling' );
+}
+
 function nectar_hook_secondary_header_menu_items() {
 	do_action( 'nectar_hook_secondary_header_menu_items' );
 }
@@ -127,7 +131,7 @@ function nectar_hook_ocm_after_menu() {
 /**
  * Off canvas menu before secondary items.
  */
- 
+
 function nectar_hook_ocm_before_secondary_items() {
 	do_action( 'nectar_hook_ocm_before_secondary_items' );
 }

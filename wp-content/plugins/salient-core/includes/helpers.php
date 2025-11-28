@@ -4,7 +4,7 @@
  *
  * @version 1.0
  */
- 
+
 
   /**
   * Cleans class names
@@ -24,17 +24,46 @@
   */
   if(!function_exists('nectar_css_sizing_units')) {
     function nectar_css_sizing_units($str) {
-      if( strpos($str,'vw') !== false ||
-        strpos($str,'vh') !== false ||
-        strpos($str,'%') !== false ||
-        strpos($str,'em') !== false ) {
-        return esc_attr($str);
-      } 
-      else {
-        return intval($str) . 'px';
+      if( null === $str ) {
+        return '';
       }
+
+      $str = trim($str);
+
+      if( '' === $str ) {
+        return '';
+      }
+
+      // Allow keywords.
+      if( strtolower($str) === 'auto' ) {
+        return 'auto';
+      }
+
+      // Allow calc() expressions as-is.
+      if( strpos($str, 'calc(') !== false ) {
+        return esc_attr($str);
+      }
+
+      // If already contains an allowed unit, return as-is.
+      $allowed_units = array('px','rem','em','%','vw','vh','vmin','vmax','ch','ex');
+      foreach( $allowed_units as $unit ) {
+        if( strpos($str, $unit) !== false ) {
+          return esc_attr($str);
+        }
+      }
+
+      // If numeric, append px.
+      if( is_numeric($str) ) {
+        return floatval($str) . 'px';
+      }
+
+      // Fallback to sanitized value.
+      return esc_attr($str);
     }
   }
+
+
+
 
 
   /**
@@ -43,8 +72,8 @@
   * @since 1.9
   */
   if(!function_exists('nectar_lazy_loaded_image_markup')) {
-    function nectar_lazy_loaded_image_markup($id, $image_size) {
-      
+    function nectar_lazy_loaded_image_markup($id, $image_size, $class = '') {
+
       // src.
       $img_src = wp_get_attachment_image_src($id, $image_size);
       if( isset($img_src[0]) ) {
@@ -58,19 +87,19 @@
         $img_srcset = wp_get_attachment_image_srcset($id, $image_size);
         $sizes = wp_get_attachment_image_sizes( $id, $image_size );
       }
-      
+
       // alt.
       $alt_tag = get_post_meta( $id, '_wp_attachment_image_alt', true );
-      
+
       // dimensions.
       $img_meta = wp_get_attachment_metadata($id);
 
       $width  = ( !empty($img_meta['width']) ) ? $img_meta['width'] : '100';
       $height = ( !empty($img_meta['height']) ) ? $img_meta['height'] : '100';
-      
+
       $placeholder_img_src = "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20".esc_attr($width).'%20'.esc_attr($height)."'%2F%3E";
 
-      return '<img class="nectar-lazy skip-lazy" src="'.$placeholder_img_src.'" alt="'.esc_attr($alt_tag).'" height="'.esc_attr($height).'" width="'.esc_attr($width).'" data-nectar-img-src="'.esc_attr($img_src).'" data-nectar-img-srcset="'.esc_attr($img_srcset).'" sizes="'.esc_attr($sizes).'" />';
+      return '<img class="nectar-lazy skip-lazy '.esc_attr($class).'" src="'.$placeholder_img_src.'" alt="'.esc_attr($alt_tag).'" height="'.esc_attr($height).'" width="'.esc_attr($width).'" data-nectar-img-src="'.esc_attr($img_src).'" data-nectar-img-srcset="'.esc_attr($img_srcset).'" sizes="'.esc_attr($sizes).'" />';
 
     }
   }
@@ -78,7 +107,7 @@
 
   if( !function_exists('nectar_lazy_loaded_video_markup') ) {
     function nectar_lazy_loaded_video_markup($video_url, $video_type, $class) {
-      
+
 
       return '<video class="nectar-lazy-video '.esc_attr($class).'" preload="auto" loop autoplay muted playsinline>
         <source data-nectar-video-src="'.esc_url($video_url).'" type="'.esc_attr($video_type).'">
@@ -100,9 +129,9 @@
 
       $style = '';
 
-      if( isset($atts['custom_box_shadow']) && 
+      if( isset($atts['custom_box_shadow']) &&
          !empty($atts['custom_box_shadow']) ) {
-    
+
           $shadow_method = isset($atts['box_shadow_method']) ? $atts['box_shadow_method'] : 'default';
 
           // Determine shadow type.
@@ -112,7 +141,7 @@
           $shadow_base = 'filter: drop-shadow($);';
          }
 
-        // Parse values.  
+        // Parse values.
         $parsed_values = array();
         $kaboom = explode(',', $atts['custom_box_shadow']);
         foreach($kaboom as $item) {
@@ -139,7 +168,7 @@
 
         // Combine base and props.
         $style = str_replace('$', $style, $shadow_base);
-				
+
       }
 
       return $style;
@@ -184,38 +213,38 @@
       }
 
       if( $atts['icon_family'] !== 'none' ) {
-		
+
         if( $atts['icon_family'] === 'iconsmind' ) {
-          
+
           // SVG iconsmind.
           $icon_escaped = '<i><span class="im-icon-wrap"><span>';
-          
+
           $converted_icon = str_replace('iconsmind-', '', $icon);
           $converted_icon = str_replace(".", "", $converted_icon);
-          
+
           require_once( SALIENT_CORE_ROOT_DIR_PATH.'includes/icons/class-nectar-icon.php' );
-    
+
           $nectar_icon_class = new Nectar_Icon(array(
             'icon_name' => $converted_icon,
             'icon_library' => 'iconsmind',
           ));
-        
+
           $icon_escaped .= $nectar_icon_class->render_icon();
           $icon_escaped .= '</span></span></i>';
-      
-          
+
+
         } else {
-          
-          $icon_escaped = '<i class="' . esc_attr($icon) .'"></i>'; 
-    
+
+          $icon_escaped = '<i class="' . esc_attr($icon) .'"></i>';
+
         }
 
         return $icon_escaped;
-        
-      } 
+
+      }
 
       return '';
-      
+
     }
   }
 
@@ -231,7 +260,7 @@
   */
   if( !function_exists('nectar_css_animation_atts') ) {
     function nectar_css_animation_atts( $atts, $stagger_element = false ) {
-        
+
         $animation = isset($atts['css_animation']) ? $atts['css_animation'] : '';
         $delay = isset($atts['css_animation_delay']) ? $atts['css_animation_delay'] : false;
         $offset = isset($atts['css_animation_offset']) ? $atts['css_animation_offset'] : false;
@@ -251,7 +280,7 @@
           if( $stagger_element ) {
             $el_attrs[] = 'data-nectar-waypoint-el-stagger="'.esc_attr($stagger_element).'"';
           }
-          
+
           // Animation delay.
           if( !empty($delay) ) {
               $el_attrs[] = 'data-nectar-waypoint-el-delay="'.esc_attr($delay).'"';
@@ -268,7 +297,7 @@
           }
 
         }
-        
+
         $combined_props = array(
           'classes' => implode(' ', $el_classes),
           'atts' => implode(' ', $el_attrs),
@@ -280,7 +309,7 @@
         }
 
         return $combined_props;
-  
+
     }
   }
 
@@ -292,7 +321,7 @@
   * @since 1.9.1
   */
   if( !function_exists('nectar_svg_shape_divider') ) {
-    
+
     function nectar_svg_shape_divider($shape_type, $shape_divider_color) {
 
       switch( $shape_type ) {
@@ -380,10 +409,10 @@
   * @since 1.7
   */
   if( !function_exists('nectar_map_legacy_fa_icon_classes') ) {
-    
+
     function nectar_map_legacy_fa_icon_classes() {
-      
-      $legacy_fa_map = array(	
+
+      $legacy_fa_map = array(
         'icon-ban-circle'             => 'icon-ban',
         'icon-bar-chart'              => 'icon-bar-chart-o',
         'icon-beaker'                 => 'icon-flask',
@@ -529,10 +558,263 @@
         'icon-zoom-in'                => 'icon-search-plus',
         'icon-zoom-out'               => 'icon-search-minus'
       );
-      
+
       return $legacy_fa_map;
-      
+
     }
-    
+
   }
- 
+
+
+/**
+ * Get image URL and lazy attributes for background-image or external fallback
+ *
+ * @param string|int $image_source Image ID or URL
+ * @param string $loading_type Lazy loading type
+ * @return array Image data array with src and lazy_attrs
+ */
+if ( ! function_exists('nectar_get_image_src_data') ) {
+  function nectar_get_image_src_data($image_source, $loading_type) {
+    $image_data = array(
+        'src' => '',
+        'lazy_attrs' => ''
+    );
+
+    if(!preg_match('/^\d+$/', $image_source)) {
+        // External URL
+        if('lazy-load' === $loading_type ||
+          (property_exists('NectarLazyImages', 'global_option_active') &&
+            true === NectarLazyImages::$global_option_active &&
+            'skip-lazy-load' !== $loading_type)) {
+            $image_data['lazy_attrs'] = ' data-nectar-img-src="'.esc_url($image_source).'"';
+        } else {
+            $image_data['src'] = esc_url($image_source);
+        }
+    } else {
+        // WordPress attachment for background-image only
+        $image_src = wp_get_attachment_image_src($image_source, apply_filters('nectar_default_row_background_image_size','full'));
+        if(isset($image_src[0])) {
+            if('lazy-load' === $loading_type ||
+              (property_exists('NectarLazyImages', 'global_option_active') &&
+                true === NectarLazyImages::$global_option_active &&
+                'skip-lazy-load' !== $loading_type)) {
+                $image_data['lazy_attrs'] = ' data-nectar-img-src="'.esc_url($image_src[0]).'"';
+            } else {
+                $image_data['src'] = esc_url($image_src[0]);
+            }
+        }
+    }
+
+    return $image_data;
+  }
+}
+
+if (!function_exists('nectar_get_row_img_tag')) {
+  function nectar_get_row_img_tag($image_source, $size = 'full', $custom_classes = '', $custom_style = '', $is_lazy = false, $object_position = '') {
+    $custom_classes = trim($custom_classes);
+    $custom_style = trim($object_position . ' ' . $custom_style);
+    $img_html = '';
+    if (preg_match('/^\d+$/', $image_source)) {
+      // WP attachment
+      $img_atts = array();
+      if (!empty($custom_classes)) {
+        $img_atts['class'] = $custom_classes;
+      }
+      if (!empty($custom_style)) {
+        $img_atts['style'] = $custom_style;
+      }
+
+      $img_src = wp_get_attachment_image_src($image_source, $size);
+      $img_meta = wp_get_attachment_metadata($image_source);
+      $alt_tag = get_post_meta($image_source, '_wp_attachment_image_alt', true);
+      $width  = (!empty($img_meta['width'])) ? $img_meta['width'] : '100';
+      $height = (!empty($img_meta['height'])) ? $img_meta['height'] : '100';
+
+      if ($is_lazy) {
+        // Directly output <img> tag for lazy WP attachments
+        $placeholder_img_src = "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20".esc_attr($width).'%20'.esc_attr($height)."'%2F%3E";
+        $img_html = '<img class="nectar-lazy skip-lazy '.esc_attr($custom_classes).'" src="'.$placeholder_img_src.'" alt="'.esc_attr($alt_tag).'" height="'.esc_attr($height).'" width="'.esc_attr($width).'" data-nectar-img-src="'.esc_attr($img_src[0]).'"';
+        if (!empty($custom_style)) {
+          $img_html .= ' style="'.esc_attr($custom_style).'"';
+        }
+        $img_html .= ' />';
+      } else {
+        $img_html = '<img class="' . esc_attr($custom_classes) . '" style="' . esc_attr($custom_style) . '" src="' . esc_url($img_src[0]) . '" height="'.esc_attr($height).'" width="'.esc_attr($width).'" alt="'.esc_attr($alt_tag).'">';
+      }
+    } else {
+      // External URL
+      if ($is_lazy) {
+        // Placeholder SVG
+        $placeholder_img_src = "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20100%20100'%2F%3E";
+        $img_html = '<img class="nectar-lazy skip-lazy '.esc_attr($custom_classes).'" src="'.$placeholder_img_src.'" alt="" style="'.esc_attr($custom_style).'" data-nectar-img-src="'.esc_url($image_source).'" />';
+      } else {
+        $img_html = '<img class="' . esc_attr($custom_classes) . '" style="' . esc_attr($custom_style) . '" src="' . esc_url($image_source) . '" alt="">';
+      }
+    }
+    return $img_html;
+  }
+}
+
+// Resolve an image source (attachment ID or URL) to a URL string
+if(!function_exists('nectar_resolve_img_url')) {
+  function nectar_resolve_img_url($src, $size) {
+    if(empty($src)) {
+      return '';
+    }
+    if(preg_match('/^\d+$/', $src)) {
+      $img = wp_get_attachment_image_src($src, $size);
+      return (isset($img[0]) && !empty($img[0])) ? esc_attr($img[0]) : '';
+    }
+    return esc_attr($src);
+  }
+}
+
+/**
+ * Generate a picture element with media queries for different device sizes
+ *
+ * @param array $bg_img_arr Array containing image sources for different viewports
+ * @param string $image_size Image size to use
+ * @param string $img_classes Classes to add to the img element
+ * @param bool $is_lazy Whether to lazy load the image
+ * @param string $object_position Object position for the image
+ * @return string HTML for the picture element
+ */
+if(!function_exists('nectar_get_row_picture_tag')) {
+    function nectar_get_row_picture_tag($bg_img_arr, $image_size, $img_classes, $is_lazy, $object_position, $fetch_priority = '') {
+        $sources = array();
+
+        // Phone source (max-width: 690px)
+        if(isset($bg_img_arr['phone']['src']) && !empty($bg_img_arr['phone']['src'])) {
+            $phone_url = nectar_resolve_img_url($bg_img_arr['phone']['src'], 'large');
+            if(!empty($phone_url)) {
+                $sources[] = '<source media="(max-width: 690px)" srcset="'.$phone_url.'">';
+            }
+        }
+
+        // Tablet source (min-width: 691px and max-width: 1000px)
+        if(isset($bg_img_arr['tablet']['src']) && !empty($bg_img_arr['tablet']['src'])) {
+            $tablet_url = nectar_resolve_img_url($bg_img_arr['tablet']['src'], 'full');
+            if(!empty($tablet_url)) {
+                $sources[] = '<source media="(min-width: 691px) and (max-width: 1000px)" srcset="'.$tablet_url.'">';
+            }
+        }
+
+        // Desktop source (min-width: 1001px)
+        $desktop_url = '';
+        $desktop_source = '';
+        if(isset($bg_img_arr['desktop']['src']) && !empty($bg_img_arr['desktop']['src'])) {
+            $desktop_url = nectar_resolve_img_url($bg_img_arr['desktop']['src'], 'full');
+            if(!empty($desktop_url)) {
+                $sources[] = '<source media="(min-width: 1001px)" srcset="'.$desktop_url.'">';
+                $desktop_source = $bg_img_arr['desktop']['src'];
+            }
+        }
+
+        // Determine fallback img URL (prefer desktop, then tablet, then phone)
+        if(empty($desktop_url)) {
+            if(isset($bg_img_arr['tablet']['src'])) {
+                $tablet_fallback = nectar_resolve_img_url($bg_img_arr['tablet']['src'], 'full');
+                if(!empty($tablet_fallback)) {
+                    $desktop_url = $tablet_fallback;
+                    $desktop_source = $bg_img_arr['tablet']['src'];
+                }
+            }
+            if(empty($desktop_url) && isset($bg_img_arr['phone']['src'])) {
+                $phone_fallback = nectar_resolve_img_url($bg_img_arr['phone']['src'], 'large');
+                if(!empty($phone_fallback)) {
+                    $desktop_url = $phone_fallback;
+                    $desktop_source = $bg_img_arr['phone']['src'];
+                }
+            }
+        }
+
+        // If no usable URL at all, return empty string to avoid empty <picture>
+        if(empty($desktop_url) && empty($sources)) {
+            return '';
+        }
+
+        $picture_html = '<picture>';
+        if(!empty($sources)) {
+            $picture_html .= implode('', $sources);
+        }
+
+        if(!empty($desktop_url)) {
+            $img_alt = '';
+            if(!empty($desktop_source) && preg_match('/^\d+$/', $desktop_source)) {
+                $raw_alt = get_post_meta($desktop_source, '_wp_attachment_image_alt', true);
+                if(is_string($raw_alt)) {
+                    $raw_alt = trim($raw_alt);
+                } else {
+                    $raw_alt = '';
+                }
+                if('' !== $raw_alt) {
+                    $img_alt = $raw_alt;
+                }
+            }
+
+            $img_attrs = array(
+                'src' => $desktop_url,
+                'class' => esc_attr($img_classes),
+                'alt' => esc_attr($img_alt),
+                'style' => !empty($object_position) ? 'object-position: ' . esc_attr($object_position) : ''
+            );
+
+            if($is_lazy) {
+                $img_attrs['loading'] = 'lazy';
+            }
+
+            if(!empty($fetch_priority)) {
+                $img_attrs['fetchpriority'] = $fetch_priority;
+            }
+
+            $img_html = '<img ';
+            foreach($img_attrs as $attr => $value) {
+                if(!empty($value)) {
+                    $img_html .= $attr . '="' . $value . '" ';
+                }
+            }
+            $img_html .= '>';
+            $picture_html .= $img_html;
+        }
+
+        $picture_html .= '</picture>';
+
+        return $picture_html;
+    }
+}
+
+
+if(!function_exists('nectar_get_video_background_markup')) {
+
+  function nectar_get_video_background_markup($video_bg, $video_webm, $video_mp4, $background_video_loading) {
+
+    // Video bg layer.
+    if( $video_bg ) {
+
+      $html = '<div class="nectar-video-wrap row-bg-layer">';
+      $html .= '<div class="nectar-video-inner">';
+
+      if( 'lazy-load' === $background_video_loading ) {
+        $html .= '<video class="nectar-video-bg nectar-lazy-video" width="1800" height="700" preload="auto" loop autoplay muted playsinline>';
+        if(!empty($video_webm)) { $html .= '<source data-nectar-video-src="'. esc_url( $video_webm ) .'" type="video/webm">'; }
+        if(!empty($video_mp4)) { $html .= '<source data-nectar-video-src="'. esc_url( $video_mp4 ) .'"  type="video/mp4">'; }
+        $html .= '</video>';
+      }
+      else {
+        $html .= '<video class="nectar-video-bg" width="1800" height="700" preload="auto" loop autoplay muted playsinline>';
+        if(!empty($video_webm)) { $html .= '<source src="'. esc_url( $video_webm ) .'" type="video/webm">'; }
+        if(!empty($video_mp4)) { $html .= '<source src="'. esc_url( $video_mp4 ) .'"  type="video/mp4">'; }
+        $html .= '</video>';
+      }
+
+      $html .= '</div>';
+      $html .= '</div>';
+
+      return $html;
+
+    }
+
+    return '';
+
+  }
+}

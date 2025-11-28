@@ -212,7 +212,7 @@ class WPBakeryShortCode_Vc_Basic_Grid extends WPBakeryShortCode_Vc_Pageable {
 	public function shortcodeScripts() {
 		parent::shortcodeScripts();
 
-		wp_register_script( 'vc_grid-js-imagesloaded', vc_asset_url( 'lib/vendor/node_modules/imagesloaded/imagesloaded.pkgd.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
+		wp_register_script( 'vc_grid-js-imagesloaded', vc_asset_url( 'lib/vendor/dist/imagesloaded/imagesloaded.pkgd.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_register_script( 'vc_grid', vc_asset_url( 'js/dist/vc_grid.min.js' ), [
 			'jquery-core',
 			'underscore',
@@ -377,6 +377,7 @@ class WPBakeryShortCode_Vc_Basic_Grid extends WPBakeryShortCode_Vc_Pageable {
 			$output .= $this->grid_item->addShortcodesCustomCss();
 			ob_start();
 			if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+				wpb_remove_emoji_assets();
 				wp_print_styles();
 			}
 			$output .= ob_get_clean();

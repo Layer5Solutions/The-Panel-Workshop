@@ -981,18 +981,11 @@ transform: scale(0.8); }
   margin-right: 0;
 }
 
-.redux-main .letter-spacing.redux-container-typography.input_wrapper input.mini {
-  width: 100%;
-  border-top-right-radius: 0px;
-  border-bottom-right-radius: 0px;
-}
 
-.redux-main .letter-spacing.redux-container-typography .add-on {
- display: none;
-}
+
 .redux-main .redux-typography-container .typography-letter-spacing-units.select_wrapper {
   float: left;
-  
+
   min-width: 100px!important;
   width: auto!important;
 }

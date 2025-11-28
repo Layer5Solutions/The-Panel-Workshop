@@ -1059,8 +1059,22 @@ proto.positionSlider = function() {
     this.shiftWrapCells( x );
   }
 
-  this.setTranslateX( x, this.isAnimating );
-  this.dispatchScrollEvent();
+  // nectar addition
+  this.setTranslateX( x, this.isAnimating || this.options.alwaysUse3dTransforms );
+
+  // throttle scroll event dispatch if configured
+  var throttle = this.options.scrollEventThrottle || 0;
+  if ( throttle > 0 ) {
+    var now = (window.performance && performance.now) ? performance.now() : Date.now();
+    if (!this._lastScrollDispatch) this._lastScrollDispatch = 0;
+    if (now - this._lastScrollDispatch >= throttle) {
+      this._lastScrollDispatch = now;
+      this.dispatchScrollEvent();
+    }
+  } else {
+    this.dispatchScrollEvent();
+  }
+  // nectar addition end
 };
 
 proto.setTranslateX = function( x, is3d ) {
@@ -2816,6 +2830,12 @@ return Unidragger;
 utils.extend( Flickity.defaults, {
   draggable: '>1',
   dragThreshold: 3,
+  // nectar addition
+  // throttle scroll event dispatch in ms (0 = no throttle)
+  scrollEventThrottle: 0,
+  // force 3D transforms even when not animating
+  alwaysUse3dTransforms: false,
+  // nectar addition end
 } );
 
 // ----- create ----- //

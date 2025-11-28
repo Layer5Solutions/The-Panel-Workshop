@@ -88,6 +88,7 @@ else if( 'animated_underline' === $header_hover_animation) {
 echo '
 #header-outer #top nav > ul > .button_bordered > a:hover,
 #header-outer:not(.transparent) #social-in-menu a i:after,
+#header-outer:not(.transparent) #social-in-menu a .nectar-dynamic-social-icon--hover,
 .sf-menu > li > a:hover > .sf-sub-indicator i,
 .sf-menu > li > a:active > .sf-sub-indicator i,
 .sf-menu > .sfHover > a > .sf-sub-indicator i,
@@ -120,8 +121,6 @@ body #header-secondary-outer #social a:focus i,
 .single #single-meta div:focus > a,
 .result .title a,
 .circle-border,
-.home .blog-recent:not([data-style="list_featured_first_row"]) .col .post-header a:hover,
-.home .blog-recent .col .post-header h3 a,
 .project-attrs li i,
 .nectar-milestone .number.accent-color,
 body #portfolio-nav a:hover i,
@@ -944,6 +943,10 @@ foreach( $nectar_gradient_colors as $selector => $color_grad ){
 		$accent_gradient_from = $color_grad[0];
 		$accent_gradient_to 	= $color_grad[1];
 
+		echo ':root {
+		   --nectar-'.$selector.': linear-gradient(to right, '.esc_attr($accent_gradient_from).', '.esc_attr($accent_gradient_to).');
+		}';
+
 		echo '.nectar-bg-'.$selector.',
     #ajax-content-wrap .nectar-bg-pseudo-'.$selector.':before,
 		.divider-small-border[data-color="'.$selector.'"],
@@ -1080,8 +1083,30 @@ if( !empty($nectar_options['overall-bg-color']) ) {
 	body.box-rolling,
 	body[data-footer-reveal="1"].ascend.box-rolling,
 	body[data-footer-reveal="1"].box-rolling,
-  .wpml-ls-statics-footer {
-		background-color: '.esc_attr($nectar_options['overall-bg-color']).';
+  	.wpml-ls-statics-footer {
+		background-color: var(--nectar-page-background-color, '.esc_attr($nectar_options['overall-bg-color']).');
+	}
+
+	body.has-color-change-section-bg-color,
+	body.has-color-change-section-bg-color .container-wrap,
+	body.has-color-change-section-bg-color .nectar-global-section.before-footer,
+	body.has-color-change-section-bg-color .nectar-global-section.after-nav,
+	body.has-color-change-section-bg-color #page-header-wrap,
+	body.has-color-change-section-bg-color .page-header-no-bg,
+	body.has-color-change-section-bg-color .single-post.ascend #page-header-bg.fullscreen-header,
+	body.has-color-change-section-bg-color .single-post #single-below-header.fullscreen-header,
+	body.has-color-change-section-bg-color .project-title {
+		transition: background-color 0.8s;
+	}
+
+	body.has-color-change-section-bg-color .container-wrap {
+		background-color: transparent;
+	}
+
+	body.material.has-color-change-section-bg-color .ocm-effect-wrap {
+		transition:
+			background-color 0.8s,
+			transform 0.8s cubic-bezier(.15,0.2,.1,1);
 	}';
 }
 
@@ -1101,7 +1126,26 @@ if( !empty($nectar_options['overall-font-color']) ) {
 	body:not(.original) .comment-list .pingback .comment-body > a,
 	.post-area.standard-minimal .post .more-link span,
 	#sidebar .widget .nectar_widget[class*="nectar_blog_posts_"] > li .post-date {
-		color: '.esc_attr($nectar_options['overall-font-color']).';
+		color: var(--nectar-page-text-color, '.esc_attr($nectar_options['overall-font-color']).');
+	}
+
+	body.has-color-change-section-bg-color h1,
+	body.has-color-change-section-bg-color h2,
+	body.has-color-change-section-bg-color h3,
+	body.has-color-change-section-bg-color h4,
+	body.has-color-change-section-bg-color h5,
+	body.has-color-change-section-bg-color h6,
+	body.has-color-change-section-bg-color p {
+		transition: color var(--page-color-change-section-transition-time), background-size 0.55s cubic-bezier(.2,.75,.5,1);
+	}
+
+	body.has-color-change-section-bg-color {
+		transition: color var(--page-color-change-section-transition-time),
+					background-color var(--page-color-change-section-transition-time);
+	}
+
+	:root {
+		--nectar-font-color: '.esc_attr($nectar_options['overall-font-color']).';
 	}';
 
 	if( 'ascend' === $theme_skin ) {
@@ -1159,6 +1203,12 @@ if( !empty($nectar_options['overall-font-color']) ) {
 	}
 }
 
+if( isset($nectar_options['primary-font-color-light']) && !empty($nectar_options['primary-font-color-light']) ) {
+
+	echo ':root { --nectar-font-light-color: '.esc_attr($nectar_options['primary-font-color-light']).'; }';
+
+}
+
 
 
 ///////// Custom header colors.
@@ -1199,6 +1249,13 @@ if( !empty($nectar_options['header-color']) && $nectar_options['header-color'] =
 			 echo 'body #header-outer, body[data-header-color="dark"] #header-outer {
 				 background-color: rgba('.$colorR.','.$colorG.','.$colorB.','.$colorA.');
 			 }';
+
+			 if ( nectar_is_contained_header() ) {
+				echo 'body #header-outer.material-search-open,
+				body[data-header-color="dark"] #header-outer.material-search-open {
+					background-color: rgba('.$colorR.','.$colorG.','.$colorB.',1);
+				}';
+			 }
 
 			 // Material search.
 			 echo '.material #header-outer:not(.transparent) .bg-color-stripe {
@@ -1324,6 +1381,7 @@ if( !empty($nectar_options['header-color']) && $nectar_options['header-color'] =
 		echo '
     #header-outer .slide-out-widget-area-toggle a:hover i.label,
 		body #header-outer:not(.transparent) #social-in-menu a i:after,
+		body #header-outer:not(.transparent) #social-in-menu a .nectar-dynamic-social-icon--hover,
 		.ascend #header-outer:not(.transparent) .cart-outer:hover .cart-menu-wrap:not(.has_products) .icon-salient-cart,
 		body.material #header-outer:not(.transparent) .cart-outer:hover .cart-menu-wrap .icon-salient-cart,
 		body #top nav .sf-menu > .current_page_ancestor > a .sf-sub-indicator i,
@@ -2031,13 +2089,13 @@ if( !empty($nectar_options['footer-custom-color']) && $nectar_options['footer-cu
 }
 
 // Custom CTA colors.
-if( !empty($nectar_options['cta-background-color']) ) {
+if( isset($nectar_options['cta-background-color']) && !empty($nectar_options['cta-background-color']) ) {
 	echo 'body #call-to-action {
 		background-color:'.esc_attr($nectar_options['cta-background-color']).';
 	}';
 }
 
-if( !empty($nectar_options['cta-text-color']) ) {
+if( isset($nectar_options['cta-text-color']) && !empty($nectar_options['cta-text-color']) ) {
 	echo 'body #call-to-action span {
 		color:'.esc_attr($nectar_options['cta-text-color']).';
 	}';

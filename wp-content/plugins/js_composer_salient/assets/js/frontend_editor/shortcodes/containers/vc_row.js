@@ -81,6 +81,9 @@
 			if ( !layout ) {
 				return false;
 			}
+			// Prevent undo steps from being created during layout conversion
+			var wasLayoutChanging = vc.isLayoutChanging;
+			vc.isLayoutChanging = true;
 			var column_params, new_model, columns_contents, columns;
 			columns_contents = [];
 			columns = this.convertToWidthsArray( layout );
@@ -146,6 +149,8 @@
 				});
 				vc.layout_old_columns = [];
 				vc.layout_change_shortcodes = [];
+				vc.isLayoutChanging = wasLayoutChanging;
+				vc.setDataChanged();
 			});
 
 			return columns;

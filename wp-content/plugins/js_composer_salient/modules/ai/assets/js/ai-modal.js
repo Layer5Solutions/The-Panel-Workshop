@@ -4,6 +4,7 @@
 	var $aiModal = $( '#vc_ui-helper-modal-ai' );
 	var $wpwrap = $( '#wpwrap' );
 	var $insertButton = $aiModal.find( '[data-vc-ui-element="button-save"]' );
+	var $aiTokensUsage = $aiModal.find( '.vc-ai-tokens-usage' );
 
 	$wpwrap.on( 'click', '.vc_ui-icon-ai', openModal );
 
@@ -57,7 +58,11 @@
 	}
 
 	function setModalPreloader () {
-		$aiModal.find( '.vc_ui-post-settings-header-container' ).after( '<div class="vc_ui-helper-modal-ai-preloader"><div class="vc_ui-wp-spinner vc_ui-wp-spinner-dark vc_ui-wp-spinner-lg"></div></div>' );
+		var preloaderClasses = 'vc_ui-helper-modal-ai-preloader';
+		if ( $aiTokensUsage.text() ) {
+			preloaderClasses += ' vc_ui-helper-modal-ai-preloader-with-tokens';
+		}
+		$aiModal.find( '.vc_ui-post-settings-header-container' ).after( '<div class="' + preloaderClasses + '"><div class="vc_ui-wp-spinner vc_ui-wp-spinner-dark vc_ui-wp-spinner-lg"></div></div>' );
 	}
 
 	function setModalContent ( aiElementType, aiElementId ) {
@@ -85,7 +90,7 @@
 				if ( response.data.tokens_left && response.data.tokens_total ) {
 					var token_usage_text =
 						get_locale().ai_credit_usage + response.data.tokens_left + ' / ' + response.data.tokens_total;
-					$aiModal.find( '.vc-ai-tokens-usage' ).text( token_usage_text );
+					$aiTokensUsage.text( token_usage_text );
 				}
 
 				$aiModal.find( ' .vc_ui-panel-content-container' ).scrollTop( 0 );

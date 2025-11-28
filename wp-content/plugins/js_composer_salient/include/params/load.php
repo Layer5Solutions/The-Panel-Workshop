@@ -35,6 +35,7 @@ require_once vc_path_dir( 'PARAMS_DIR', '/iconpicker/iconpicker.php' );
 require_once vc_path_dir( 'PARAMS_DIR', '/el_id/el_id.php' );
 require_once vc_path_dir( 'PARAMS_DIR', '/gutenberg/gutenberg.php' );
 require_once vc_path_dir( 'PARAMS_DIR', '/textarea_ace/textarea_ace.php' );
+require_once vc_path_dir( 'PARAMS_DIR', '/checkbox/checkbox.php' );
 
 global $vc_params_list;
 $vc_params_list = [

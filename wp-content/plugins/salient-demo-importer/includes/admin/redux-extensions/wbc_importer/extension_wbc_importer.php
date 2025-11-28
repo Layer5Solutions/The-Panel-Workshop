@@ -45,9 +45,12 @@ if ( !class_exists( 'ReduxFramework_extension_wbc_importer' ) ) {
         public $nectar_import_demo_content;
         public $nectar_import_theme_option_settings;
         public $nectar_import_demo_widgets;
-        
+
         // Nectar addition
         public $demo_order = array(
+          'Signal'                => 8,
+          'Harbor'                => 9,
+          'Tether'                => 10,
           'Portfolio-Layered'     => 11,
           'Portfolio-Quantum'     => 12,
           'Mag'                   => 13,
@@ -102,16 +105,16 @@ if ( !class_exists( 'ReduxFramework_extension_wbc_importer' ) ) {
             if ( !is_admin() ) {
               return;
             }
-            
-            // do not load anywhere except needed 
-            if ( isset($_GET['page']) && $_GET['page'] == $this->parent->args['page_slug'] || isset($_REQUEST['demo_import_id']) || isset($_REQUEST['plugin_src']) ) { 
+
+            // do not load anywhere except needed
+            if ( isset($_GET['page']) && $_GET['page'] == $this->parent->args['page_slug'] || isset($_REQUEST['demo_import_id']) || isset($_REQUEST['plugin_src']) ) {
               //init
             } else {
               //still add menu item
               $this->add_importer_section();
-              return; 
+              return;
             }
-            
+
             //plugin installer
             if(file_exists( dirname( __FILE__ ) . '/wbc_importer/connekt-plugin-installer/class-connekt-plugin-installer.php' ) ) {
               include_once('wbc_importer/connekt-plugin-installer/class-connekt-plugin-installer.php');
@@ -121,7 +124,7 @@ if ( !class_exists( 'ReduxFramework_extension_wbc_importer' ) ) {
             if ( true !== apply_filters( 'wbc_importer_abort', true ) ) {
                 return;
             }
-            
+
 
             if ( empty( $this->extension_dir ) ) {
                 $this->extension_dir = SALIENT_DEMO_IMPORTER_ROOT_DIR_PATH . 'includes/admin/redux-extensions/wbc_importer/';
@@ -135,7 +138,7 @@ if ( !class_exists( 'ReduxFramework_extension_wbc_importer' ) ) {
             $this->getImports();
 
             $this->field_name = 'wbc_importer';
-            
+
             self::$instance = $this;
 
             add_filter( 'redux/' . $this->parent->args['opt_name'] . '/field/class/' . $this->field_name, array( &$this,
@@ -160,48 +163,48 @@ if ( !class_exists( 'ReduxFramework_extension_wbc_importer' ) ) {
         }
 
 
-        
+
         /**
          * Get the demo folders/files
          * Provided fallback where some host require FTP info
          *
          * @return array list of files for demos
          */
-        
+
         public static function is_writable() {
 
             global $wp_filesystem;
             require_once( ABSPATH . 'wp-admin/includes/file.php' );
-            
+
             $wp_upload_dir = wp_upload_dir( null, false );
             $upload_dir = $wp_upload_dir['basedir'];
-        
+
             if ( ! function_exists( 'WP_Filesystem' ) ) {
               return false;
             }
-    
+
             WP_Filesystem();
-        
+
             $writable = WP_Filesystem( false, $upload_dir );
-        
+
             return ( $writable && 'direct' === $wp_filesystem->method );
         }
 
         public function demoFiles() {
-            
+
             $this->filesystem = $this->parent->filesystem->execute( 'object' );
-            
+
             if( self::is_writable() ) {
-        
+
                 $dir_array = $this->filesystem->dirlist( $this->demo_data_dir, false, true );
 
                 if ( !empty( $dir_array ) && is_array( $dir_array ) ) {
-                   
+
                     uksort( $dir_array, 'strcasecmp' );
                     return $dir_array;
                 }
             }
-           
+
 
             $dir_array = array();
 
@@ -225,7 +228,7 @@ if ( !class_exists( 'ReduxFramework_extension_wbc_importer' ) ) {
 
                 uksort( $dir_array, 'strcasecmp' );
             }
-            
+
             return $dir_array;
         }
 
@@ -257,7 +260,7 @@ if ( !class_exists( 'ReduxFramework_extension_wbc_importer' ) ) {
                                 $this->wbc_import_files['wbc-import-'.$x]['imported'] = 'imported';
                             }
                         }
-                        
+
                         //Nectar addition add in order
                         if( isset( $this->demo_order[$this->wbc_import_files['wbc-import-'.$x]['directory']] ) ) {
                           $this->wbc_import_files['wbc-import-'.$x]['order'] = $this->demo_order[$this->wbc_import_files['wbc-import-'.$x]['directory']];
@@ -282,6 +285,7 @@ if ( !class_exists( 'ReduxFramework_extension_wbc_importer' ) ) {
                             case 'screen-image.png':
                             case 'screen-image.jpg':
                             case 'screen-image.gif':
+                            case 'screen-image.webp':
                                 $this->wbc_import_files['wbc-import-'.$x]['image'] = $file['name'];
                                 break;
                             }
@@ -321,13 +325,13 @@ if ( !class_exists( 'ReduxFramework_extension_wbc_importer' ) ) {
                 }
 
                 $this->active_import_id = $_REQUEST['demo_import_id'];
-                
+
                 $this->active_import = array( $this->active_import_id => $this->wbc_import_files[$this->active_import_id] );
-                
+
                 $this->nectar_import_demo_content = ( isset($_REQUEST['import_demo_content']) ) ? $_REQUEST['import_demo_content'] : 'true';
                 $this->nectar_import_theme_option_settings = ( isset($_REQUEST['import_theme_option_settings']) ) ? $_REQUEST['import_theme_option_settings'] : 'true';
                 $this->nectar_import_demo_widgets = ( isset($_REQUEST['import_demo_widgets']) ) ? $_REQUEST['import_demo_widgets'] : 'true';
-                
+
                 if ( !isset( $import_parts['imported'] ) || true === $reimporting ) {
                     include $this->extension_dir.'inc/init-installer.php';
                     $installer = new Radium_Theme_Demo_Data_Importer( $this, $this->parent );

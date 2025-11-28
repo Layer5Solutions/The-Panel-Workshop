@@ -225,7 +225,7 @@ body nav.woocommerce-pagination .page-numbers.next {
 	}
 
 	body .woocommerce ul.products[data-product-style="minimal"] li.product.minimal {
-		width: calc(49.7% - 15px);
+		width: calc(49.9% - 15px);
 	}
 
 	body .woocommerce ul.products[data-product-style="material"] li:nth-child(2n+1),
@@ -1123,6 +1123,10 @@ div.pp_woocommerce a.pp_expand, div.pp_woocommerce a.pp_contract, div.pp_woocomm
 	border: none!important;
 }
 
+.woocommerce .variations th.label {
+	padding-left: 0;
+}
+
 div.product .single_variation .price {
 	display: block;
 	margin-top: 0;
@@ -1421,11 +1425,12 @@ body[data-fancy-form-rcs="1"] .woocommerce-ordering .select2-container--default 
 	margin-top: 0;
 }
 
-.woocommerce .star-rating {
+.woocommerce .star-rating,
+html .woocommerce ul.products li.product .star-rating {
 	height: 1.1em!important;
-	width: 86px;
+	width: 90px;
 	letter-spacing: 4px;
-	font-size: 13px;
+	font-size: 14px;
 }
 
 .woocommerce p.stars a.star-1, .woocommerce-page p.stars a {
@@ -1771,6 +1776,9 @@ body .main-content .wp-block-woocommerce-cart-items-block table.wc-block-cart-it
 
 .woocommerce-cart .cart-collaterals table tr:nth-child(1n) th {}
 
+.woocommerce-cart[data-bg-header=true] .container-wrap {
+	padding-top: 40px!important;
+}
 .coupon .minimal-form-input input#coupon_code {
 	width: 100%;
 }
@@ -2023,6 +2031,11 @@ table.cart a.remove {
 
 .cat-parent {
 	border-bottom: 0!important;
+}
+
+/* fixes select2 dropdown misalignment from default relative position */
+body.woocommerce-checkout {
+	position: static;
 }
 
 .checkout #order_review {
@@ -3141,7 +3154,7 @@ body .is-large.wc-block-cart .wc-block-cart-items td:last-child {
 		overflow: visible;
 	}
 
-	.wc-block-checkout__sidebar {
+	body .wc-block-checkout__sidebar {
 		position: sticky;
 		top: var(--nectar-sticky-top-distance, 100px);
 	}
@@ -3628,11 +3641,11 @@ body .pswp {
 		margin: 0 1.5% 1.5% 0%!important;
 	}
 	body.woocommerce:not(.single-product) ul.products[data-n-desktop-columns="4"] li.product {
-		width: 23.4%!important;
+		width: 23.49%!important;
 		margin: 0 1.5% 1.5% 0%!important;
 	}
 	body.woocommerce:not(.single-product) ul.products[data-n-desktop-columns="3"] li.product {
-		width: 31.2%!important;
+		width: 31.29%!important;
 		margin: 0 2% 2% 0%!important;
 	}
 	body.woocommerce:not(.single-product) ul.products[data-n-desktop-columns="2"] li.product {
@@ -3660,11 +3673,11 @@ body .pswp {
 		margin: 0 1.5% 1.5% 0%!important;
 	}
 	body.woocommerce:not(.single-product) ul.products[data-n-desktop-small-columns="4"] li.product {
-		width: 23.4%!important;
+		width: 23.49%!important;
 		margin: 0 1.5% 1.5% 0%!important;
 	}
 	body.woocommerce:not(.single-product) ul.products[data-n-desktop-small-columns="3"] li.product {
-		width: 31.2%!important;
+		width: 31.29%!important;
 		margin: 0 2% 2% 0%!important;
 	}
 	body.woocommerce:not(.single-product) ul.products[data-n-desktop-small-columns="2"] li.product {
@@ -3684,12 +3697,12 @@ body .pswp {
 		width: 102%!important;
 	}
 	body.woocommerce:not(.single-product) ul.products[data-n-tablet-columns="4"] li.product {
-		width: 23.4%!important;
+		width: 23.49%!important;
 		margin: 0 1.5% 1.5% 0%!important;
 		padding: 0;
 	}
 	body.woocommerce:not(.single-product) ul.products[data-n-tablet-columns="3"] li.product {
-		width: 31.2%!important;
+		width: 31.29%!important;
 		margin: 0 2% 2% 0%!important;
 		padding: 0;
 	}
@@ -3711,11 +3724,11 @@ body .pswp {
 		width: 102%!important;
 	}
 	body.woocommerce:not(.single-product) ul.products[data-n-phone-columns="4"] li.product, body.woocommerce:not(.single-product) ul.products[data-n-phone-columns="4"] li.product.material {
-		width: 23.4%!important;
+		width: 23.49%!important;
 		margin: 0 1.5% 1.5% 0%!important;
 	}
 	body.woocommerce:not(.single-product) ul.products[data-n-phone-columns="3"] li.product, body.woocommerce:not(.single-product) ul.products[data-n-phone-columns="3"] li.product.material {
-		width: 31.2%!important;
+		width: 31.29%!important;
 		margin: 0 2% 2% 0%!important;
 	}
 	body.woocommerce:not(.single-product) ul.products[data-n-phone-columns="2"] li.product, body.woocommerce:not(.single-product) ul.products[data-n-phone-columns="2"] li.product.material {

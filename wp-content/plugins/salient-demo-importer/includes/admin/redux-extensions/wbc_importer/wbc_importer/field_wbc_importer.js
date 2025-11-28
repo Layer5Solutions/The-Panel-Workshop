@@ -1,18 +1,27 @@
 /* global redux_change, wp */
 
 (function($) {
-  
+
     "use strict";
-  
+
     $.redux = $.redux || {};
     $(document).ready(function() {
         $.redux.wbc_importer();
     });
-    
+
     $.redux.wbc_importer = function() {
-        
+
         // demo depends.
         var nectar_demo_depends = {
+          "Signal" : {
+            "plugins": ['js_composer_salient','salient-core', 'fluentform']
+          },
+          "Harbor" : {
+            "plugins": ['js_composer_salient','salient-core', 'fluentform']
+          },
+          "Tether" : {
+            "plugins": ['js_composer_salient','salient-core']
+          },
           "Portfolio-Quantum" : {
             "plugins": ['js_composer_salient','salient-social','salient-core','salient-portfolio']
           },
@@ -128,31 +137,31 @@
             "plugins": ['js_composer_salient','salient-core','salient-social','salient-nectar-slider']
           }
         };
-      
-        
+
+
         var $selected_demo;
-        
+
         //open popup
         $('.wrap-importer.theme.not-imported, #wbc-importer-reimport').unbind('click').on('click', function(e) {
-          
+
           //store demo for processing below
           $selected_demo = $(this);
-          
+
           var $selected_demo_block      = ($selected_demo.is('#wbc-importer-reimport')) ? $(this).parents('.wrap-importer') : $selected_demo;
           var $selected_demo_block_name = ($selected_demo_block.find('.theme-name').length > 0 ) ? $selected_demo_block.find('.theme-name').text() : '';
-          
+
           //show required plugins
           $('.nectar-demo-importer-selection-modal .cnkt-plugin-installer .plugin, .nectar-demo-importer-selection-modal .cnkt-plugin-installer').hide();
-          
+
           $.each(nectar_demo_depends,function(k,v){
-            
+
             if(k == $selected_demo_block_name) {
-              
+
               var plugins_required = v.plugins;
               if(typeof plugins_required != 'undefined' && plugins_required.length > 0) {
-                
+
                 for(var i=0; i<plugins_required.length; i++) {
-                  
+
                   // if we can locate a plugin name that matches the required arr item
                   $('.nectar-demo-importer-selection-modal .cnkt-plugin-installer h4[data-slug]').each(function(){
                     if($(this).attr('data-slug') == plugins_required[i]) {
@@ -160,62 +169,62 @@
                       $(this).parents('.cnkt-plugin-installer').show();
                     }
                   });
-  
+
                 } // for loop
-                
+
               } // if required plugins is not empty
-              
+
             } // if located single demo block
-            
+
           }); // each
-            
-          
+
+
 
           //show modal
           $('.nectar-demo-importer-selection-modal .switch-options.salient').addClass('activated');
           $('.nectar-demo-importer-selection-modal-backdrop, .nectar-demo-importer-selection-modal').fadeIn(200);
-          
-          
+
+
           //set preview img
           $('.nectar-demo-importer-selection-modal .nectar-preview-img').css('background-image','url('+ $selected_demo_block.find('.wbc_image').attr('src') +')');
           $('.nectar-demo-importer-selection-modal .nectar-demo-preview-header h2').text($selected_demo_block_name);
-          
+
         });
-        
+
         //close popup
         $('.nectar-demo-importer-selection-modal a.close').unbind('click').on('click', function(e) {
-          
+
           e.preventDefault();
           $('.nectar-demo-importer-selection-modal-backdrop, .nectar-demo-importer-selection-modal').fadeOut(250);
-          
+
         });
-        
-        
+
+
         //selected classes
         $('.nectar-demo-importer-selection-modal a.theme-demo-import-option').unbind('click').on('click', function(e) {
           e.preventDefault();
           $(this).parents('.demo-importer-form-row').find('.switch-options.salient').toggleClass('activated');
         });
-        
+
         $('.nectar-demo-importer-selection-modal .switch-options.salient').unbind('click').on('click', function(e) {
           e.preventDefault();
           $(this).toggleClass('activated');
         });
-        
+
         //import demo
         $('.nectar-demo-importer-selection-modal a.submit').unbind('click').on('click', function(e) {
-          
+
             e.preventDefault();
-            
+
             if($selected_demo.length == 0) { return; }
-            
+
             var $modal = $(this).parents('.nectar-demo-importer-selection-modal');
-            
+
             //set parent equal to demo that was clicked before entering modal
             var parent = $selected_demo;
 
             var reimport = false;
-            
+
             //set parent equal to demo that was clicked before entering modal when clicking reimport btn
             if (parent.is('#wbc-importer-reimport') ) {
 
@@ -225,23 +234,23 @@
                     parent = $selected_demo.parents('.wrap-importer');
                 }
             }
-            
+
 
 
             if (parent.hasClass('imported') && reimport == false) {
               return;
             }
-            
+
 
             if (reimport == true) {
                 parent.removeClass('active imported').addClass('not-imported');
             }
-            
+
             //return if nothing was chosen to import
             if( $modal.find('.switch-options.activated').length == 0 ) {
               return;
             }
-            
+
             //close modal
             $('.nectar-demo-importer-selection-modal a.close').trigger('click');
 
@@ -252,7 +261,7 @@
             parent.find('.importer-button').hide();
 
             var data = parent.data();
-            
+
             var imported_demo = false;
 
             data.action = "redux_wbc_importer";
@@ -260,7 +269,7 @@
             data.nonce = parent.attr("data-nonce");
             data.type = 'import-demo-content';
             data.wbc_import = (reimport == true) ? 're-importing' : ' ';
-            
+
             data.import_demo_content = ($modal.find('.import-nectar-theme-demo-content > .switch-options.activated').length > 0) ? 'true' : 'false';
             data.import_theme_option_settings = ($modal.find('.import-nectar-theme-option-settings > .switch-options.activated').length > 0) ? 'true' : 'false';
             data.import_demo_widgets = ($modal.find('.import-nectar-theme-demo-widgets > .switch-options.activated').length > 0) ? 'true' : 'false';
@@ -296,7 +305,7 @@
                         parent.find('.importer-button').attr('style', '');
                         parent.addClass('imported active').removeClass('not-imported');
                     }
-                    
+
                     imported_demo = true;
 
                     alert('There was an error importing demo content: \n\n' + response.replace(/(<([^>]+)>)/gi, ""));
@@ -314,11 +323,11 @@
             progress_bar();
 
             function wbc_show_progress( data ){
-                
+
                 data.action = "redux_wbc_importer_progress";
 
                 if(imported_demo == false){
-                    
+
                     jQuery.ajax({
                         url: ajaxurl,
                         data: data,

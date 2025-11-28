@@ -21,7 +21,7 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
         public static $exclude = false;
         public static $post_type;
         public static $post_id;
-        
+
         private function __construct()
         {
             add_action( 'wp', array($this, 'frontend_display') );
@@ -40,7 +40,7 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
 
         public function frontend_display() {
 
-            // store post type and id outside of global section query 
+            // store post type and id outside of global section query
             // to reflect real post type and id
             if ( !is_admin() ) {
                 self::$post_type = get_post_type();
@@ -52,28 +52,40 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
          }
 
 
-        public function parse_conditional($conditional, $include_exclude) 
+        public function parse_conditional($conditional, $include_exclude, $post_data = null)
         {
             $display = true;
 
             if( 'is_single' === $conditional ) {
                 $display = is_single();
-            } 
+            }
             else if( 'is_archive' === $conditional ) {
                 $display = is_archive();
-            } 
+            }
             else if( 'is_search' === $conditional ) {
                 $display = is_search();
-            } 
+            }
             else if( 'is_front_page' === $conditional ) {
                 $display = is_front_page();
-            } 
+            }
             else if( 'is_user_logged_in' === $conditional ) {
                 $display = is_user_logged_in();
-            } 
+            }
             else if( 'is_user_not_logged_in' === $conditional ) {
                 $display = !is_user_logged_in();
-            } 
+            }
+            else if( 'specific_post' === $conditional ) {
+                $display = false;
+
+                // Only apply this condition on single post views, not on archives
+                if( is_singular() && $post_data && is_object($post_data) ) {
+                    $selected_post_id = isset($post_data->id) ? intval($post_data->id) : 0;
+
+                    if( $selected_post_id > 0 && self::$post_id == $selected_post_id ) {
+                        $display = true;
+                    }
+                }
+            }
             else if( strpos($conditional, 'post_type__') !== false ) {
 
                 $post_type = str_replace('post_type__', '', $conditional);
@@ -94,7 +106,7 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
             }
             else if( strpos($conditional, 'role__') !== false ) {
                 $role = str_replace('role__', '', $conditional);
-       
+
                 if ( current_user_can( $role ) ) {
                     $display = true;
                 } else {
@@ -120,9 +132,9 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
         /**
          * Render Global Section
          */
-        public function render_global_sections() 
+        public function render_global_sections()
         {
-            
+
             // Disabled on cpt single edit.
             if( 'salient_g_sections' === get_post_type() ) {
                 return;
@@ -134,11 +146,11 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                 'no_found_rows'  => true,
                 'posts_per_page' => -1
             );
-            
+
             $global_sections_query = new WP_Query( $global_sections_query_args );
-        
+
             if( $global_sections_query->have_posts() ) : while( $global_sections_query->have_posts() ) : $global_sections_query->the_post();
-                
+
                 $global_section_id = get_the_ID();
 
                 // Locations.
@@ -163,7 +175,7 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                         $option = (array) $option;
                         if( $option['type'] === 'priority' ) {
                             $location_priority = sanitize_text_field($option['value']);
-                        } 
+                        }
                         else if($option['type'] === 'location' && !empty($option['value'])) {
                             $location_hook = sanitize_text_field($option['value']);
                         }
@@ -177,17 +189,17 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                             call_user_func(array($this, $location_hook), $global_section_id);
                             continue;
                         }
-                        
+
                         // Verify display conditions.
                         $allow_output = $this->verify_conditional_display($global_section_id);
-                       
+
                         // Add section to hook.
                         if( $allow_output ) {
                             add_action(
-                                $location_hook, 
-                                function() use ( $global_section_id, $location_hook ) { 
+                                $location_hook,
+                                function() use ( $global_section_id, $location_hook ) {
                                     $this->output_global_section($global_section_id, $location_hook);
-                                }, 
+                                },
                                 $location_priority
                             );
 
@@ -199,12 +211,12 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                 } // end foreach locations.
 
 
-            
-            endwhile; endif;  
-            
+
+            endwhile; endif;
+
             wp_reset_query();
 
-           
+
         }
 
 
@@ -237,42 +249,48 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
              } else {
                  $condition_operator = 'and';
              }
-             
+
              // Verify display conditions.
              $conditionals = array();
              self::$exclude = false;
-             
+
              foreach($conditions_arr as $conditions_obj) {
+
+                 $include_exclude = 'include';
+                 $conditional = false;
+                 $post_data = null;
 
                  foreach($conditions_obj as $condition) {
 
-                     $conditional = false;
                      $condition = (array) $condition;
                      if( $condition['type'] === 'include' ) {
                          $include_exclude = $condition['value'];
-                     } 
+                     }
                      else if($condition['type'] === 'condition' && !empty($condition['value'])) {
                          $conditional = $condition['value'];
                      }
-
-                     if($conditional) {
-                         
-                         if( !$this->parse_conditional($conditional, $include_exclude) ) {
-                             $conditionals[] = false;
-                         } else {
-                             $conditionals[] = true;
-                         }
-                     
+                     else if($condition['type'] === 'post_data' && !empty($condition['value'])) {
+                         $post_data = (object) $condition['value'];
                      }
 
                  }
-                 
+
+                 if($conditional) {
+
+                     if( !$this->parse_conditional($conditional, $include_exclude, $post_data) ) {
+                         $conditionals[] = false;
+                     } else {
+                         $conditionals[] = true;
+                     }
+
+                 }
+
              }
-             
+
              $allow_output = false;
-             
+
              if( self::$exclude === false ) {
-                 
+
                  foreach($conditionals as $condition) {
                      if($condition === true) {
                          $allow_output = true;
@@ -286,15 +304,15 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
              }
 
              return apply_filters( 'salient_global_section_allow_display', $allow_output );
-            
+
         }
 
         /**
          * Frontend output.
          */
-        public function output_global_section($global_section_id, $location) 
+        public function output_global_section($global_section_id, $location)
         {
-            
+
             if ( $this->omit_global_section_render($location) ) {
                 return;
             }
@@ -325,12 +343,12 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
 
             $global_section_shortcode = ' [nectar_global_section id="'.intval($global_section_id).'"] ';
             $global_section_content = '';
-            
+
             if( class_exists('NectarElDynamicStyles') ) {
 
                 if( 0 !== $global_section_id ) {
                     $global_section_query = get_post($global_section_id);
-        
+
                     if( isset($global_section_query->post_content) && !empty($global_section_query->post_content) ) {
                         $global_section_content = $global_section_query->post_content;
                     }
@@ -341,13 +359,13 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                     echo '<style>'.$global_section_css.'</style>';
                 }
             }
-            
-            
+
+
             echo do_shortcode('<div '.$attributes.'><div '.$inner_attributes.'>'.$global_section_shortcode.'</div></div>');
-            
-            
-     
-        }  
+
+
+
+        }
 
         public function omit_global_section_render( $hook ) {
 
@@ -357,21 +375,21 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
             if ( $nectar_using_VC_front_end_editor === true ) {
                 return true;
             }
-            
+
             // Disabled on page full screen rows.
             if ( function_exists('nectar_get_full_page_options') ) {
                 $nectar_fp_options = nectar_get_full_page_options();
 
                 $full_screen_non_compat_hooks = array(
                     'nectar_hook_global_section_after_header_navigation',
-                    'nectar_hook_global_section_after_content', 
+                    'nectar_hook_global_section_after_content',
                     'nectar_hook_before_content_global_section',
                     'nectar_hook_global_section_footer',
                     'nectar_hook_global_section_parallax_footer',
                     'nectar_hook_global_section_after_footer'
                 );
 
-                if( 'on' === $nectar_fp_options['page_full_screen_rows'] && 
+                if( 'on' === $nectar_fp_options['page_full_screen_rows'] &&
                     in_array( $hook, $full_screen_non_compat_hooks ) ) {
                     return true;
                 }
@@ -380,13 +398,14 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
             // Disabled locations when using contained header.
             if ( function_exists('nectar_is_contained_header') && nectar_is_contained_header() ) {
                 $contained_header_non_compat_hooks = array(
-                    'nectar_hook_before_secondary_header', 
+                    'nectar_hook_before_secondary_header',
+                    'nectar_hook_before_secondary_header_before_scrolling',
                 );
                 if ( in_array( $hook, $contained_header_non_compat_hooks ) ) {
                     return true;
                 }
             }
-            
+
 
             return false;
         }
@@ -417,29 +436,44 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
         public function modify_salient_markup($hook) {
 
             // Calculate nectar_hook_before_secondary_header height asap.
-            if ( $hook === 'nectar_hook_before_secondary_header' && 
-                function_exists('nectar_is_contained_header') && 
+            if ( in_array($hook, ['nectar_hook_before_secondary_header', 'nectar_hook_before_secondary_header_before_scrolling']) &&
+                function_exists('nectar_is_contained_header') &&
                 !nectar_is_contained_header() ) {
-                add_action('nectar_hook_before_secondary_header', function(){
-                    echo '<script>
-                        var contentHeight = 0;
-                        var headerHooks = document.querySelectorAll(".nectar_hook_before_secondary_header");
-                   
-                        if( headerHooks ) {
+                add_action($hook, function() use ( $hook ){
+                    echo '<script>(function() {
+                        function updateHookContentHeight() {
+                            var contentHeight = 0;
+                            var headerHooks = document.querySelectorAll("div[class*=\'nectar_hook_before_secondary_header\']");
 
-                            Array.from(headerHooks).forEach(function(el){
-                                contentHeight += el.getBoundingClientRect().height;
-                            });
+                            if (headerHooks) {
+                                headerHooks.forEach(function(el) {
+                                    contentHeight += el.getBoundingClientRect().height;
+                                });
+                            }
+
+                            document.documentElement.style.setProperty("--nectar_hook_before_nav_content_height", contentHeight + "px");
                         }
-                       
-                        document.documentElement.style.setProperty("--before_secondary_header_height", contentHeight + "px");
-                    </script>';
+
+                        // Run on page load
+                        updateHookContentHeight();
+
+                        // Detect if touch device
+                        var isTouch = ("ontouchstart" in window) || navigator.maxTouchPoints > 0;
+
+                        if (!isTouch) {
+                            window.addEventListener("resize", updateHookContentHeight);
+                        } else {
+                            if (screen.orientation && typeof screen.orientation.addEventListener === "function") {
+                                screen.orientation.addEventListener("change", updateHookContentHeight);
+                            }
+                        }
+                    })();</script>';
                 },99);
             }
 
             // Global sections that disabled transparent header.
             $transparent_non_compat_hooks = array(
-                'nectar_hook_global_section_after_header_navigation', 
+                'nectar_hook_global_section_after_header_navigation',
             );
 
             if( in_array( $hook, $transparent_non_compat_hooks ) ) {
@@ -451,15 +485,15 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
         }
         public function after_header_navigation_remove_transparency() {
             return false;
-        } 
-       
+        }
+
 
         /**
          * Special Location: Blog loop
          */
         public function nectar_special_location__blog_loop($global_section_id) {
-            
-            add_action('wp_enqueue_scripts', function() use ( $global_section_id ) { 
+
+            add_action('wp_enqueue_scripts', function() use ( $global_section_id ) {
                 if( is_archive() || is_author() || is_category() || is_home() || is_tag() || is_single() ) {
                     $section_content = get_post_field('post_content', $global_section_id);
 
@@ -499,7 +533,7 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                     }
                     ';
 
-                   
+
                     if( function_exists('get_nectar_theme_options')) {
 
                         $options = get_nectar_theme_options();
@@ -514,9 +548,9 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                                     width: 100vw;
                                     width: calc(100vw - var(--scroll-bar-w));
                                 }
-                                html body[data-bg-header="true"].category .container-wrap, 
+                                html body[data-bg-header="true"].category .container-wrap,
                                 html body[data-bg-header="true"].author .container-wrap,
-                                html body[data-bg-header="true"].date .container-wrap, 
+                                html body[data-bg-header="true"].date .container-wrap,
                                 html body[data-bg-header="true"].blog .container-wrap {
                                     padding-top: 0!important;
                                 }
@@ -537,11 +571,11 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                                 .nectar-archive-blog-wrap .spacing-4vw { padding: 4vw; }
                                 ';
                             }
-                            
+
                         }
                     }
 
-                    
+
 
                     wp_add_inline_style('nectar-element-post-grid', $css);
 
@@ -551,7 +585,7 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
 
             // Modify blog type
             add_filter('nectar_blog_type', function( $blog_type ) {
-                
+
                 if( function_exists('get_nectar_theme_options')) {
                     $options = get_nectar_theme_options();
                     if( Nectar_Global_Sections_Display_Options::is_special_location_active('nectar_special_location__blog_loop') ) {
@@ -563,10 +597,10 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
 
             //// match expected blog type on single post.
             add_filter('nectar_single_blog_type', function( $blog_type ) {
-                
+
                 if( function_exists('get_nectar_theme_options')) {
                     $options = get_nectar_theme_options();
-                    if( Nectar_Global_Sections_Display_Options::is_special_location_active('nectar_special_location__blog_loop') && 
+                    if( Nectar_Global_Sections_Display_Options::is_special_location_active('nectar_special_location__blog_loop') &&
                         isset($options['blog_type_post_grid']) ) {
 
                         if( $options['blog_type_post_grid'] === 'contained-sidebar' ) {
@@ -574,7 +608,7 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                         } else {
                             return 'std-blog-fullwidth';
                         }
-           
+
                     }
                 }
                 return $blog_type;
@@ -590,17 +624,17 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
 
                         if( $options['blog_type_post_grid'] === 'contained-sidebar' ) {
                             $sidebar_class = ' force-contained-rows';
-                        } 
-           
+                        }
+
                     }
                 }
 
                 return $class . ' nectar-archive-blog-wrap top-level'.$sidebar_class;
             });
 
-        
+
             // Outer Element wrap.
-            add_action( 'nectar_before_blog_loop_content', function() use ( $global_section_id ) { 
+            add_action( 'nectar_before_blog_loop_content', function() use ( $global_section_id ) {
 
                 $section_content = get_post_field('post_content', $global_section_id);
 
@@ -616,7 +650,7 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                     $a = shortcode_parse_atts($matches[1]);
                     $a = shortcode_atts( NectarPostGrid::get_attributes(), $a);
 
-                 
+
 
                     $css_class_arr = array('nectar-post-grid-wrap');
 
@@ -630,7 +664,7 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
 
                     if( !empty($a['additional_meta_size']) && 'default' != $a['additional_meta_size'] ) {
                         array_push($css_class_arr, 'additional-meta-size-'.$a['additional_meta_size']);
-                    } 
+                    }
 
                     if( !empty($a['grid_item_spacing']) ) {
                         array_push($css_class_arr, 'spacing-'.$a['grid_item_spacing']);
@@ -658,7 +692,7 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                             $a['columns'] = '2';
                             $a['columns_tablet'] = '1';
                         }
-                        
+
                     }
                     $data_attrs_escaped = NectarPostGrid::get_data_attributes($a);
 
@@ -669,15 +703,15 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                     }
 
                     echo '<div class="nectar-post-grid'.$dynamic_el_styles.'" '.$data_attrs_escaped.'>';
-                    
-                
+
+
                 }
             });
-        
+
 
             // Inner Post Loop.
-            add_action( 'nectar_blog_loop_post_item', function() use ( $global_section_id ) { 
-          
+            add_action( 'nectar_blog_loop_post_item', function() use ( $global_section_id ) {
+
                 $section_content = get_post_field('post_content', $global_section_id);
 
 		        if (!$section_content) {
@@ -687,7 +721,7 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                 $pattern = '/\[nectar_post_grid(.*?)\]/';
                 preg_match($pattern, $section_content, $matches);
                 if( isset($matches[1]) ) {
-                   
+
                     // parse attributes from shortcode
                     $a = shortcode_parse_atts($matches[1]);
 
@@ -708,11 +742,17 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                         'grid_style' => (isset($a['grid_style'])) ? $a['grid_style'] : 'content_overlaid',
                         'heading_tag' => (isset($a['heading_tag'])) ? $a['heading_tag'] : 'default',
                         'enable_gallery_lightbox' => (isset($a['enable_gallery_lightbox'])) ? $a['enable_gallery_lightbox'] : '0',
+                        'remove_links' => (isset($a['remove_links'])) ? $a['remove_links'] : '0',
                         'hover_effect' => (isset($a['hover_effect'])) ? $a['hover_effect'] : 'zoom',
                         'vertical_list_hover_effect' => (isset($a['vertical_list_hover_effect'])) ? $a['vertical_list_hover_effect'] : '',
                         'category_style' => (isset($a['category_style'])) ? $a['category_style'] : 'underline',
+                        'category_button_color' => (isset($a['category_button_color'])) ? $a['category_button_color'] : '',
+                        'category_button_text_color' => (isset($a['category_button_text_color'])) ? $a['category_button_text_color'] : '',
                         'post_title_overlay' => (isset($a['post_title_overlay'])) ? $a['post_title_overlay'] : '',
                         'display_date' => (isset($a['display_date'])) ? $a['display_date'] : '0',
+                        'content_next_to_image_divider' => (isset($a['content_next_to_image_divider'])) ? $a['content_next_to_image_divider'] : 'no',
+                        'content_next_to_image_divider_color' => (isset($a['content_next_to_image_divider_color'])) ? $a['content_next_to_image_divider_color'] : '',
+                        'content_next_to_image_excerpt_pos' => (isset($a['content_next_to_image_excerpt_pos'])) ? $a['content_next_to_image_excerpt_pos'] : 'default',
                         'display_estimated_reading_time' => (isset($a['display_estimated_reading_time'])) ? $a['display_estimated_reading_time'] : '0',
                         'display_author' => (isset($a['display_author'])) ? $a['display_author'] : '0',
                         'author_position' => (isset($a['author_position'])) ? $a['author_position'] : '',
@@ -720,21 +760,22 @@ if (!class_exists('Nectar_Global_Sections_Render')) {
                         'parallax_scrolling' => (isset($a['parallax_scrolling'])) ? $a['parallax_scrolling'] : 'no',
                     );
 
+
                     if( is_single() ) {
                         // related posts forced attrs.
                         $post_grid_options['image_loading_lazy_skip'] = '0';
                     }
 
-                
+
                     // post grid output.
                     echo nectar_post_grid_item_markup($post_grid_options, 0, 'archive');
 
 
                 } // found shortcode
-                
+
             });
 
-            add_action( 'nectar_after_blog_loop_content', function() use ( $global_section_id ) { 
+            add_action( 'nectar_after_blog_loop_content', function() use ( $global_section_id ) {
                 echo '</div></div>';
             });
         }

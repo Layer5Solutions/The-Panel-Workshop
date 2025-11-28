@@ -16,6 +16,12 @@
       opacity: 0;
     }
   }
+  &[data-vc-full-width-temp] {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    left: 0;
+    right: 0;
+  }
 }
 
 .vc_editor {
@@ -69,7 +75,7 @@
         -ms-flex-direction: column;
         flex-direction: column;
         z-index: 1;
-        @media (-ms-high-contrast: active), (-ms-high-contrast: none) {
+        @media (forced-colors: active), (forced-colors: none) {
           /* IE10+ specific styles */
           & > * {
             min-height: 1em;

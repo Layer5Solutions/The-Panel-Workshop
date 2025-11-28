@@ -63,7 +63,7 @@ $vc_role = new Vc_Roles();
 						<div class="vc_wp-accordion-panel-body">
 							<?php
 							if ( 'administrator' === $role ) {
-								$valid_roles = [ 'post_types' ];
+								$valid_roles = [ 'post_types', 'backend_editor' ];
 								?>
 								<div class="vc_wp-roles-message">
 									<p><?php esc_html_e( 'Administrator role have always full access to WPBakery Page Builder features and options.', 'js_composer' ); ?></p>

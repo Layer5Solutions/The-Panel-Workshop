@@ -46,7 +46,7 @@ if (preg_match('/^\d+$/',$image) ) {
 
 // Output.
 if (!empty($url) && $url !== 'none' && $url !== '#') : ?>
-	<div><a href="<?php echo esc_attr( $url ); ?>" target="<?php echo esc_attr($url_target); ?>">
+	<div><a href="<?php echo esc_url( $url ); ?>" target="<?php echo esc_attr($url_target); ?>">
 		<?php echo '<img src="'.esc_attr( $image ).'" alt="'.esc_attr( $alt_tag ).'"'.$img_dimens_o . $img_attrs.' />'; ?>
 	</a></div>
 <?php else : ?>

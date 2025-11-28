@@ -27,7 +27,12 @@ if( !empty($image) ) {
 		$image     = $image_src[0];
 		$has_bg    = 'has-bg';
 
-		$bg_markup_escaped = 'style="background-image: url('.esc_url($image).');"';
+		if ( property_exists('NectarLazyImages', 'global_option_active') &&
+			true === NectarLazyImages::$global_option_active ) {
+			$bg_markup_escaped = 'data-nectar-img-src="'.esc_url($image).'"';
+		} else {
+			$bg_markup_escaped = 'style="background-image: url('.esc_url($image).');"';
+		}
 	}
 
 }

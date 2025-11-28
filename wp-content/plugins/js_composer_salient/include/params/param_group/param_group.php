@@ -96,7 +96,7 @@ class Vc_ParamGroup {
 	 * Vc_ParamGroup constructor.
 	 *
 	 * @param array $settings
-	 * @param array $value
+	 * @param string $value
 	 * @param string $tag
 	 *
 	 * @since 4.4
@@ -190,7 +190,7 @@ class Vc_ParamGroup {
  * Parse settings from vc_map and entered values.
  *
  * @param array $param_settings
- * @param array $param_value
+ * @param string|null $param_value
  * @param string $tag
  *
  * @return mixed rendered template for params in edit form
@@ -199,6 +199,8 @@ class Vc_ParamGroup {
  * vc_filter: vc_param_group_render_filter
  */
 function vc_param_group_form_field( $param_settings, $param_value, $tag ) {
+
+	$param_value = (string) $param_value;
 	$param_group = new Vc_ParamGroup( $param_settings, $param_value, $tag );
 
 	return apply_filters( 'vc_param_group_render_filter', $param_group->render() );

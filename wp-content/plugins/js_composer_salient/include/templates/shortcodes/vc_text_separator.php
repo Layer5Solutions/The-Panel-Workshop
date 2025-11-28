@@ -92,9 +92,7 @@ if ( $icon ) {
 }
 if ( '' !== $title && 'separator_no_text' !== $layout ) {
 	$css_class .= ' vc_separator-has-text';
-	// nectar addition - wp_kses_post
-	$content .= '<h4>' . wp_kses_post($title) . '</h4>';
-	// nectar addition end
+	$content .= '<h4>' . wp_kses_post( $title ) . '</h4>';
 }
 $wrapper_attributes = [];
 if ( ! empty( $el_id ) ) {

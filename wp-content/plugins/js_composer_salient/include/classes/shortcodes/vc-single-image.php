@@ -29,7 +29,7 @@ class WPBakeryShortCode_Vc_Single_Image extends WPBakeryShortCode {
 	 * Register scripts.
 	 */
 	public function jsScripts() {
-		wp_register_script( 'zoom', vc_asset_url( 'lib/vendor/node_modules/jquery-zoom/jquery.zoom.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
+		wp_register_script( 'zoom', vc_asset_url( 'lib/vendor/dist/jquery-zoom/jquery.zoom.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 
 		wp_register_script( 'vc_image_zoom', vc_asset_url( 'lib/vc/vc_image_zoom/vc_image_zoom.min.js' ), [
 			'jquery-core',

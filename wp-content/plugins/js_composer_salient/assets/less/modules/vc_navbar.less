@@ -122,7 +122,7 @@
     }
   }
 
-  .vc_badge-custom-css {
+  .vc_badge-custom-code {
     display: block;
     background-color: #fcb714;
     position: absolute;
@@ -297,7 +297,8 @@
   }
 }
 
-@media screen and (min-width: 961px) {
+// Desktop navbar mixin
+.vc_navbar-desktop {
   .vc_hide-desktop {
     display: none;
   }
@@ -358,22 +359,12 @@
   }
 }
 
-@media screen and (max-width: 1005px) {
-  body:not(.vc_editor) .vc_navbar {
-    padding-left: 160px;
-    position: fixed;
-    z-index: 9980;
-    width: 100%;
-    left: 0;
-    top: 32px; // #wpadminbar height
-  }
-}
-
-@media screen and (max-width: 960px) {
+// Desktop mobile mixin
+.vc_navbar-mobile {
   .vc_navbar {
     display: flex;
     ul.vc_navbar-nav li.vc_hide-mobile, .navbar-header {
-        display: none;
+      display: none;
     }
 
     &-nav {
@@ -433,20 +424,67 @@
   .vc_navbar-header {
     float: left;
   }
+}
 
-  .vc_navbar {
+// Media query specifically for Backend Editor!
+@media screen and (min-width: 1011px) {
+  body:not(.vc_editor) {
+    .vc_navbar-desktop();
+  }
+}
+
+// Media query specifically for Frontend Editor!
+@media screen and (min-width: 961px) {
+  body.vc_editor {
+    .vc_navbar-desktop();
+  }
+}
+
+// Media query specifically for Backend Editor! , fixed at this point
+@media screen and (max-width: 1065px) {
+  body:not(.vc_editor) .vc_navbar {
     position: fixed;
     z-index: 9980;
     width: 100%;
     left: 0;
+    padding-left: @vc_navbar_fixed_right_padding;
     top: 32px; // #wpadminbar height
   }
 
-  body:not(.vc_editor) .vc_navbar {
-    padding-left: 160px;
+  body.folded:not(.vc_editor) {
+    .vc_navbar {
+      padding-left: 36px;
+    }
+    .vc_subnav-fixed {
+      padding-left: 40px;
+    }
+  }
+}
+
+// Media query specifically for Backend Editor!
+@media screen and (max-width: 1010px) {
+  body:not(.vc_editor) {
+    .vc_navbar-mobile();
   }
 
-  body.auto-fold:not(.vc_editor) {
+  body.folded:not(.vc_editor) {
+    .vc_navbar {
+      padding-left: 36px;
+    }
+    .vc_subnav-fixed {
+      padding-left: 40px;
+    }
+  }
+}
+
+@media screen and (max-width: 960px) {
+  // Sytle specifically for Frontend Editor!
+  body.vc_editor {
+    .vc_navbar-mobile();
+  }
+
+  // Sytle specifically for Backend Editor!
+  body:not(.vc_editor).auto-fold {
     .vc_navbar {
       padding-left: 36px;
     }
@@ -520,18 +558,24 @@
   transition: all 0.2s ease-in-out;
 }
 
-.vc_post-settings-icon {
+.vc_custom-code-icon {
   position: relative;
   .vc_badge {
-    top: -13px;
-    right: -16px;
+    top: -15px;
+    right: -15px;
   }
 }
 
+.vc_editor #vc_more-options {
+  .vc_badge {
+    top: -3px;
+    right: -3px;
+  }
+}
 #vc_more-options {
   .vc_badge {
     top: 0px;
-    right: -2px;
+    right: -3px;
   }
 }
 

@@ -88,7 +88,7 @@ $output .= '<canvas width="101" height="101"></canvas>';
 $output .= '</div>';
 
 if ( '' !== $title ) {
-	$output .= '<h4 class="wpb_heading wpb_pie_chart_heading">' . $title . '</h4>';
+	$output .= '<h4 class="wpb_heading wpb_pie_chart_heading">' . wp_kses_post( $title ) . '</h4>';
 }
 
 $output .= '</div>';

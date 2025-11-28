@@ -1642,11 +1642,29 @@
                     } elseif ( ! $this->args['disable_google_fonts_link'] ) {
                         /* nectar addition */
                         $protocol = ( is_ssl() ) ? "https:" : "http:";
-                        /* nectar addition end */
 
-                        //echo '<link rel="stylesheet" id="options-google-fonts" title="" href="'.$protocol.$typography->makeGoogleWebfontLink( $this->typography ).'&amp;v='.$version.'" type="text/css" media="all" />';
-                        wp_register_style( 'redux-google-fonts-' . $this->args['opt_name'], $protocol . $typography->makeGoogleWebfontLink( $this->typography ), '', $version );
-                        wp_enqueue_style( 'redux-google-fonts-' . $this->args['opt_name'] );
+                        // Load Google Fonts locally when enabled in Salient options.
+                        $nectar_options = function_exists('get_nectar_theme_options') ? get_nectar_theme_options() : array();
+                        $use_local_google_fonts = ( isset($nectar_options['typography_google_fonts_local']) && '1' === $nectar_options['typography_google_fonts_local'] );
+
+                        if ( $use_local_google_fonts ) {
+                            $local_css_url = get_option( 'salient_local_google_fonts_css' );
+
+                            if ( ! empty( $local_css_url ) ) {
+                                wp_register_style( 'salient-redux-local-google-fonts-' . $this->args['opt_name'], $local_css_url, '', $version );
+                                wp_enqueue_style( 'salient-redux-local-google-fonts-' . $this->args['opt_name'] );
+                            } else {
+                                // Fallback to external when local cache missing
+                                wp_register_style( 'redux-google-fonts-' . $this->args['opt_name'], $protocol . $typography->makeGoogleWebfontLink( $this->typography ), '', $version );
+                                wp_enqueue_style( 'redux-google-fonts-' . $this->args['opt_name'] );
+                            }
+                        } else {
+                            // Default: load from Google
+                            //echo '<link rel="stylesheet" id="options-google-fonts" title="" href="'.$protocol.$typography->makeGoogleWebfontLink( $this->typography ).'&amp;v='.$version.'" type="text/css" media="all" />';
+                            wp_register_style( 'redux-google-fonts-' . $this->args['opt_name'], $protocol . $typography->makeGoogleWebfontLink( $this->typography ), '', $version );
+                            wp_enqueue_style( 'redux-google-fonts-' . $this->args['opt_name'] );
+                        }
+                        /* nectar addition end */
                     }
                 }
             }
@@ -2622,9 +2640,12 @@
 
                     if ( $plugin_options['import_code'] != '' ) {
                         $import = $plugin_options['import_code'];
-                    } elseif ( $plugin_options['import_link'] != '' ) {
-                        $import = wp_remote_retrieve_body( wp_remote_get( $plugin_options['import_link'] ) );
                     }
+
+                    // remove option to import from link
+                    // elseif ( $plugin_options['import_link'] != '' ) {
+                    //     $import = wp_remote_retrieve_body( wp_remote_get( $plugin_options['import_link'] ) );
+                    // }
 
                     if ( ! empty ( $import ) ) {
                         $imported_options = json_decode( $import, true );

@@ -52,9 +52,11 @@ function watchModuleJsMainFile ( done ) {
 		});
 }
 
+/* eslint-disable */
 module.exports = {
 	watchJs,
 	watchJsLibs,
 	watchModuleJsFiles,
 	watchModuleJsMainFile
 };
+/* eslint-enable */

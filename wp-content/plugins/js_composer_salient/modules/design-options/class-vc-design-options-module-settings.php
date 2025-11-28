@@ -17,6 +17,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Vc_Design_Options_Module_Settings {
 
 	/**
+	 * Custom CSS upload file name.
+	 *
+	 * @var string
+	 * @since 8.5
+	 */
+	public $custom_css_upload_file = 'js_composer_front_custom.css';
+
+	/**
 	 * Init point.
 	 *
 	 * @since 7.7
@@ -48,7 +56,7 @@ class Vc_Design_Options_Module_Settings {
 
 		add_action( 'vc_after_init', [ $this, 'restore_default' ] );
 
-		add_action( 'vc_before_init', [ $this, 'check_for_custom_css_build' ] );
+		add_action( 'vc_after_init', [ $this, 'check_for_custom_css_build' ] );
 
 		add_action( 'vc-settings-render-tab-vc-color', [ $this, 'load_module_settings_assets' ] );
 	}
@@ -60,8 +68,29 @@ class Vc_Design_Options_Module_Settings {
 	 * @since 7.7
 	 */
 	public function check_for_custom_css_build() {
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		if ( ! vc_user_access()->wpAny( 'manage_options' )->part( 'settings' )->can( 'vc-color-tab' )->get() ) {
+			return;
+		}
+
+		if ( ! $this->use_custom_css() ) {
+			return;
+		}
+
+		$upload_dir = wp_upload_dir();
+		$vc_upload_dir = vc_upload_dir();
+
+		if ( ! is_file( $upload_dir['basedir'] . '/' . $vc_upload_dir . '/' . $this->custom_css_upload_file ) ) {
+			// nectar addition
+			// add_action( 'admin_notices', [ $this, 'custom_css_admin_notice' ] );
+			// nectar addition end
+		}
+
 		$version = $this->get_custom_css_version();
-		if ( vc_user_access()->wpAny( 'manage_options' )->part( 'settings' )->can( 'vc-color-tab' )->get() && $this->use_custom_css() && ( ! $version || version_compare( WPB_VC_VERSION, $version, '<>' ) ) ) {
+		if ( ! $version || version_compare( WPB_VC_VERSION, $version, '<>' ) ) {
 			// nectar addition
 			// add_action( 'admin_notices', [$this, 'custom_css_admin_notice'] );
 			// nectar addition end
@@ -267,17 +296,16 @@ class Vc_Design_Options_Module_Settings {
 	public function build_custom_color_css() {
 		// Filesystem API init.
 		$settings = vc_settings();
-		$url = wp_nonce_url( 'admin.php?page=vc-color&build_css=1', 'wpb_js_settings_save_action' );
-		$settings::getFileSystem( $url );
+		$settings::getFileSystem();
 		// WP_Filesystem_Direct $wp_filesystem.
 		global $wp_filesystem;
 		// Building css file.
-		$js_composer_upload_dir = $settings::checkCreateUploadDir( $wp_filesystem, 'use_custom', 'js_composer_front_custom.css' );
+		$js_composer_upload_dir = $settings::checkCreateUploadDir( $wp_filesystem, 'use_custom', $this->custom_css_upload_file );
 		if ( ! $js_composer_upload_dir ) {
 			return;
 		}
 
-		$filename = $js_composer_upload_dir . '/js_composer_front_custom.css';
+		$filename = $js_composer_upload_dir . '/' . $this->custom_css_upload_file;
 		$use_custom = get_option( $settings::$field_prefix . 'use_custom' );
 		if ( ! $use_custom ) {
 			$wp_filesystem->put_contents( $filename, '', FS_CHMOD_FILE );
@@ -289,7 +317,6 @@ class Vc_Design_Options_Module_Settings {
 			update_option( $settings::$field_prefix . 'less_version', WPB_VC_VERSION );
 			delete_option( $settings::$field_prefix . 'compiled_js_composer_less' );
 			$css_string = wp_strip_all_tags( $css_string );
-			// HERE goes the magic.
 			if ( ! $wp_filesystem->put_contents( $filename, $css_string, FS_CHMOD_FILE ) ) {
 				if ( is_wp_error( $wp_filesystem->errors ) && $wp_filesystem->errors->get_error_code() ) {
 					add_settings_error( $settings::$field_prefix . 'main_color', $wp_filesystem->errors->get_error_code(), esc_html__( 'Something went wrong: js_composer_front_custom.css could not be created.', 'js_composer' ) . ' ' . $wp_filesystem->errors->get_error_message() );
@@ -720,11 +747,11 @@ class Vc_Design_Options_Module_Settings {
 	 * @since 7.8
 	 */
 	public function load_module_settings_assets() {
-		wp_enqueue_style( 'pickr', vc_asset_url( 'lib/vendor/node_modules/@simonwep/pickr/dist/themes/classic.min.css' ), [], WPB_VC_VERSION );
-		wp_enqueue_script( 'pickr', vc_asset_url( 'lib/vendor/node_modules/@simonwep/pickr/dist/pickr.es5.min.js' ), [], WPB_VC_VERSION, true );
+		wp_enqueue_style( 'pickr', vc_asset_url( 'lib/vendor/dist/@simonwep/pickr/dist/themes/classic.min.css' ), [], WPB_VC_VERSION );
+		wp_enqueue_script( 'pickr', vc_asset_url( 'lib/vendor/dist/@simonwep/pickr/dist/pickr.es5.min.js' ), [], WPB_VC_VERSION, true );
 
 		add_filter( 'vc_settings-tab-submit-button-attributes-color', [ $this, 'page_settings_tab_color_submit_attributes' ] );
-		wp_enqueue_script( 'vc_less_js', vc_asset_url( 'lib/vendor/node_modules/less/dist/less.min.js' ), [], WPB_VC_VERSION, true );
+		wp_enqueue_script( 'vc_less_js', vc_asset_url( 'lib/vendor/dist/less/dist/less.min.js' ), [], WPB_VC_VERSION, true );
 		wp_enqueue_script( 'wpb_design_options_module', vc_asset_url( '../modules/design-options/assets/dist/module.min.js' ), [], WPB_VC_VERSION, true );
 		wp_enqueue_style( 'wpb_design_options_module', vc_asset_url( '../modules/design-options/assets/dist/module.min.css' ), false, WPB_VC_VERSION );
 	}

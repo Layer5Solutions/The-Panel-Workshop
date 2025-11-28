@@ -15,6 +15,14 @@ return array(
 	"description" => esc_html__('Animated text that scrolls', 'salient-core'),
 	"params" => array(
 
+		array(
+			"type" => "textarea_html",
+			"heading" => esc_html__("Text Content", "salient-core"),
+			"param_name" => "content",
+			"value" => '',
+			"description" => esc_html__("Please ensure your text is using a heading tag - The text you enter will appear in a single line.", "salient-core"),
+			"admin_label" => true
+		),
 
 		array(
 			"type" => "dropdown",
@@ -48,61 +56,6 @@ return array(
 			"heading" => esc_html__("Text Color", "salient-core"),
 			"param_name" => "text_color",
 			"value" => "",
-		),
-		array(
-			"type" => "textarea_html",
-			"heading" => esc_html__("Text Content", "salient-core"),
-			"param_name" => "content",
-			"value" => '',
-			"description" => esc_html__("Please ensure your text is using a heading tag - The text you enter will appear in a single line.", "salient-core"),
-			"admin_label" => true
-		),
-
-		array(
-			"type" => 'checkbox',
-			"heading" => esc_html__("Move on Scroll", "salient-core"),
-			"param_name" => "move_on_scroll_animation",
-			"description" => esc_html__("This will cause your text movment to react to user scrolling.", "salient-core"),
-			'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
-			"value" => Array(esc_html__("Yes, please", "salient-core") => 'yes')
-		),
-		array(
-			"type" => "dropdown",
-			"heading" => esc_html__("Italic Style", "salient-core"),
-			"param_name" => "style",
-			"value" => array(
-				esc_html__("Default", "salient-core") => "default",
-				esc_html__("Text Outline", "salient-core") => "text_outline"
-			),
-			'save_always' => true,
-			"description" => esc_html__("Please select the style you would like for your italics. Use the \"I\" button on the editor above when highlighting text to toggle italics", "salient-core")
-		),
-		array(
-			"type" => "dropdown",
-			"heading" => esc_html__("Outline Thickness", "salient-core"),
-			"param_name" => "outline_thickness",
-			"dependency" => array('element' => "style", 'value' => array('text_outline')),
-			"value" => array(
-				esc_html__("Ultra Thin", "salient-core") => "ultra-thin",
-				esc_html__("Thin", "salient-core") => "thin",
-				esc_html__("Regular", "salient-core") => "regular",
-				esc_html__("Thick", "salient-core") => "thick",
-				esc_html__("Extra Thick", "salient-core") => "extra_thick"
-			),
-			'save_always' => true,
-			"description" => ''
-		),
-
-		array(
-			"type" => "dropdown",
-			"heading" => esc_html__("Outline Applies To", "salient-core"),
-			"param_name" => "outline_applies_to",
-			"dependency" => array('callback' => 'nectarOutlineAppliesToCallback'),
-			"value" => array(
-				esc_html__("Text Content", "salient-core") => "text_only",
-				esc_html__("Text Content and Custom Divider", "salient-core") => "both",
-			),
-			'save_always' => true,
 		),
 
 		array(
@@ -151,13 +104,28 @@ return array(
 			"heading" => esc_html__("Text Space Amount", "salient-core"),
 			"param_name" => "text_space_amount",
 			"value" => array(
+				esc_html__("None", "salient-core") => "none",
 				esc_html__("Small", "salient-core") => "default",
 				esc_html__("Medium", "salient-core") => "medium",
 				esc_html__("Large", "salient-core") => "large",
+				esc_html__("Custom", "salient-core") => "custom",
 			),
-			"dependency" => array('element' => "text_repeat_divider", 'value' => array('space')),
+			"dependency" => array('element' => "text_repeat_divider", 'value' => array('space', 'custom')),
 			'save_always' => true,
 		),
+
+		array(
+			"type" => "nectar_numerical",
+			"class" => "",
+			"placeholder" => '',
+			"heading" =>  esc_html__("Custom Text Space Amount", "salient-core"),
+			"value" => "",
+			"edit_field_class" => "zero-floor vc_col-xs-12",
+			"param_name" => "text_space_amount_custom",
+			"dependency" => array('element' => "text_space_amount", 'value' => array('custom')),
+			"description" => ""
+		),
+
 		array(
 			"type" => "textfield",
 			"heading" => esc_html__("Custom Text Repeat Divider", "salient-core"),
@@ -185,6 +153,69 @@ return array(
 			"dependency" => array('element' => "text_repeat_divider", 'value' => array('custom')),
 			"value" => "",
 		),
+
+		array(
+			"type" => "nectar_group_header",
+			"class" => "",
+			"heading" => esc_html__("Effects", "salient-core" ),
+			"param_name" => "group_header_effects",
+			"edit_field_class" => "",
+			"value" => ''
+		),
+		array(
+			"type" => 'checkbox',
+			"heading" => esc_html__("Mask Edges", "salient-core"),
+			"param_name" => "mask_edges",
+			"description" => esc_html__("This will mask the edges of the text.", "salient-core"),
+			'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+			"value" => Array(esc_html__("Yes, please", "salient-core") => 'yes')
+		),
+		array(
+			"type" => 'checkbox',
+			"heading" => esc_html__("Move on Scroll", "salient-core"),
+			"param_name" => "move_on_scroll_animation",
+			"description" => esc_html__("This will cause your text movment to react to user scrolling.", "salient-core"),
+			'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+			"value" => Array(esc_html__("Yes, please", "salient-core") => 'yes')
+		),
+		array(
+			"type" => "dropdown",
+			"heading" => esc_html__("Italic Style", "salient-core"),
+			"param_name" => "style",
+			"value" => array(
+				esc_html__("Default", "salient-core") => "default",
+				esc_html__("Text Outline", "salient-core") => "text_outline"
+			),
+			'save_always' => true,
+			"description" => esc_html__("Please select the style you would like for your italics. Use the \"I\" button on the editor above when highlighting text to toggle italics", "salient-core")
+		),
+		array(
+			"type" => "dropdown",
+			"heading" => esc_html__("Outline Thickness", "salient-core"),
+			"param_name" => "outline_thickness",
+			"dependency" => array('element' => "style", 'value' => array('text_outline')),
+			"value" => array(
+				esc_html__("Ultra Thin", "salient-core") => "ultra-thin",
+				esc_html__("Thin", "salient-core") => "thin",
+				esc_html__("Regular", "salient-core") => "regular",
+				esc_html__("Thick", "salient-core") => "thick",
+				esc_html__("Extra Thick", "salient-core") => "extra_thick"
+			),
+			'save_always' => true,
+			"description" => ''
+		),
+
+		array(
+			"type" => "dropdown",
+			"heading" => esc_html__("Outline Applies To", "salient-core"),
+			"param_name" => "outline_applies_to",
+			"dependency" => array('callback' => 'nectarOutlineAppliesToCallback'),
+			"value" => array(
+				esc_html__("Text Content", "salient-core") => "text_only",
+				esc_html__("Text Content and Custom Divider", "salient-core") => "both",
+			),
+			'save_always' => true,
+		),
 		array(
 			"type" => 'checkbox',
 			"heading" => esc_html__("Custom Text Repeat Divider Spin on Scroll", "salient-core"),
@@ -192,6 +223,15 @@ return array(
 			'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
 			"dependency" => array('element' => "text_repeat_divider", 'value' => array('custom')),
 			"value" => Array(esc_html__("Yes, please", "salient-core") => 'yes')
+		),
+
+		array(
+			"type" => "nectar_group_header",
+			"class" => "",
+			"heading" => esc_html__("Advanced", "salient-core" ),
+			"param_name" => "group_header_advanced",
+			"edit_field_class" => "",
+			"value" => ''
 		),
 		array(
 			"type" => "dropdown",

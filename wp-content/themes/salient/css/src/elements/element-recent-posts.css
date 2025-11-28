@@ -4,11 +4,7 @@ Description: Styles for the "Recent Posts" page builder element.
 */
 
 .home .blog-recent .col .post-header{
-     color:#999;
      margin-bottom:12px
-}
- .home .blog-recent .col .post-header h3 a{
-    color:#27CFC3
 }
  .blog-recent .mejs-container{
     margin-bottom:15px

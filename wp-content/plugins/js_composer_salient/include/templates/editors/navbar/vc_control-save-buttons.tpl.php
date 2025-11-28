@@ -26,7 +26,7 @@ if ( ! in_array( $post->post_status, [
 	<a href="javascript:;"
 		id="vc_button-save-draft"
 		class="<?php echo $is_mobile ? 'vc_icon-btn ' : 'vc_btn vc_btn-default vc_navbar-btn '; ?> vc_btn-save-draft"
-		title="<?php esc_attr_e( 'Save Draft', 'js_composer' ); ?>">
+		title="<?php echo esc_attr( wpb_get_title_with_shortcut( 'Save Draft' ) ); ?>">
 		<i class="vc_hide-desktop vc-composer-icon vc-c-icon-save-draft"></i>
 		<p><?php esc_html_e( 'Save Draft', 'js_composer' ); ?></p>
 	</a>
@@ -34,7 +34,7 @@ if ( ! in_array( $post->post_status, [
 		<a href="javascript:;"
 			id="vc_button-save-as-pending"
 			class="<?php echo $is_mobile ? 'vc_icon-btn ' : 'vc_btn vc_btn-primary vc_navbar-btn '; ?> vc_btn-save"
-			title="<?php esc_attr_e( 'Save as Pending', 'js_composer' ); ?>">
+			title="<?php echo esc_attr( wpb_get_title_with_shortcut( 'Save as Pending' ) ); ?>">
 			<i class="vc_hide-desktop vc-composer-icon vc-c-icon-save-draft"></i>
 			<p><?php esc_html_e( 'Save as Pending', 'js_composer' ); ?></p>
 		</a>
@@ -43,7 +43,7 @@ if ( ! in_array( $post->post_status, [
 		<a href="javascript:;"
 			id="vc_button-update"
 			class="<?php echo $is_mobile ? 'vc_icon-btn ' : 'vc_btn vc_btn-primary vc_navbar-btn '; ?> vc_btn-save"
-			title="<?php esc_attr_e( 'Publish', 'js_composer' ); ?>"
+			title="<?php echo esc_attr( __( 'Publish', 'js_composer' ) ); ?>"
 			data-change-status="publish">
 			<i class="vc_hide-desktop vc-composer-icon vc-c-icon-publish"></i>
 			<p><?php esc_html_e( 'Publish', 'js_composer' ); ?></p>
@@ -52,7 +52,7 @@ if ( ! in_array( $post->post_status, [
 		<a href="javascript:;"
 			id="vc_button-update"
 			class="<?php echo $is_mobile ? 'vc_icon-btn ' : 'vc_btn vc_btn-primary vc_navbar-btn '; ?> vc_btn-save"
-			title="<?php esc_attr_e( 'Submit for Review', 'js_composer' ); ?>"
+			title="<?php echo esc_attr( wpb_get_title_with_shortcut( 'Submit for Review' ) ); ?>"
 			data-change-status="pending">
 			<i class="vc_hide-desktop vc-composer-icon vc-c-icon-publish"></i>
 			<p><?php esc_html_e( 'Submit for Review', 'js_composer' ); ?></p>
@@ -62,7 +62,7 @@ if ( ! in_array( $post->post_status, [
 	<a href="javascript:;"
 		id="vc_button-update"
 		class="<?php echo $is_mobile ? 'vc_icon-btn ' : 'vc_btn vc_btn-primary vc_navbar-btn '; ?> vc_btn-save"
-		title="<?php esc_attr_e( 'Update', 'js_composer' ); ?>">
+		title="<?php echo esc_attr( wpb_get_title_with_shortcut( 'Update' ) ); ?>">
 		<i class="vc_hide-desktop vc-composer-icon vc-c-icon-publish"></i>
 		<p><?php esc_html_e( 'Update', 'js_composer' ); ?></p>
 	</a>

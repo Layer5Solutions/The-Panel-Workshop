@@ -28,7 +28,7 @@ class WPBakeryShortCode_Vc_Round_Chart extends WPBakeryShortCode {
 	 */
 	public function jsScripts() {
 		wp_register_script( 'vc_waypoints', vc_asset_url( 'lib/vc/vc_waypoints/vc-waypoints.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
-		wp_register_script( 'ChartJS', vc_asset_url( 'lib/vendor/node_modules/chart.js/dist/chart.min.js' ), [], WPB_VC_VERSION, true );
+		wp_register_script( 'ChartJS', vc_asset_url( 'lib/vendor/dist/chart.js/dist/chart.min.js' ), [], WPB_VC_VERSION, true );
 		wp_register_script( 'vc_round_chart', vc_asset_url( 'lib/vc/vc_round_chart/vc_round_chart.min.js' ), [
 			'jquery-core',
 			'vc_waypoints',

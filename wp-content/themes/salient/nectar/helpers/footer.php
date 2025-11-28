@@ -125,7 +125,20 @@ if ( ! defined( 'ABSPATH' ) ) {
  add_filter('nectar_global_section_attrs', 'nectar_global_section_footer_attributes_filter', 10, 2);
  function nectar_global_section_footer_attributes_filter($attrs, $location) {
   if ( in_array($location, array('nectar_hook_global_section_footer', 'nectar_hook_global_section_parallax_footer')) ) {
-    $attrs['role'] = 'contentinfo';
+
+    // Check if the main footer already has role="contentinfo"
+    $nectar_options = get_nectar_theme_options();
+    $using_footer_widget_area  = ( isset( $nectar_options['enable-main-footer-area'] ) && $nectar_options['enable-main-footer-area'] === '1' ) ? 'true' : 'false';
+    $disable_footer_copyright  = ( isset( $nectar_options['disable-copyright-footer-area'] ) && $nectar_options['disable-copyright-footer-area'] === '1' ) ? 'true' : 'false';
+
+    $main_footer_has_contentinfo = ( $using_footer_widget_area !== 'false' || $disable_footer_copyright !== 'true' );
+
+    if ( $main_footer_has_contentinfo ) {
+      $attrs['role'] = 'complementary';
+      $attrs['aria-label'] = esc_attr__('Additional site information', 'salient');
+    } else {
+      $attrs['role'] = 'contentinfo';
+    }
   }
   return $attrs;
 }

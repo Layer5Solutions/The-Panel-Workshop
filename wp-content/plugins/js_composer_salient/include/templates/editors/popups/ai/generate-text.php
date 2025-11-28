@@ -69,23 +69,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</div>
 </div>
 <div class="vc_col-xs-12 wpb_el_type_dropdown vc_wrapper-param-type-dropdown vc_shortcode-param vc_column" data-optional-form-field="length">
-	<div class="wpb-param-heading">
-		<div class="wpb_element_label"><?php esc_html_e( 'Length', 'js_composer' ); ?></div>
-		<?php
-		$length_info = vc_get_template( 'editors/partials/param-info.tpl.php', [ 'description' => esc_html__( 'Select the length of the content.', 'js_composer' ) ] );
-		// phpcs:ignore
-		if ( is_string( $length_info ) ) { echo $length_info; }
+	<?php
+	$length_list = $ai_modal_controller->get_number_of_symbols_list( $ai_element_type );
+	if ( count( $length_list ) === 1 ) {
+		reset( $length_list );
+		$slug = key( $length_list );
 		?>
-	</div>
-	<div class="edit_form_line">
-		<select name="length" class="wpb_vc_param_value wpb-input wpb-select source dropdown">
-			<?php
-			foreach ( $ai_modal_controller->get_number_of_symbols_list( $ai_element_type ) as $slug => $value ) {
-				echo '<option value="' . esc_html( $slug ) . '">' . esc_html( $value ) . '</option>';
-			}
-			?>
-		</select>
-	</div>
+		<input type="hidden" name="length" value="<?php echo esc_attr( $slug ); ?>">
+		<?php
+	} else {
+		?>
+			<div class="wpb-param-heading">
+				<div class="wpb_element_label"><?php esc_html_e( 'Length', 'js_composer' ); ?></div>
+				<?php
+				$length_info = vc_get_template( 'editors/partials/param-info.tpl.php', [ 'description' => esc_html__( 'Select the length of the content.', 'js_composer' ) ] );
+                // phpcs:ignore
+                if ( is_string( $length_info ) ) { echo $length_info; }
+				?>
+			</div>
+			<div class="edit_form_line">
+				<select name="length" class="wpb_vc_param_value wpb-input wpb-select source dropdown">
+					<?php
+					foreach ( $ai_modal_controller->get_number_of_symbols_list( $ai_element_type ) as $slug => $value ) {
+						echo '<option value="' . esc_html( $slug ) . '">' . esc_html( $value ) . '</option>';
+					}
+					?>
+				</select>
+			</div>
+		<?php
+	}
+	?>
 </div>
 <div class="vc_col-sm-12 vc_column" data-optional-form-field="keyWords">
 	<div class="wpb-param-heading">

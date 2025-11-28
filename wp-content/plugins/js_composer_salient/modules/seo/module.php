@@ -397,10 +397,11 @@ class Vc_Seo_Module extends Vc_Module {
 			return $controls;
 		}
 
+		$title = esc_attr( wpb_get_title_with_shortcut( 'WPBakery SEO' ) );
 		$controls[] = [
 			'seo',
 			'<li class="vc_pull-right vc_hide-mobile vc_hide-desktop-more">
-				<a href="javascript:;" class="vc_icon-btn vc_seo-button" id="vc_seo-button" title="' . esc_attr__( 'WPBakery SEO', 'js_composer' ) . '">
+				<a href="javascript:;" class="vc_icon-btn vc_seo-button" id="vc_seo-button" title="' . $title . '">
 					<i class="vc-composer-icon vc-c-icon-seo"></i>
 					<p class="vc_hide-desktop">' . __( 'SEO', 'js_composer' ) . '</p>
 				</a>

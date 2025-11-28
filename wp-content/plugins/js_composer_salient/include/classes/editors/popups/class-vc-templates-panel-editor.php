@@ -444,7 +444,7 @@ class Vc_Templates_Panel_Editor {
 		wpbakery()->registerAdminCss();
 		vc_backend_editor()->registerBackendJavascript();
 		vc_backend_editor()->registerBackendCss();
-		wp_register_script( 'vc_editors-templates-preview-js', vc_asset_url( 'js/editors/templates-preview.js' ), [
+		wp_register_script( 'vc_editors-templates-preview-js', vc_asset_url( 'js/panels/views/templates/components/templates-preview.js' ), [
 			'vc-backend-min-js',
 		], WPB_VC_VERSION, true );
 	}

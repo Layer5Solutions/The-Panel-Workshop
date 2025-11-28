@@ -7,9 +7,8 @@ Author URI:  https://themeforest.net/user/themenectar
 Template: salient
 Version: 1.0
 */
-.smartcut-content .grid-table .row::after {
-  content: unset !important;
-}
-.smartcut-content .grid-table .row::before {
-  content: unset !important;
-}
+
+
+
+
+

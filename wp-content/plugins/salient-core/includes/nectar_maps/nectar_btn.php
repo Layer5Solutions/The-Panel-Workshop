@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 $el_color_list = array(
     esc_html__( "Accent Color", "salient-core") => "Accent-Color",
 	esc_html__( "Extra Color 1", "salient-core") => "Extra-Color-1",
-	esc_html__( "Extra Color 2", "salient-core") => "Extra-Color-2",	
+	esc_html__( "Extra Color 2", "salient-core") => "Extra-Color-2",
 	esc_html__( "Extra Color 3", "salient-core") => "Extra-Color-3",
 	esc_html__( "Color Gradient 1", "salient-core") => "extra-color-gradient-1",
 	esc_html__( "Color Gradient 2", "salient-core") => "extra-color-gradient-2"
@@ -17,14 +17,14 @@ $custom_colors = apply_filters('nectar_additional_theme_colors', array());
 $el_color_list = array_merge($el_color_list, $custom_colors);
 
 return array(
-	"name" => esc_html__("Button", "salient-core"),
+	"name" => esc_html__("Legacy Button", "salient-core"),
 	"base" => "nectar_btn",
 	"icon" => "icon-wpb-btn",
 	"category" => esc_html__('Interactive', 'salient-core'),
 	"weight" => 9,
 	"description" => esc_html__('Add a button', 'salient-core'),
 	"params" => array(
-		
+
 		array(
 			"type" => "textfield",
 			"heading" => esc_html__("Text", "salient-core"),
@@ -32,7 +32,7 @@ return array(
 			"admin_label" => true,
 			"description" => esc_html__("The text for your button." , "salient-core")
 		),
-		
+
 		array(
 			'type' => 'dropdown',
 			'heading' => __( 'Size', 'salient-core' ),
@@ -58,7 +58,7 @@ return array(
 		array(
 			'type' => 'checkbox',
 			'heading' => esc_html__( 'Constrain 1', 'salient-core' ),
-			'param_name' => 'constrain_group_1', 
+			'param_name' => 'constrain_group_1',
 			'description' => '',
 			"edit_field_class" => "no-device-group constrain-icon",
 			'value' => array( esc_html__( 'Yes', 'salient-core' ) => 'yes' ),
@@ -82,7 +82,7 @@ return array(
 		array(
 			'type' => 'checkbox',
 			'heading' => esc_html__( 'Constrain 2', 'salient-core' ),
-			'param_name' => 'constrain_group_2', 
+			'param_name' => 'constrain_group_2',
 			'description' => '',
 			"edit_field_class" => "no-device-group constrain-icon",
 			'value' => array( esc_html__( 'Yes', 'salient-core' ) => 'yes' ),
@@ -95,7 +95,7 @@ return array(
 			"edit_field_class" => "col-md-2 no-device-group constrain_group_2",
 			"description" => ''
 		),
-		
+
 		array(
 		 "type" => "nectar_group_header",
 		 "class" => "",
@@ -104,7 +104,7 @@ return array(
 		 "edit_field_class" => "",
 		 "value" => ''
 	 ),
-	 
+
 		array(
 			"type" => "textfield",
 			"heading" => esc_html__("Link URL", "salient-core"),
@@ -129,7 +129,7 @@ return array(
 			"admin_label" => false,
 			"description" => 'Optional text to describe the link that will be used for screen reader accessibility.',
 		),
-		
+
 		array(
 		 "type" => "nectar_group_header",
 		 "class" => "",
@@ -138,7 +138,7 @@ return array(
 		 "edit_field_class" => "",
 		 "value" => ''
 	 ),
-	 
+
 		array(
 			'type' => 'dropdown',
 			'heading' => __( 'Style', 'salient-core' ),
@@ -149,7 +149,7 @@ return array(
 				esc_html__( 'See Through Solid On Hover', 'salient-core' ) => 'see-through-2',
 				esc_html__( 'See Through Solid On Hover Alt', 'salient-core' ) => 'see-through-3',
 				esc_html__( 'See Through 3D', 'salient-core' ) => 'see-through-3d',
-			),		
+			),
 			'save_always' => true,
 			'param_name' => 'button_style',
 			'description' => __( 'Select your button style.', 'salient-core' ),
@@ -160,7 +160,7 @@ return array(
 			'value' => array(
 				esc_html__( "Accent Color", "salient-core") => "Accent-Color",
 				esc_html__( "Extra Color 1", "salient-core") => "Extra-Color-1",
-				esc_html__( "Extra Color 2", "salient-core") => "Extra-Color-2",	
+				esc_html__( "Extra Color 2", "salient-core") => "Extra-Color-2",
 				esc_html__( "Extra Color 3", "salient-core") => "Extra-Color-3",
 			),
 			'dependency' => array(
@@ -189,7 +189,7 @@ return array(
 			"heading" => "Button Color Override",
 			"param_name" => "color_override",
 			"value" => "",
-			"description" => "won't take effect on gradient colored btns",	
+			"description" => "won't take effect on gradient colored btns",
 		),
 		array(
 			"type" => "colorpicker",
@@ -282,8 +282,8 @@ return array(
 			"dependency" => array('element' => "icon_family", 'value' => 'steadysets'),
 			"description" => esc_html__("Select icon from library.", "salient-core")
 		),
-		
-		
+
+
 		array(
 		 "type" => "nectar_group_header",
 		 "class" => "",

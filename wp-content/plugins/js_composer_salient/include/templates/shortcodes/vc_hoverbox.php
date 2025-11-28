@@ -49,8 +49,8 @@ if ( 'custom' !== $atts['hover_background_color'] ) {
 	$hover_background_color = esc_attr( $atts['hover_custom_background'] );
 }
 
-$primary_title = $this->getHeading( 'primary_title', $atts, $atts['primary_align'] );
-$hover_title = $this->getHeading( 'hover_title', $atts, $atts['hover_align'] );
+$primary_title = wp_kses_post( $this->getHeading( 'primary_title', $atts, $atts['primary_align'] ) );
+$hover_title = wp_kses_post( $this->getHeading( 'hover_title', $atts, $atts['hover_align'] ) );
 
 $content = wpb_js_remove_wpautop( $content, true );
 $button = '';

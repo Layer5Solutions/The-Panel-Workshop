@@ -209,7 +209,7 @@ return [
 			'type' => 'dropdown',
 			'heading' => esc_html__( 'Link Target', 'js_composer' ),
 			'param_name' => 'img_link_target',
-			'value' => vc_target_param_list(),
+			'value' => vc_get_shared( 'target param list' ),
 			'dependency' => [
 				'element' => 'onclick',
 				'value' => [

@@ -20,6 +20,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @var $icon_typicons
  * @var $icon_entypo
  * @var $icon_linecons
+ * @var $icon_monosocial
+ * @var $icon_material
+ * @var $icon_pixelicons
  * @var $color
  * @var $custom_color
  * @var $background_style
@@ -35,7 +38,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Shortcode class
  * @var WPBakeryShortCode_Vc_Icon $this
  */
-$type = $icon_fontawesome = $icon_openiconic = $icon_typicons = $icon_entypo = $icon_linecons = $color = $custom_color = $background_style = $background_color = $custom_background_color = $size = $align = $el_class = $el_id = $link = $css_animation = $css = $rel = '';
+$type = $icon_fontawesome = $icon_openiconic = $icon_typicons = $icon_entypo = $icon_linecons = $icon_monosocial = $icon_material = $icon_pixelicons = $color = $custom_color = $background_style = $background_color = $custom_background_color = $size = $align = $el_class = $el_id = $link = $css_animation = $css = $rel = '';
 
 $atts = vc_map_get_attributes( $this->getShortcode(), $atts );
 extract( $atts );

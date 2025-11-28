@@ -56,31 +56,31 @@ class Vc_Modules_Manager {
 
 		$module_list = [
 			'vc-seo' => [
-				'name' => 'SEO',
+				'name' => esc_html__( 'SEO', 'js_composer' ),
 				'main_file_path' => $modules_dir . '/seo/module.php',
 				'module_class' => 'Vc_Seo_Module',
 				'is_active' => true,
 			],
 			'vc-ai' => [
-				'name' => 'WPB AI',
+				'name' => esc_html__( 'WPB AI', 'js_composer' ),
 				'main_file_path' => $modules_dir . '/ai/module.php',
 				'module_class' => 'Vc_Ai_Module',
 				'is_active' => true,
 			],
 			'vc-automapper' => [
-				'name' => 'Shortcode Mapper',
+				'name' => esc_html__( 'Shortcode Mapper', 'js_composer' ),
 				'main_file_path' => $modules_dir . '/automapper/module.php',
 				'module_class' => 'Vc_Automapper',
 				'is_active' => true,
 			],
 			'vc-custom-js' => [
-				'name' => 'Custom JS',
+				'name' => esc_html__( 'Custom JS', 'js_composer' ),
 				'main_file_path' => $modules_dir . '/custom-js/module.php',
 				'module_class' => 'Vc_Custom_Js_Module',
 				'is_active' => true,
 			],
 			'vc-custom-css' => [
-				'name' => 'Custom CSS',
+				'name' => esc_html__( 'Custom CSS', 'js_composer' ),
 				'main_file_path' => $modules_dir . '/custom-css/module.php',
 				'module_class' => 'Vc_Custom_Css_Module',
 				'is_active' => true,
@@ -94,19 +94,19 @@ class Vc_Modules_Manager {
 			// ],
 			// nectar addition end
 			'vc-scroll-to-element' => [
-				'name' => 'Scroll to element',
+				'name' => esc_html__( 'Scroll to element', 'js_composer' ),
 				'main_file_path' => $modules_dir . '/scroll-to-element/module.php',
 				'module_class' => 'Vc_Scroll_To_Element_Module',
 				'is_active' => true,
 			],
 			'vc-color-picker' => [
-				'name' => 'Color Picker Settings',
+				'name' => esc_html__( 'Color Picker Settings', 'js_composer' ),
 				'main_file_path' => $modules_dir . '/color-picker/module.php',
 				'module_class' => 'Vc_Color_Picker_Module',
 				'is_active' => true,
 			],
 			'vc-typography' => [
-				'name' => 'Typography',
+				'name' => esc_html__( 'Typography', 'js_composer' ),
 				'main_file_path' => $modules_dir . '/typography/module.php',
 				'module_class' => 'Vc_Typography_Module',
 				'is_active' => true,
@@ -128,7 +128,7 @@ class Vc_Modules_Manager {
 
 		if ( ! vc_is_as_theme() ) {
 			$list['vc-design-options'] = [
-				'name' => 'Design Option (Skin builder)',
+				'name' => esc_html__( 'Design Option (Skin builder)', 'js_composer' ),
 				'main_file_path' => $modules_dir . '/design-options/module.php',
 				'module_class' => 'Vc_Design_Options_Module',
 				'is_active' => true,

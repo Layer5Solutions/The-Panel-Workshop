@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 // Exit if accessed directly
 if ( ! defined( 'ABSPATH' ) ) {
@@ -28,7 +28,8 @@ extract(shortcode_atts(array(
   'text_repeat_divider_custom_color' => '',
   'text_repeat_divider_custom_spin_animation' => '',
 	'text_repeat_divider_scale' => 'full',
-	'overflow' => 'hidden'
+	'overflow' => 'hidden',
+	'mask_edges' => '',
 ), $atts));
 
 $content = wp_kses_post($content);
@@ -36,13 +37,23 @@ $content = wp_kses_post($content);
 // Divider.
 $divider_spacing = 'false';
 
-// Handle multiple headings.
+// Handle multiple headings and paragraphs.
 $has_multiple_tags = '';
-$tag_pattern = "/<h[1-6]>.*?<\/h[1-6]>/"; 
+$tag_pattern = "/<(h[1-6]|p)>.*?<\/(h[1-6]|p)>/";
 $tag_count = preg_match_all($tag_pattern, $content);
+
+// Check if content contains the specific tags we handle (h1-h6, p)
+$has_supported_tags = preg_match('/<(h[1-6]|p)>/', $content);
+
 if($tag_count > 1) {
   $has_multiple_tags = ' has-multiple-items';
 }
+
+// If no supported tags found, wrap raw text in a paragraph tag
+if (!$has_supported_tags) {
+  $content = '<p>' . wp_kses_post($content) . '</p>';
+}
+
 $content = '<div class="nectar-scrolling-text-inner__text-chunk'.$has_multiple_tags.'">'.$content.'</div>';
 
 // Space or element between items.
@@ -72,10 +83,10 @@ if( 'space' === $text_repeat_divider ) {
     $outline_em_o = '<em>';
     $outline_em_c = '</em>';
   }
-  $color_style = ( !empty($text_repeat_divider_custom_color) ) ? ' style="color:'.esc_attr($text_repeat_divider_custom_color).';"' : ''; 
-	$content = preg_replace('/(<\/h[1-6]>)/','<span class="'.esc_attr($custom_class_names).'" data-scale="'.esc_attr($text_repeat_divider_scale).'"'.$color_style.'><span'.$custom_divider_attrs.'>'.$outline_em_o.esc_html($text_repeat_divider_custom).$outline_em_c.'</span></span>${1}',$content);
+  $color_style = ( !empty($text_repeat_divider_custom_color) ) ? ' style="color:'.esc_attr($text_repeat_divider_custom_color).';"' : '';
+	$content = preg_replace('/(<\/(h[1-6]|p)>)/','<span class="'.esc_attr($custom_class_names).'" data-scale="'.esc_attr($text_repeat_divider_scale).'"'.$color_style.'><span'.$custom_divider_attrs.'>'.$outline_em_o.esc_html($text_repeat_divider_custom).$outline_em_c.'</span></span>${1}',$content);
 } else {
-	$content = preg_replace('/(<\/h[1-6]>)/','<span>&nbsp;</span>${1}',$content);
+	$content = preg_replace('/(<\/(h[1-6]|p)>)/','<span>&nbsp;</span>${1}',$content);
 }
 
 // Inner attrs.
@@ -102,7 +113,7 @@ for( $i = 0; $i < $text_repeat_number_int; $i++ ) {
   if ( $i < 1 ) {
     $inner_content .= $content;
   } else {
-    $inner_content .= preg_replace('/<(h[1-6])(.*?)>/','<$1$2 aria-hidden="true">',$content);
+    $inner_content .= preg_replace('/<(h[1-6]|p)(.*?)>/','<$1$2 aria-hidden="true">',$content);
   }
 }
 
@@ -111,26 +122,27 @@ $background_markup = false;
 $background_style = 'style="';
 
 if( !empty($background_image_url) ) {
-	
+
   // Image.
-	if( !preg_match('/^\d+$/',$background_image_url) ) {   
+	if( !preg_match('/^\d+$/',$background_image_url) ) {
 	   $background_style .= 'height:'.esc_attr($background_image_height).'; background-image: url('.esc_url($background_image_url) . ');';
   } else {
-    
+
 		$bg_image_src = wp_get_attachment_image_src($background_image_url, 'full');
 		$background_style .= 'height:'.esc_attr($background_image_height).'; background-image: url(\''.esc_url($bg_image_src[0]).'\'); ';
 	}
-  
-  
+
+
+  $front_text_later = '';
   if( 'true' === $separate_text_coloring ) {
     $front_text_later = '<div class="nectar-scrolling-text-inner" style="color:'.esc_attr($text_color_front).'">'.$inner_content.'</div>';
   }
 
-  
+
   $background_style .= '"';
-  
+
   $background_markup = '<div class="background-layer row-bg-wrap" data-bg-animation="'.esc_attr($background_image_animation).'"><div class="inner row-bg"><div class="background-image" '.$background_style.'></div></div>'.$front_text_later.'</div>';
-	
+
 }
 
 // Dynamic style classes.
@@ -143,7 +155,7 @@ if( function_exists('nectar_el_dynamic_classnames') ) {
 $style_markup = '';
 if( !empty($text_color) ) {
   $style_markup = ' style="color: '.esc_attr($text_color).';"';
-} 
+}
 
 $data_attrs_escaped = 'data-style="'.esc_attr($style).'" ';
 $data_attrs_escaped .= 'data-s-dir="'.esc_attr($scroll_direction).'" ';

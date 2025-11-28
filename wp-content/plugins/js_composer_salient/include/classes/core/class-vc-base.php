@@ -331,12 +331,19 @@ class Vc_Base {
 		 * @since 4.4
 		 */
 		 /* nectar addition */
-		 $portfolio_extra_content = (isset($post->ID)) ? get_post_meta($post->ID, '_nectar_portfolio_extra_content', true) : '';
+		 // Extra protection for invalid post object
+		 if ( $post && isset($post->ID) ) {
 
-		 if(!empty($portfolio_extra_content)) {
-			 $css = apply_filters( 'vc_base_build_shortcodes_' . esc_html__( $type ) . '_css', $this->parseShortcodesCss( $portfolio_extra_content, $type ), $id  );
+			// portfolio extra content
+			 $portfolio_extra_content = get_post_meta($post->ID, '_nectar_portfolio_extra_content', true);
+
+			 if(!empty($portfolio_extra_content)) {
+				 $css = apply_filters( 'vc_base_build_shortcodes_' . esc_html__( $type ) . '_css', $this->parseShortcodesCss( $portfolio_extra_content, $type ), $id  );
+			 } else {
+				 $css = apply_filters( 'vc_base_build_shortcodes_' . esc_html__( $type ) . '_css', $this->parseShortcodesCss( $post->post_content, $type ), $id  );
+			 }
 		 } else {
-			 $css = apply_filters( 'vc_base_build_shortcodes_' . esc_html__( $type ) . '_css', $this->parseShortcodesCss( $post->post_content, $type ), $id  );
+			 $css = '';
 		 }
 		 /* nectar addition end */
 
@@ -615,12 +622,12 @@ class Vc_Base {
 	 * @since  3.1
 	 */
 	public function frontCss() {
-		wp_register_style( 'wpb_flexslider', vc_asset_url( 'lib/vendor/node_modules/flexslider/flexslider.min.css' ), [], WPB_VC_VERSION );
-		wp_register_style( 'nivo-slider-css', vc_asset_url( 'lib/vendor/node_modules/nivo-slider/nivo-slider.min.css' ), [], WPB_VC_VERSION );
-		wp_register_style( 'nivo-slider-theme', vc_asset_url( 'lib/vendor/node_modules/nivo-slider/themes/default/default.min.css' ), [ 'nivo-slider-css' ], WPB_VC_VERSION );
+		wp_register_style( 'wpb_flexslider', vc_asset_url( 'lib/vendor/dist/flexslider/flexslider.min.css' ), [], WPB_VC_VERSION );
+		wp_register_style( 'nivo-slider-css', vc_asset_url( 'lib/vendor/dist/nivo-slider/nivo-slider.min.css' ), [], WPB_VC_VERSION );
+		wp_register_style( 'nivo-slider-theme', vc_asset_url( 'lib/vendor/dist/nivo-slider/themes/default/default.min.css' ), [ 'nivo-slider-css' ], WPB_VC_VERSION );
 		wp_register_style( 'prettyphoto', vc_asset_url( 'lib/vendor/prettyphoto/css/prettyPhoto.min.css' ), [], WPB_VC_VERSION );
 		wp_register_style( 'isotope-css', vc_asset_url( 'css/lib/isotope/isotope.min.css' ), [], WPB_VC_VERSION );
-		wp_register_style( 'vc_animate-css', vc_asset_url( 'lib/vendor/node_modules/animate.css/animate.min.css' ), [], WPB_VC_VERSION );
+		wp_register_style( 'vc_animate-css', vc_asset_url( 'lib/vendor/dist/animate.css/animate.min.css' ), [], WPB_VC_VERSION );
 		/* nectar addition */
 		//wp_register_style( 'lightbox2', vc_asset_url( 'lib/lightbox2/dist/css/lightbox.min.css' ), array(), WPB_VC_VERSION );
 		/* nectar addition end */
@@ -660,7 +667,7 @@ class Vc_Base {
 	 */
 	public function frontJsRegister() {
 		wp_register_script( 'prettyphoto', vc_asset_url( 'lib/vendor/prettyphoto/js/jquery.prettyPhoto.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
-		wp_register_script( 'lightbox2', vc_asset_url( 'lib/vendor/node_modules/lightbox2/dist/js/lightbox.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
+		wp_register_script( 'lightbox2', vc_asset_url( 'lib/vendor/dist/lightbox2/dist/js/lightbox.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_register_script( 'vc_waypoints', vc_asset_url( 'lib/vc/vc_waypoints/vc-waypoints.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 
 		// @deprecated used in old tabs.
@@ -675,9 +682,9 @@ class Vc_Base {
 		wp_register_script( 'isotope', vc_asset_url( 'lib/bower/isotope/dist/isotope.pkgd.min.js' ), array( 'jquery' ), WPB_VC_VERSION, true );
 		*/
 
-		wp_register_script( 'twbs-pagination', vc_asset_url( 'lib/vendor/node_modules/twbs-pagination/jquery.twbsPagination.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
-		wp_register_script( 'nivo-slider', vc_asset_url( 'lib/vendor/node_modules/nivo-slider/jquery.nivo.slider.pack.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
-		wp_register_script( 'wpb_flexslider', vc_asset_url( 'lib/vendor/node_modules/flexslider/jquery.flexslider-min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
+		wp_register_script( 'twbs-pagination', vc_asset_url( 'lib/vendor/dist/twbs-pagination/jquery.twbsPagination.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
+		wp_register_script( 'nivo-slider', vc_asset_url( 'lib/vendor/dist/nivo-slider/jquery.nivo.slider.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
+		wp_register_script( 'wpb_flexslider', vc_asset_url( 'lib/vendor/dist/flexslider/jquery.flexslider.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_register_script( 'wpb_composer_front_js', vc_asset_url( 'js/dist/js_composer_front.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 
 		/**
@@ -783,7 +790,7 @@ class Vc_Base {
 	 * @since  4.2
 	 */
 	public function bodyClass( $classes ) {
-		return js_composer_body_class( $classes );
+		return wpb_body_class( $classes );
 	}
 
 	/**
@@ -927,6 +934,8 @@ class Vc_Base {
 			'template_is_empty' => esc_html__( 'Template is empty: There is no content to be saved as a template.', 'js_composer' ),
 			'template_save_error' => esc_html__( 'Error while saving template.', 'js_composer' ),
 			'page_settings_updated' => esc_html__( 'Page settings updated!', 'js_composer' ),
+			'custom_code_updated' => esc_html__( 'Custom CSS/JS updated!', 'js_composer' ),
+			'seo_settings_updated' => esc_html__( 'SEO settings updated!', 'js_composer' ),
 			'update_all' => esc_html__( 'Update all', 'js_composer' ),
 			'confirm_to_leave' => esc_html__( 'The changes you made will be lost if you navigate away from this page.', 'js_composer' ),
 			'inline_element_saved' => esc_html__( '%s saved!', 'js_composer' ),
@@ -948,7 +957,13 @@ class Vc_Base {
 			'vc_successfully_updated' => esc_html__( 'Successfully updated!', 'js_composer' ),
 			'gutenbergDoesntWorkProperly' => esc_html__( 'Gutenberg plugin doesn\'t work properly. Please check Gutenberg plugin.', 'js_composer' ),
 			'unfiltered_html_access' => esc_html__( 'Custom HTML is disabled for your user role. Please contact your site Administrator to change your capabilities.', 'js_composer' ),
-			'not_editable_post' => sprintf( '%s %s %s', esc_html__( 'This', 'js_composer' ), get_post_type() ? get_post_type() : 'post', esc_html__( 'can not be edited with WPBakery since it is missing a WordPress default content area.', 'js_composer' ) ),
+			'not_editable_post' => sprintf(
+				'%s %s %s %s',
+				esc_html__( 'This', 'js_composer' ),
+				get_post_type() ? get_post_type() : 'post',
+				esc_html__( 'can not be edited with WPBakery since it is missing a WordPress default content area. ', 'js_composer' ),
+				'<a href="https://kb.wpbakery.com/docs/faq/how-to-fix-this-page-can-not-be-edited-with-wpbakery-since-it-is-missing-a-wordpress-default-content-area/" target="_blank" rel="noreferrer noopener">Learn how to fix this issue</a>.'
+			),
 			'generate' => esc_html__( 'Generate', 'js_composer' ),
 			'regenerate' => esc_html__( 'Regenerate', 'js_composer' ),
 			'problems' => esc_html__( 'Problems', 'js_composer' ),

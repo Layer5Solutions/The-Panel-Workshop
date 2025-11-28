@@ -41,7 +41,7 @@
           'post_type'      => 'salient_g_sections'
         )
       );
-      
+
 
       foreach( $global_sections_query as $section ) {
         if( property_exists( $section, 'post_title') && property_exists( $section, 'ID') ) {
@@ -50,12 +50,12 @@
       }
 
       $salient_options_panel_text = esc_html__('Salient options panel.','salient-core');
-      if ( class_exists('NectarThemeManager') && 
+      if ( class_exists('NectarThemeManager') &&
         property_exists('NectarThemeManager', 'custom_theme_name') &&
         NectarThemeManager::$custom_theme_name ) {
         $salient_options_panel_text = esc_html(NectarThemeManager::$custom_theme_name) . ' ' . esc_html__('options panel.', 'salient-core');
       }
-        
+
 
        self::$settings = array(
          /************* mega menu *************/
@@ -632,7 +632,7 @@
           'menu_item_link_link_text_style' => array(
             'type'           => 'dropdown',
             'category'       => 'menu-item',
-            'label'          => esc_html__('Menu Item Link Text Hover','salient-core'),
+            'label'          => esc_html__('Menu Item Link Text Effect','salient-core'),
             'description'    => esc_html__('Optionally set a link hover animation.','salient-core'),
             'max_depth' => '0',
             'options'        => array(
@@ -749,6 +749,7 @@
           'custom_attrs'    => array(
             'data-icon-container'            => 'menu_item_icon',
             'data-iconsmind-container'       => 'menu_item_icon_iconsmind',
+            'data-nectarbrands-container'    => 'menu_item_icon_nectarbrands',
             'data-icon-custom'               => 'menu_item_icon_custom',
             'data-icon-custom-text'          => "menu_item_icon_custom_text",
             'data-icon-custom-border-radius' => "menu_item_icon_custom_border_radius"
@@ -787,6 +788,20 @@
             'above' => esc_html__('Above Text','salient-core'),
           )
         ),
+
+        'menu_item_icon_alignment' => array(
+          'type'           => 'dropdown',
+          'category'       => 'menu-icon',
+          'label'          => esc_html__('Menu Icon Alignment','salient-core'),
+          'description'    => esc_html__('The alignment of the menu icon relative to the text when using the Next To Text position.','salient-core'),
+          'default_value'  => 'left',
+          'max_depth' => '-1',
+          'options'        => array(
+            'left' => esc_html__('Left','salient-core'),
+            'right' => esc_html__('Right','salient-core'),
+          )
+        ),
+
         'menu_item_icon_spacing' => array(
           'type'          => 'numerical',
           'category'       => 'menu-icon',
@@ -867,14 +882,14 @@
         ),
       );
 
-      
+
        /************* Off canvas menu  *************/
        $nectar_options = array();
       if( defined( 'NECTAR_THEME_NAME' ) && function_exists('get_nectar_theme_options') ) {
         $nectar_options = get_nectar_theme_options();
       }
 
-      if( isset($nectar_options['header-slide-out-widget-area-style']) && 
+      if( isset($nectar_options['header-slide-out-widget-area-style']) &&
           $nectar_options['header-slide-out-widget-area-style'] === 'fullscreen-inline-images' ) {
 
             self::$settings['menu_item_ocm_header'] = array(

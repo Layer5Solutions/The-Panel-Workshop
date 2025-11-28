@@ -54,7 +54,7 @@ Description: Styles for the "testimonial Slider" page builder element.
      transition:background-color 0.2s linear 0s,border-color 0.2s linear 0s;
      width:10px
 }
- .testimonial_slider .controls ul li .pagination-switch:hover, 
+ .testimonial_slider .controls ul li .pagination-switch:hover,
  .testimonial_slider .controls ul li .pagination-switch.active{
     background-color:#333
 }
@@ -70,11 +70,9 @@ Description: Styles for the "testimonial Slider" page builder element.
      position:relative
 }
  body .testimonial_slider blockquote span, .nectar_single_testimonial span {
-    font-size:16px;
      display:block;
-     line-height:22px
 }
- body .testimonial_slider blockquote .open-quote, 
+ body .testimonial_slider blockquote .open-quote,
  body .testimonial_slider blockquote .close-quote {
      display: inline;
 }
@@ -109,7 +107,7 @@ Description: Styles for the "testimonial Slider" page builder element.
 .span_12 .nectar_single_testimonial .inner[data-custom-color="true"] .title {
   opacity: 0.6;
 }
- .testimonial_slider blockquote .title, 
+ .testimonial_slider blockquote .title,
  .nectar_single_testimonial .title {
     color: inherit;
     opacity: 0.6;
@@ -118,14 +116,14 @@ Description: Styles for the "testimonial Slider" page builder element.
     font-size:12px
 }
 
- .testimonial_slider[data-style*="multiple_visible"] blockquote .title, 
+ .testimonial_slider[data-style*="multiple_visible"] blockquote .title,
  .nectar_single_testimonial .title {
     font-size:14px
 }
  .light .testimonial_slider blockquote{
     color:rgba(255,255,255,0.95)
 }
- .light .testimonial_slider blockquote .title, 
+ .light .testimonial_slider blockquote .title,
  .testimonial_slider[data-style="multiple_visible"][data-color*="-light"] blockquote .title{
     color:rgba(255,255,255,1)
 }
@@ -133,11 +131,11 @@ Description: Styles for the "testimonial Slider" page builder element.
     color:#444
 }
  .light .testimonial_slider .controls ul li span{
-    border-color:#fff
+    border-color: var(--nectar-font-light-color)
 }
- .light .testimonial_slider .controls ul li span:hover, 
+ .light .testimonial_slider .controls ul li span:hover,
  .light .testimonial_slider .controls ul li .pagination-switch.active{
-    background-color:#fff
+    background-color: var(--nectar-font-light-color)
 }
  .testimonial_slider .image-icon,
  .nectar_single_testimonial .image-icon {
@@ -178,7 +176,7 @@ Description: Styles for the "testimonial Slider" page builder element.
  .testimonial_slider blockquote p .bottom-arrow{
     display:none
 }
- .testimonial_slider[data-style="multiple_visible_minimal"] .image-icon, 
+ .testimonial_slider[data-style="multiple_visible_minimal"] .image-icon,
  .nectar_single_testimonial .image-icon {
     width:52px;
      height:52px;
@@ -187,7 +185,7 @@ Description: Styles for the "testimonial Slider" page builder element.
      margin-bottom:0;
      margin-right:20px
 }
- .testimonial_slider[data-style="multiple_visible_minimal"] .wrap, 
+ .testimonial_slider[data-style="multiple_visible_minimal"] .wrap,
  .nectar_single_testimonial .wrap{
     display:inline-block;
      vertical-align:middle
@@ -244,7 +242,7 @@ Description: Styles for the "testimonial Slider" page builder element.
      color:#000;
      float:left
 }
- .toggles .testimonial_slider, 
+ .toggles .testimonial_slider,
  .full-width-content .testimonial_slider{
      padding-bottom:20px
 }
@@ -259,13 +257,13 @@ Description: Styles for the "testimonial Slider" page builder element.
      transition:transform 0.5s,opacity 0.5s;
      -webkit-transition:transform 0.5s,opacity 0.5s
 }
- .testimonial_slider[data-style="minimal"] blockquote.no-trans, 
+ .testimonial_slider[data-style="minimal"] blockquote.no-trans,
  .testimonial_slider[data-style="default"] blockquote.no-trans{
     -ms-transition:none;
      transition:none;
      -webkit-transition:none
 }
- 
+
  .nectar_single_testimonial:before {
      display: none;
 }
@@ -282,13 +280,13 @@ Description: Styles for the "testimonial Slider" page builder element.
      .testimonial_slider[data-style="multiple_visible"] blockquote {
          margin-bottom: 0;
     }
-     
+
      .testimonial_slider[data-style="multiple_visible_minimal"] blockquote .inner {
          padding: 30px;
     }
 }
  @media only screen and (min-width: 990px) and (max-width: 1300px) {
-     .full-width-content .vc_span4 .testimonial_slider blockquote, 
+     .full-width-content .vc_span4 .testimonial_slider blockquote,
      .full-width-content .vc_col-sm-4 .testimonial_slider blockquote {
          font-size: 16px;
          line-height: 33px;

@@ -216,7 +216,7 @@ body .nectar-fancy-box[data-style="parallax_hover"] .inner > .arrow {
  .nectar-fancy-box[data-style="default"] .im-icon-wrap path {
      fill: #fff;
 }
- 
+
 
  .nectar-fancy-box[data-style="hover_desc"][data-alignment="right"] .inner,
  .nectar-fancy-box[data-style="hover_desc"][data-alignment="right"] .inner-wrap,
@@ -246,7 +246,7 @@ body .nectar-fancy-box[data-style="parallax_hover"] .inner > .arrow {
  .nectar-fancy-box[data-style="color_box_hover"]:before {
      box-shadow: 0px 30px 90px #000;
 }
- 
+
  .nectar-fancy-box[data-style="color_box_hover"] .im-icon-wrap {
      margin-bottom: 20px;
      display: block;
@@ -258,7 +258,7 @@ body .nectar-fancy-box[data-style="parallax_hover"] .inner > .arrow {
      fill: #fff;
 }
 
-.nectar-fancy-box[data-style="hover_desc"] .im-icon-wrap path { 
+.nectar-fancy-box[data-style="hover_desc"] .im-icon-wrap path {
   fill: #fff;
 }
 
@@ -345,7 +345,7 @@ body .nectar-fancy-box[data-style="parallax_hover"] .inner > .arrow {
 }
 .nectar-fancy-box[data-style="hover_desc"] .hover-content {
   line-height: 1.5em;
-  max-width: 80%;
+  max-width: 100%;
   transition: opacity .18s cubic-bezier(.05,0.2,.1,1), transform .18s cubic-bezier(.05,0.2,.1,1);
 }
 .nectar-fancy-box[data-style="hover_desc"][data-alignment="center"] .hover-content {

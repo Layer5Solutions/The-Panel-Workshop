@@ -19,7 +19,8 @@ body[data-bg-header="true"] #header-outer[data-permanent-transparent="1"].transp
 body[data-bg-header="true"] #header-outer[data-permanent-transparent="1"].transparent .span_3,
 body[data-bg-header="true"] #header-outer[data-permanent-transparent="1"].transparent .right-aligned-menu-items,
 body[data-bg-header="true"] #header-outer[data-permanent-transparent="1"].transparent #header-secondary-outer,
-body[data-bg-header="true"] #header-outer[data-permanent-transparent="1"].transparent #mobile-menu {
+body[data-bg-header="true"] #header-outer[data-permanent-transparent="1"].transparent #mobile-menu,
+body[data-bg-header="true"] #header-outer[data-permanent-transparent="1"].transparent > .nectar-global-section {
   pointer-events: all;
 }
 

@@ -7,7 +7,7 @@ const sourcemaps = require( 'gulp-sourcemaps' );
 const less = require( 'gulp-less' );
 const util = require( 'gulp-util' );
 const postcss = require( 'gulp-postcss' );
-const cssmin = require( 'gulp-cssmin' );
+const cssnano = require( 'cssnano' );
 const rename = require( 'gulp-rename' );
 const concat = require( 'gulp-concat' );
 const mode = require( 'gulp-mode' )();
@@ -31,11 +31,22 @@ function buildCss ( done ) {
 			strictMath: true // to resolve calculations in less
 		}).on( 'error', util.log ) )
 		.pipe( postcss([ autoprefixer({ overrideBrowserslist: buildConfig.globalOptions.browsers }) ]) )
-		.pipe( ( mode.production( cssmin() ) ) )
+		.pipe( ( mode.production( postcss([ cssnano() ]) ) ) )
 		.pipe( rename({ suffix: '.min' }) )
 		.pipe( mode.development( sourcemaps.write() ) )
 		.pipe( dest( buildConfig.globalOptions.less.destPath ) )
-		.on( 'end', done );
+		.on( 'end', () => {
+			const filePathToDelete = path.resolve( __dirname, '../../../uploads/js_composer/js_composer_front_custom.css' );
+			if ( fs.existsSync( filePathToDelete ) ) {
+				try {
+					fs.unlinkSync( filePathToDelete );
+					console.log( 'Deleted:', filePathToDelete );
+				} catch ( err ) {
+					console.error( 'Failed to delete file:', err );
+				}
+			}
+			return done();
+		});
 }
 
 function buildFontLibs ( done ) {
@@ -47,7 +58,7 @@ function buildFontLibs ( done ) {
 			.pipe( plumber( errorHandler ) )
 			.pipe( mode.development( sourcemaps.init() ) )
 			.pipe( postcss([ autoprefixer({ overrideBrowserslist: buildConfig.globalOptions.browsers }) ]) )
-			.pipe( ( mode.production( cssmin() ) ) )
+			.pipe( ( mode.production( postcss([ cssnano() ]) ) ) )
 			.pipe( rename({ suffix: '.min' }) )
 			.pipe( mode.development( sourcemaps.write() ) )
 			.pipe( dest( destPath ) ) );
@@ -67,9 +78,9 @@ function buildCssPackages () {
 	const cssTasks = buildConfig.nodeModules.css.map( ( file ) => {
 		return function buildingCssPackages () {
 			return src( path.join( buildConfig.nodeModules.srcPath, file.src ) )
-				.pipe( cssmin() )
+				.pipe( postcss([ cssnano() ]) )
 				.pipe( rename({ suffix: '.min' }) )
-				.pipe( dest( path.join( buildConfig.nodeModules.srcPath, file.dest ) ) );
+				.pipe( dest( path.join( buildConfig.nodeModules.destPath, file.dest ) ) );
 		};
 	});
 
@@ -143,7 +154,7 @@ function processLessFile ( filePath, done, destPath ) {
 			this.emit( 'end' );
 		}) )
 		.pipe( postcss([ autoprefixer({ overrideBrowserslist: buildConfig.globalOptions.browsers }) ]) )
-		.pipe( mode.production( cssmin() ) )
+		.pipe( mode.production( postcss([ cssnano() ]) ) )
 		.pipe( rename( destFileName ) )
 		.pipe( mode.development( sourcemaps.write() ) )
 		.pipe( dest( cssDir ) )
@@ -160,14 +171,14 @@ function buildModuleCss ( done ) {
 	const tasks = buildConfig.modules.moduleCssList.map( ( file ) => {
 		return function buildingCssModules () {
 			return src( path.join( srcPath, file.src ) )
-				.pipe( plumber({ errorHandler }) )
+				.pipe( plumber({ errorHandler }) ) // eslint-disable-line
 				.pipe( mode.development( sourcemaps.init() ) )
 				.pipe( less({
 					paths: [ srcPath ],
 					strictMath: true
 				}).on( 'error', util.log ) )
 				.pipe( postcss([ autoprefixer({ overrideBrowserslist: buildConfig.globalOptions.browsers }) ]) )
-				.pipe( mode.production( cssmin() ) )
+				.pipe( mode.production( postcss([ cssnano() ]) ) )
 				.pipe( rename({ suffix: '.min' }) )
 				.pipe( mode.development( sourcemaps.write() ) )
 				.pipe( dest( path.join( srcPath, file.dest ) ) )
@@ -187,7 +198,7 @@ function buildModuleCssMainFile ( done ) {
 			strictMath: true
 		}).on( 'error', util.log ) )
 		.pipe( concat( buildConfig.modulesMainFile.modulesMainCssList[0].dest ) )
-		.pipe( ( mode.production( cssmin() ) ) )
+		.pipe( ( mode.production( postcss([ cssnano() ]) ) ) )
 		.pipe( mode.development( sourcemaps.write() ) )
 		.pipe( dest( buildConfig.modulesMainFile.cssDestPath ) )
 		.on( 'end', done );

@@ -459,7 +459,7 @@ class Vc_Frontend_Editor extends Vc_Editor {
 	 */
 	public function setPost() {
 		global $post, $wp_query;
-		$this->post = get_post(); // fixes #1342 if no get/post params set.
+		$this->post = get_post();
 		$this->post_id = vc_get_param( 'post_id' );
 		if ( vc_post_param( 'post_id' ) ) {
 			$this->post_id = vc_post_param( 'post_id' );
@@ -518,19 +518,7 @@ class Vc_Frontend_Editor extends Vc_Editor {
 		wpbakery()->registerAdminCss(); // bc.
 		wpbakery()->registerAdminJavascript(); // bc.
 		if ( $this->post && 'auto-draft' === $this->post->post_status ) {
-			$post_data = [
-				'ID' => $this->post_id,
-				'post_status' => 'draft',
-				'post_title' => '',
-			];
-			add_filter( 'wp_insert_post_empty_content', [
-				$this,
-				'allowInsertEmptyPost',
-			] );
-			wp_update_post( $post_data, true );
-			$this->post->post_status = 'draft';
-			$this->post->post_title = '';
-
+			$this->set_new_post_data();
 		}
 		add_filter( 'admin_body_class', [
 			$this,
@@ -564,6 +552,30 @@ class Vc_Frontend_Editor extends Vc_Editor {
 		] );
 		$this->render( 'editor' );
 		die();
+	}
+
+	/**
+	 * Sets the new post data.
+	 *
+	 * @since 8.5
+	 */
+	public function set_new_post_data() {
+		$post_data = [
+			'ID' => $this->post_id,
+			'post_status' => 'draft',
+			'post_title' => '',
+		];
+
+		add_filter( 'wp_insert_post_empty_content', [
+			$this,
+			'allowInsertEmptyPost',
+		] );
+
+		$post_data = apply_filters( 'vc_frontend_editor_new_post_data', $post_data, $this->post );
+
+		wp_update_post( $post_data, true );
+		$this->post->post_status = 'draft';
+		$this->post->post_title = '';
 	}
 
 	/**
@@ -770,11 +782,11 @@ class Vc_Frontend_Editor extends Vc_Editor {
 		wp_enqueue_script( 'jquery-ui-autocomplete' );
 		wp_enqueue_script( 'wpb_composer_front_js' );
 		wp_enqueue_style( 'js_composer_front' );
-		wp_enqueue_style( 'vc_inline_css', vc_asset_url( 'css/js_composer_frontend_editor_iframe.min.css' ), array(), WPB_VC_VERSION );
+		wp_enqueue_style( 'vc_inline_css', vc_asset_url( 'css/js_composer_frontend_editor_iframe.min.css' ), [], WPB_VC_VERSION );
 		// nectar addition
-		//wp_enqueue_script( 'vc_waypoints' );
+		// wp_enqueue_script( 'vc_waypoints' );
 		// nectar addition end
-		wp_enqueue_script( 'wpb_scrollTo_js', vc_asset_url( 'lib/vendor/node_modules/jquery.scrollto/jquery.scrollTo.min.js' ), array( 'jquery-core' ), WPB_VC_VERSION, true );
+		wp_enqueue_script( 'wpb_scrollTo_js', vc_asset_url( 'lib/vendor/dist/jquery.scrollto/jquery.scrollTo.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 
 		wp_enqueue_script( 'wpb_php_js', vc_asset_url( 'lib/vendor/php.default/php.default.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_enqueue_script( 'vc_inline_iframe_js', vc_asset_url( 'js/dist/page_editable.min.js' ), [
@@ -804,7 +816,9 @@ class Vc_Frontend_Editor extends Vc_Editor {
 				ob_start();
 				_print_styles();
 				print_head_scripts();
-				wp_enqueue_block_template_skip_link();
+				if ( function_exists( 'wp_enqueue_block_template_skip_link' ) ) {
+					wp_enqueue_block_template_skip_link();
+				}
 				wp_footer();
 				$output .= ob_get_clean();
 				$output .= '</div>';
@@ -934,22 +948,28 @@ class Vc_Frontend_Editor extends Vc_Editor {
 	 * Registers scripts for the frontend editor.
 	 */
 	public function registerJs() {
-		wp_register_script( 'vc_bootstrap_js', vc_asset_url( 'lib/vendor/node_modules/bootstrap3/dist/js/bootstrap.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
+		wp_register_script( 'vc_bootstrap_js', vc_asset_url( 'lib/vendor/dist/bootstrap3/dist/js/bootstrap.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_register_script( 'vc_accordion_script', vc_asset_url( 'lib/vc/vc_accordion/vc-accordion.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_register_script( 'wpb_php_js', vc_asset_url( 'lib/vendor/php.default/php.default.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		// used as polyfill for JSON.stringify and etc.
-		wp_register_script( 'wpb_json-js', vc_asset_url( 'lib/vendor/node_modules/json-js/json2.min.js' ), [], WPB_VC_VERSION, true );
+		wp_register_script( 'wpb_json-js', vc_asset_url( 'lib/vendor/dist/json-js/json2.min.js' ), [], WPB_VC_VERSION, true );
 		// used in post settings editor.
-		wp_register_script( 'ace-editor', vc_asset_url( 'lib/vendor/node_modules/ace-builds/src-min-noconflict/ace.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
+		wp_register_script( 'ace-editor', vc_asset_url( 'lib/vendor/dist/ace-builds/src-min-noconflict/ace.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_register_script( 'wpb-code-editor', vc_asset_url( 'js/dist/post-code-editor.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_register_script( 'webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js', [], WPB_VC_VERSION, true ); // Google Web Font CDN.
-		wp_register_script( 'wpb_scrollTo_js', vc_asset_url( 'lib/vendor/node_modules/jquery.scrollto/jquery.scrollTo.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
+		wp_register_script( 'wpb_scrollTo_js', vc_asset_url( 'lib/vendor/dist/jquery.scrollto/jquery.scrollTo.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_register_script( 'vc_accordion_script', vc_asset_url( 'lib/vc/vc_accordion/vc-accordion.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
-		wp_register_script( 'wpb-popper', vc_asset_url( 'lib/vendor/node_modules/@popperjs/core/dist/umd/popper.min.js' ), [], WPB_VC_VERSION, true );
+		wp_register_script( 'wpb-popper', vc_asset_url( 'lib/vendor/dist/@popperjs/core/dist/umd/popper.min.js' ), [], WPB_VC_VERSION, true );
 		wp_register_script( 'vc-image-drop', vc_asset_url( 'js/dist/image-drop.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_register_script( 'vc-frontend-editor-min-js', vc_asset_url( 'js/dist/frontend-editor.min.js' ), [], WPB_VC_VERSION, true );
-		wp_register_script( 'pickr', vc_asset_url( 'lib/vendor/node_modules/@simonwep/pickr/dist/pickr.es5.min.js' ), [], WPB_VC_VERSION, true );
-		wp_register_script( 'select2', vc_asset_url( 'lib/vendor/node_modules/select2/dist/js/select2.min.js' ), [], WPB_VC_VERSION, true );
+		wp_register_script( 'pickr', vc_asset_url( 'lib/vendor/dist/@simonwep/pickr/dist/pickr.es5.min.js' ), [], WPB_VC_VERSION, true );
+		wp_register_script( 'select2', vc_asset_url( 'lib/vendor/dist/select2/dist/js/select2.min.js' ), [], WPB_VC_VERSION, true );
+		// Conditionally register mousetrap based on shortcuts setting.
+		$shortcuts_disabled = get_option( 'wpb_js_shortcuts', false );
+		if ( ! $shortcuts_disabled ) {
+			wp_register_script( 'mousetrap', vc_asset_url( 'lib/vendor/dist/mousetrap/mousetrap.min.js' ), [], WPB_VC_VERSION, true );
+		}
+		wp_register_script( 'wpb-dompurify', vc_asset_url( 'lib/vendor/dist/dompurify/dist/purify.min.js' ), [], WPB_VC_VERSION, true );
 
 		vc_modules_manager()->register_modules_script();
 
@@ -993,6 +1013,7 @@ class Vc_Frontend_Editor extends Vc_Editor {
 			'webfont',
 			'vc_accordion_script',
 			'wpb-popper',
+			'wpb-dompurify',
 			'vc-frontend-editor-min-js',
 			'wpb-modules-js',
 			'ace-editor',
@@ -1003,6 +1024,11 @@ class Vc_Frontend_Editor extends Vc_Editor {
 			vc_user_access()->part( 'shortcodes' )->can( 'vc_single_image_all' )->get() === true
 		) {
 			$dependencies[] = 'vc-image-drop';
+		}
+
+		// Conditionally add mousetrap when shortcuts are enabled.
+		if ( Vc_Settings::areShortcutsEnabled() ) {
+			$dependencies[] = 'mousetrap';
 		}
 
 		$common = apply_filters( 'vc_enqueue_frontend_editor_js', array_merge( $wp_dependencies, $dependencies ) );
@@ -1018,16 +1044,16 @@ class Vc_Frontend_Editor extends Vc_Editor {
 	 */
 	public function registerCss() {
 		wp_register_style( 'ui-custom-theme', vc_asset_url( 'css/jquery-ui-less.custom.min.css' ), false, WPB_VC_VERSION );
-		wp_register_style( 'vc_animate-css', vc_asset_url( 'lib/vendor/node_modules/animate.css/animate.min.css' ), false, WPB_VC_VERSION, 'screen' );
+        wp_register_style( 'vc_animate-css', vc_asset_url( 'lib/vendor/dist/animate.css/animate.min.css' ), false, WPB_VC_VERSION, 'screen' );
 		/* nectar addition */
 		// wp_register_style( 'vc_font_awesome_5_shims', vc_asset_url( 'lib/vendor/node_modules/@fortawesome/fontawesome-free/css/v4-shims.min.css' ), [], WPB_VC_VERSION );
 		// wp_register_style( 'vc_font_awesome_6', vc_asset_url( 'lib/vendor/node_modules/@fortawesome/fontawesome-free/css/all.min.css' ), [ 'vc_font_awesome_5_shims' ], WPB_VC_VERSION );
 		/* nectar addition end */
 		wp_register_style( 'vc_inline_css', vc_asset_url( 'css/js_composer_frontend_editor.min.css' ), [], WPB_VC_VERSION );
 		wp_register_style( 'wpb_modules_css', vc_asset_url( 'css/modules.min.css' ), [], WPB_VC_VERSION, false );
-		wp_register_style( 'pickr', vc_asset_url( 'lib/vendor/node_modules/@simonwep/pickr/dist/themes/classic.min.css' ), [], WPB_VC_VERSION, false );
+		wp_register_style( 'pickr', vc_asset_url( 'lib/vendor/dist/@simonwep/pickr/dist/themes/classic.min.css' ), [], WPB_VC_VERSION, false );
 		wp_register_style( 'vc_google_fonts', 'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,500&display=swap', [], WPB_VC_VERSION );
-		wp_register_style( 'select2', vc_asset_url( 'lib/vendor/node_modules/select2/dist/css/select2.min.css' ), [], WPB_VC_VERSION, false );
+		wp_register_style( 'select2', vc_asset_url( 'lib/vendor/dist/select2/dist/css/select2.min.css' ), [], WPB_VC_VERSION, false );
 
 		do_action( 'wpb_after_register_frontend_editor_css', $this );
 	}

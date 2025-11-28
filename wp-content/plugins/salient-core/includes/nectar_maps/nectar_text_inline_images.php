@@ -124,7 +124,7 @@ return array(
 			"type" => "dropdown",
 			"class" => "",
 			'save_always' => true,
-			"heading" => "Image Effect",
+			"heading" => "Animation Effect",
 			"description" => '',
 			"param_name" => "image_effect",
       'dependency' => array(
@@ -133,6 +133,7 @@ return array(
       ),
 			"value" => array(
 				esc_html__("None",'salient-core') => "none",
+        esc_html__("Scroll Reveal",'salient-core') => "scroll_fade",
 				esc_html__("Circle Mask Reveal",'salient-core') => "circle_reveal",
 				esc_html__("Circle Crop",'salient-core') => "circle_fade_in",
 			)
@@ -155,7 +156,7 @@ return array(
 			'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
 			"description" => esc_html__("If selected, the divider line will animate in when scrolled to", "salient-core"),
 			"value" => Array(esc_html__("Yes, please", "salient-core") => 'yes'),
-			"dependency" => Array('element' => "image_effect", 'value' => array('circle_reveal','circle_fade_in')),
+			"dependency" => Array('element' => "image_effect", 'value' => array('circle_reveal','circle_fade_in','scroll_fade')),
 		),
     array(
       "type" => "dropdown",
@@ -172,7 +173,7 @@ return array(
         esc_html__("50px", "salient-core") => "50px"
       ),
     ),
-		
+
 		array(
 			"type" => "colorpicker",
 			"class" => "",
@@ -181,6 +182,25 @@ return array(
 			"value" => "",
 			"description" => esc_html__("Defaults to light or dark based on the current row text color.", "salient-core")
 		),
+    array(
+      "type" => "dropdown",
+      "class" => "",
+      'save_always' => true,
+      "heading" => esc_html__("Inherit Typography From", "salient-core"),
+      "param_name" => "inherit_typography_from",
+      "value" => array(
+        "Default" => "default",
+        "Body" => "body",
+        "Label" => "label",
+        "Italic" => "italic",
+        "H6" => "h6",
+        "H5" => "h5",
+        "H4" => "h4",
+        "H3" => "h3",
+        "H2" => "h2",
+        "H1" => "h1",
+      )
+    ),
 		array(
 			"type" => "textfield",
 			"heading" => '<span class="group-title">' . esc_html__("Custom Font Size", "salient-core") . "</span>",
@@ -410,8 +430,8 @@ return array(
 				esc_html__("Right", "salient-core") => "rtl",
       ),
     )
-		
-    
+
+
 
 	)
 );

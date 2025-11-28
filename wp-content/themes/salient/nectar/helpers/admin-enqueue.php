@@ -44,9 +44,9 @@ if ( ! function_exists( 'nectar_enqueue_media' ) ) {
  * @since 1.0
  */
 function nectar_metabox_styles() {
-	
+
 	$nectar_theme_version = nectar_get_theme_version();
-	
+
 	wp_enqueue_style( 'nectar_meta_css', NECTAR_FRAMEWORK_DIRECTORY . 'assets/css/nectar_meta.css', '', $nectar_theme_version );
 }
 
@@ -57,12 +57,17 @@ function nectar_metabox_styles() {
  * @since 1.0
  */
 function nectar_metabox_scripts() {
-	
+
 	global $nectar_options;
 
 	$nectar_theme_version = nectar_get_theme_version();
-	
+
 	wp_register_script( 'nectar-upload', NECTAR_FRAMEWORK_DIRECTORY . 'assets/js/nectar-meta.js', array( 'jquery' ), $nectar_theme_version );
+	wp_localize_script( 'nectar-upload', 'nectar_theme_i18n', array(
+		'search_placeholder' => __( 'Search', 'salient' ),
+		'no_results_message' => __( 'No results found', 'salient' ),
+		'no_results_description' => __( 'Try searching for a different term.', 'salient' )
+	));
 	wp_enqueue_script( 'nectar-upload' );
 	wp_localize_script( 'redux-opts-field-upload-js', 'redux_upload', array( 'url' => get_template_directory_uri() . '/nectar/redux-framework/ReduxCore/inc/fields/upload/blank.png' ) );
 
@@ -107,9 +112,9 @@ function nectar_metabox_scripts() {
 
 		wp_localize_script(
 			'nectar-colorpicker-js',
-			'nectar_theme_colors', 
+			'nectar_theme_colors',
 			$formatted_available_colors
-		);	
+		);
 
 		 wp_enqueue_media();
 

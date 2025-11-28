@@ -4,7 +4,7 @@
  *
  * @package Salient WordPress Theme
  * @subpackage helpers
- * @version 9.0.2
+ * @version 18.0
  */
 
 // Exit if accessed directly
@@ -67,6 +67,31 @@ function nectar_get_full_page_options() {
 	);
 
 	return $nectar_full_page_options;
+}
+
+
+if ( ! function_exists( 'nectar_using_page_full_screen_rows' ) ) {
+	function nectar_using_page_full_screen_rows() {
+
+		if ( is_page() ) {
+
+			if ( is_page_template( 'template-no-footer.php' ) ||
+			is_page_template( 'template-no-header.php' ) ||
+			is_page_template( 'template-no-header-footer.php' ) ||
+			! is_page_template() ) {
+
+			$nectar_fp_options = nectar_get_full_page_options();
+
+			if ( $nectar_fp_options['page_full_screen_rows'] === 'on' ) {
+				return true;
+			}
+
+			}
+
+		}
+
+		return false;
+	}
 }
 
 

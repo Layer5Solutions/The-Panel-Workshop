@@ -1,7 +1,7 @@
 (function($) {
 
   "use strict";
-  
+
   /* Element Sorting */
   function NectarWPBakeryElementSorting() {
 
@@ -14,7 +14,7 @@
     }
 
     $('body').append('<div id="nectar-fe-sortable-indicator"><div class="inner"></div></div>');
-    
+
     this.$indicator = $('#nectar-fe-sortable-indicator');
     this.$indicatorInner = $('#nectar-fe-sortable-indicator .inner');
 
@@ -38,7 +38,15 @@
 
     //// Element
     var activateColOutline = true;
-    
+    var activateSectionOutline = true;
+
+    $('body').on( 'mouseover', '.vc_element.vc_vc_section', function() {
+      if(activateSectionOutline) {
+        $(this).addClass('nectar-vc-el-outline-active');
+        activateSectionOutline = false;
+      }
+    });
+
     $('body').on( 'mouseover', '.vc_element.vc_vc_column', function() {
 
       if(activateColOutline) {
@@ -54,9 +62,12 @@
       $(this).addClass('nectar-vc-el-outline-active');
     });
 
-    $('body').on( 'mouseleave', '.vc_element.vc_vc_column, .vc_element.vc_vc_column_inner', function() {
+
+
+    $('body').on( 'mouseleave', '.vc_element.vc_vc_column, .vc_element.vc_vc_column_inner, .vc_element.vc_vc_section', function() {
       $(this).removeClass('nectar-vc-el-outline-active');
       activateColOutline = true;
+      activateSectionOutline = true;
     });
 
     //// Controls
@@ -90,9 +101,23 @@
       $('.vc_element.vc_vc_column, .vc_element.vc_vc_column_inner').removeClass('nectar-vc-el-outline-active');
       $parent.addClass('nectar-vc-el-outline-active');
     });
-    
+
     $('body').on( 'mouseleave', '.vc_controls-out-tl > .parent-vc_row_inner', function() {
       var $parent = $(this).parents('.vc_element.vc_vc_row_inner');
+      $parent.removeClass('nectar-vc-el-outline-active');
+      activateColOutline = true;
+    });
+
+    //// Section
+    $('body').on( 'mouseenter', '.vc_controls-out-tl > .element-vc_section', function() {
+      var $parent = $(this).parents('.vc_element.vc_vc_section');
+      $('.vc_element.vc_vc_column, .vc_element.vc_vc_column_inner, .vc_element.vc_vc_row, .vc_element.vc_vc_row_inner').removeClass('nectar-vc-el-outline-active');
+      $parent.addClass('nectar-vc-el-outline-active');
+      activateColOutline = false;
+    });
+
+    $('body').on( 'mouseleave', '.vc_controls-out-tl > .element-vc_section', function() {
+      var $parent = $(this).parents('.vc_element.vc_vc_section');
       $parent.removeClass('nectar-vc-el-outline-active');
       activateColOutline = true;
     });
@@ -104,11 +129,11 @@
     var hiddenHelper = $('.vc_helper');
     var color = hiddenHelper.css('background-color');
     var icon = hiddenHelper.find('i').clone();
-    
+
     this.$indicatorInner.css({'background-color': color});
     if( color == '#f9b418' ) {
       icon.addClass('vc_helper-vc_column');
-    } 
+    }
     else if( color == '#3353fc' ) {
       icon.addClass('vc_helper-vc_row');
     }
@@ -124,7 +149,7 @@
     this.renderIcon();
     this.$indicatorInner[0].style.opacity = '1';
     this.$indicatorInner[0].style.transform = 'scale(1)';
-    
+
     this.sortingIndicatorRAF();
   };
 
@@ -140,7 +165,7 @@
     }
     this.state.mouseXLerp = this.lerp(this.state.mouseXLerp, this.state.mouseX, 0.3 );
     this.state.mouseYLerp = this.lerp(this.state.mouseYLerp, this.state.mouseY, 0.3 );
-    
+
     this.$indicator[0].style.transform = 'translateX('+this.state.mouseXLerp+'px) translateY('+this.state.mouseYLerp+'px)';
 
     requestAnimationFrame(this.sortingIndicatorRAF.bind(this));
@@ -150,9 +175,9 @@
     return (1 - n) * a + n * b;
   }
 
-  
+
   $(document).ready(function(){
     new NectarWPBakeryElementSorting();
   });
-  
+
 })(jQuery);

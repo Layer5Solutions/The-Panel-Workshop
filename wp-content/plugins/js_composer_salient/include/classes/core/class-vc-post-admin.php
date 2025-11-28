@@ -169,10 +169,33 @@ class Vc_Post_Admin {
 	 * @since 4.4
 	 */
 	public function save( $post_id ) {
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE || vc_is_inline() ) {
+		if ( ! $this->is_regular_post_saving() ) {
 			return;
 		}
 		$this->setPostMeta( $post_id );
+	}
+
+	/**
+	 * Check if post saved as a regular post in the admin area.
+	 *
+	 * @since 8.6
+	 * return bool
+	 */
+	public function is_regular_post_saving() {
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+			return false;
+		}
+
+		if ( vc_is_inline() ) {
+			return false;
+		}
+
+		// Check if we have some custom meta with our prefix to update.
+		if ( ! preg_grep( '/^(wpb_vc|vc_post_)/', array_keys( $_POST ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Safe: only checking presence
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -195,6 +218,25 @@ class Vc_Post_Admin {
 		} elseif ( '' === $value ) {
 			delete_post_meta( $post_id, '_wpb_vc_js_status', get_post_meta( $post_id, '_wpb_vc_js_status', true ) );
 		}
+	}
+
+	/**
+	 * Saves VC Backend editor type.
+	 *
+	 * If post param 'wpb_vc_editor_type' set to true, then methods adds/updated post
+	 * meta option with tag '_wpb_vc_editor_type'.
+	 *
+	 * @param int $id
+	 * @since 8.5
+	 */
+	public function set_editor_type( $id ) {
+		$editor_type = vc_post_param( 'wpb_vc_editor_type' );
+
+		if ( 'classic' !== $editor_type && 'backend' !== $editor_type ) {
+			$editor_type = 'classic'; // Default to 'classic' if invalid.
+		}
+
+		update_post_meta( $id, '_wpb_vc_editor_type', $editor_type );
 	}
 
 	/**
@@ -290,7 +332,8 @@ class Vc_Post_Admin {
 	public function set_post_title( $post ) {
 		$post_title = vc_post_param( 'post_title' );
 		if ( null !== $post_title ) {
-			$post->post_title = $post_title;
+			// nectar addition - core bugfix adding wp_unslash to post_title
+			$post->post_title = wp_unslash( $post_title );
 		}
 
 		return $post;
@@ -306,7 +349,8 @@ class Vc_Post_Admin {
 	public function set_post_excerpt( $post ) {
 		$post_excerpt = vc_post_param( 'post_excerpt' );
 		if ( null !== $post_excerpt ) {
-			$post->post_excerpt = $post_excerpt;
+			// nectar addition - core bugfix adding wp_unslash to post_excerpt
+			$post->post_excerpt = wp_unslash( $post_excerpt );
 		}
 
 		return $post;
@@ -557,6 +601,7 @@ class Vc_Post_Admin {
 		}
 
 		$this->setJsStatus( $id );
+		$this->set_editor_type( $id );
 
 		// Get the appropriate ID (revision or original post).
 		$id = $this->get_latest_revision_id( $id );

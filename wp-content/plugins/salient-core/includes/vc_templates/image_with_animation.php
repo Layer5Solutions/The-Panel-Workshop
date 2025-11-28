@@ -49,6 +49,7 @@ extract(shortcode_atts(array(
   'custom_image_size' => '',
   'custom_sizes_attr' => '',
   'display_title' => '',
+  'display_caption' => '',
   'mask_enable' => '',
   'mask_shape' => '',
   'mask_custom_image' => '',
@@ -254,7 +255,14 @@ extract(shortcode_atts(array(
     if ( $image_title ) {
       $image_attrs_escaped .= 'title="'.esc_attr($image_title).'" ';
     }
+  }
 
+  $image_caption = '';
+  if ( apply_filters('nectar_display_single_image_captions', $display_caption) === '1' && $image_id ) {
+    $image_caption = wp_get_attachment_caption($image_id);
+    if ( $image_caption ) {
+      $image_caption = '<p class="img-caption">'.wp_kses_post($image_caption).'</p>';
+    }
   }
 
 	// Attributes applied to inner wrap for hover effect.
@@ -335,6 +343,7 @@ extract(shortcode_atts(array(
             </a>
           </div>
         </div>
+        '.$image_caption.'
       </div>
       </div>';
 
@@ -349,6 +358,7 @@ extract(shortcode_atts(array(
             </a>
           </div>
         </div>
+         '.$image_caption.'
       </div>
       </div>';
     }
@@ -362,6 +372,7 @@ extract(shortcode_atts(array(
             <img class="img-with-animation '.esc_attr($el_class).'" '.$image_attrs_escaped.' />
           </div>
         </div>
+        '.$image_caption.'
       </div>
     </div>';
   }

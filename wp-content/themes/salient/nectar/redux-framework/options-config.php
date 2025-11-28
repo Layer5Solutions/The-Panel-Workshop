@@ -26,8 +26,7 @@
                 $theme = wp_get_theme();
                 $theme_name = str_replace(' ', '', $theme->get( 'Name' ));
                 echo '<style>
-                   .toplevel_page_'.esc_attr($theme_name).' .wp-menu-image img,
-                   .redux-container #redux-header img {
+                   .toplevel_page_'.esc_attr($theme_name).' .wp-menu-image img {
                     filter: brightness(0) invert(1);
                   }
                 </style>';
@@ -225,6 +224,8 @@
     // Write dynamic css when saving.
     add_action('redux/options/salient_redux/saved', 'nectar_generate_options_css');
 
+    // Local Google Fonts logic moved to helpers/redux-salient.php for cohesion.
+
 
 
 
@@ -263,6 +264,7 @@
 
       // Write dynamic css when importing.
       add_action('redux/options/salient_redux/import', 'nectar_generate_options_css');
+
     }
 
 
@@ -277,7 +279,7 @@
        'title'            => esc_html__( 'General Settings', 'salient' ),
        'id'               => 'general-settings',
        'customizer_width' => '450px',
-       'desc'             => esc_html__('Welcome to the Salient options panel! You can switch between option groups by using the left-hand tabs.', 'salient'),
+       'icon'             => 'salient-admin-icon-settings',
        'fields'           => array(
 
        )
@@ -332,7 +334,7 @@
            'id' => 'button-styling',
            'type' => 'select',
            'title' => esc_html__('Button Styling', 'salient'),
-           'subtitle' => esc_html__('This will effect the overall styling of buttons', 'salient'),
+           'subtitle' => esc_html__('This will affect the overall styling of buttons.', 'salient'),
            'options' => array(
              "default" => esc_html__("Default", "salient"),
              "slightly_rounded" => esc_html__("Slightly Rounded", "salient"),
@@ -359,9 +361,12 @@
            'id' => 'column-spacing',
            'type' => 'select',
            'title' => esc_html__('Column Spacing', 'salient'),
-           'subtitle' => esc_html__('Choose the global spacing between page builder columns.', 'salient'),
+           'subtitle' => esc_html__('Choose the global gap between page builder columns.', 'salient'),
            'options' => array(
              "default" => esc_html__('Default', 'salient'),
+             "5px" => esc_html__('5px', 'salient'),
+             "10px" => esc_html__('10px', 'salient'),
+             "20px" => esc_html__('20px', 'salient'),
              "30px" => esc_html__('30px', 'salient'),
              "40px" => esc_html__('40px', 'salient'),
              "50px" => esc_html__('50px', 'salient'),
@@ -374,7 +379,7 @@
          array(
            'id' => 'overall-bg-color',
            'type' => 'color',
-           'title' => esc_html__('Overall Background Color', 'salient'),
+           'title' => esc_html__('Primary Background Color', 'salient'),
            'subtitle' => esc_html__('Default is #ffffff', 'salient'),
            'transparent' => false,
            'desc' => '',
@@ -384,18 +389,27 @@
          array(
            'id' => 'overall-font-color',
            'type' => 'color',
-           'title' => esc_html__('Overall Font Color', 'salient'),
+           'title' => esc_html__('Primary Text Color', 'salient'),
            'subtitle' => esc_html__('Default is #676767', 'salient'),
            'transparent' => false,
            'desc' => '',
            'default' => ''
          ),
          array(
+           'id' => 'primary-font-color-light',
+           'type' => 'color',
+           'title' => esc_html__('Primary Text Color (Light)', 'salient'),
+           'subtitle' => esc_html__('Used when setting the Text Color in a Row to "Light"', 'salient'),
+           'transparent' => false,
+           'desc' => '',
+           'default' => '#ffffff'
+         ),
+         array(
            'id' => 'animated-underline-type',
            'type' => 'select',
            'desc' => '',
            'title' => esc_html__('Animated Underline Type', 'salient'),
-           'subtitle' => esc_html__('Various elements in Salient display an animated underline when hovering over. This option allows you to globally fine-tune the styling of that line.', 'salient'),
+           'subtitle' => esc_html__('Many elements in Salient show an animated underline on hover. Use this option to adjust its styling globally.', 'salient'),
            'options' => array(
              'default' => esc_html__('Default', 'salient'),
              'ltr' => esc_html__('Left to Right Simple', 'salient'),
@@ -414,18 +428,6 @@
            "max"       => 4,
            'display_value' => 'label',
          ),
-         array(
-          'id' => 'general-link-style',
-          'type' => 'select',
-          'desc' => '',
-          'title' => esc_html__('General Link Style', 'salient'),
-          'subtitle' => esc_html__('This controls the styling of standard anchor links.', 'salient'),
-          'options' => array(
-            'default' => esc_html__('Inherit Accent Color', 'salient'),
-            'basic-underline' => esc_html__('Basic Underline', 'salient')
-          ),
-          'default' => 'default'
-        ),
          array(
            'id' => 'body-border',
            'type' => 'switch',
@@ -473,6 +475,18 @@
            'options' => $border_border_sizes,
            'default' => '20px'
          ),
+         array(
+          'id' => 'general-link-style',
+          'type' => 'select',
+          'desc' => '',
+          'title' => esc_html__('General Link Style', 'salient'),
+          'subtitle' => esc_html__('This controls the styling of standard anchor links.', 'salient'),
+          'options' => array(
+            'default' => esc_html__('Inherit Accent Color', 'salient'),
+            'basic-underline' => esc_html__('Basic Underline', 'salient')
+          ),
+          'default' => 'default'
+        ),
          $legacy_wp_favicon
        )
      ) );
@@ -528,17 +542,7 @@
            'desc' => '',
            'default' => '1'
          ),
-         array(
-          'id' => 'meta_viewport',
-          'type' => 'select',
-          'title' => esc_html__('Meta Viewport Functionality', 'salient'),
-          'subtitle' => esc_html__('Determines whether browser zooming/scaling is enabled or disabled. Enabling this will improve accessibility for users with low vision.', 'salient'),
-          'options' => array(
-            "not_scalable" => "Not Scalable",
-            "scalable" => "Scalable",
-          ),
-          'default' => 'not_scalable'
-        ),
+
          array(
            'id'        => 'max_container_width',
            'type'      => 'slider',
@@ -557,7 +561,7 @@
            'type'      => 'slider',
            'required' => array( 'ext_responsive', '=', '1' ),
            'title'     => esc_html__('Container Left/Right Padding', 'salient'),
-           'subtitle'  => esc_html__('When using the extended responsive design, the main content container will have 90px of padding set on left and right, use this option if you\'d like to modify that.', 'salient'),
+           'subtitle'  => esc_html__('The main content container applies 90px of left and right padding by default. Use this option to adjust or override that padding as needed.', 'salient'),
            'desc'      => '',
            "default"   => 90,
            "min"       => 20,
@@ -565,6 +569,58 @@
            "max"       => 120,
            'display_value' => 'text'
          ),
+
+         array(
+          'id' => 'ext_responsive_padding_mobile_mode',
+          'type' => 'button_set',
+          'title' => esc_html__('Mobile Container Padding Mode', 'salient'),
+          'subtitle' =>  '',
+          'desc' => '',
+          'options' => array(
+            'percent' => esc_html__('Percent', 'salient'),
+            'px' => esc_html__('Pixels', 'salient'),
+          ),
+          'default' => 'percent'
+        ),
+         array(
+          'id'        => 'ext_responsive_padding_mobile_percent',
+          'type'      => 'slider',
+          'required' => [['ext_responsive', '=', '1'], ['ext_responsive_padding_mobile_mode', '=', 'percent']],
+          'title'     => esc_html__('Mobile Container Left/Right Padding', 'salient'),
+          'subtitle'  => '',
+          'desc'      => '',
+          "default"   => 6,
+          "min"       => 2,
+          "step"      => 1,
+          "max"       => 10,
+          'display_value' => 'text'
+        ),
+         array(
+          'id'        => 'ext_responsive_padding_mobile_px',
+          'type'      => 'slider',
+          'required' => [['ext_responsive', '=', '1'], ['ext_responsive_padding_mobile_mode', '=', 'px']],
+          'title'     => esc_html__('Mobile Container Left/Right Padding', 'salient'),
+          'subtitle'  => '',
+          'desc'      => '',
+          "default"   => 20,
+          "min"       => 10,
+          "step"      => 5,
+          "max"       => 40,
+          'display_value' => 'text'
+        ),
+
+
+        array(
+          'id' => 'meta_viewport',
+          'type' => 'select',
+          'title' => esc_html__('Meta Viewport Functionality', 'salient'),
+          'subtitle' => esc_html__('Determines whether browser zooming/scaling is enabled or disabled. Enabling this will improve accessibility for users with low vision.', 'salient'),
+          'options' => array(
+            "not_scalable" => "Not Scalable",
+            "scalable" => "Scalable",
+          ),
+          'default' => 'not_scalable'
+        ),
          array(
            'id' => 'lightbox_script',
            'type' => 'select',
@@ -700,7 +756,7 @@
            'id' => 'force-dynamic-css-inline',
            'type' => 'switch',
            'title' => esc_html__('Force Dynamic CSS to Inline In Head', 'salient'),
-           'subtitle' => esc_html__('This prevents the theme dynamic css from being written/enqueued in a stylesheet and instead will cause it to output directly inline within the HTML head. This option is useful for preventing caching of the styles if you\'re still developing and using minification/caching plugins.', 'salient'),
+           'subtitle' => esc_html__('Outputs dynamic CSS inline in the HTML head instead of a stylesheet. Helps avoid caching issues during development.', 'salient'),
            'desc' => '',
            'default' => '0'
          ),
@@ -753,7 +809,6 @@
         array(
           'id' => 'delay-js-execution',
           'type' => 'switch',
-          'class' => 'salient-new-badge',
           'title' => esc_html__('Delay Javascript Execution', 'salient'),
           'subtitle' => esc_html__('Prevents theme javascript from running until the user makes an interaction such as scrolling, tapping etc.', 'salient'),
           'desc' => '',
@@ -771,14 +826,33 @@
           ),
           'default' => 'all'
         ),
+        array(
+          'id' => 'global_lazy_load_images',
+          'type' => 'switch',
+          'title' => esc_html__('Lazy Load Page Builder Element Images', 'salient'),
+          'subtitle' => esc_html__('Enabling this will globally activate lazy loading for theme elements which support it.', 'salient'),
+          'desc' => '',
+          'default' => '0'
+        ),
+
          array(
-           'id' => 'global_lazy_load_images',
-           'type' => 'switch',
-           'title' => esc_html__('Lazy Load Page Builder Element Images', 'salient'),
-           'subtitle' => esc_html__('Enabling this will globally activate lazy loading for theme elements which support it.', 'salient'),
-           'desc' => '',
-           'default' => '0'
-         ),
+          'id' => 'typography_google_fonts_local',
+          'type' => 'switch',
+          'class' => 'salient-new-badge',
+          'title' => esc_html__('Load Google Fonts Locally', 'salient'),
+          'subtitle' => esc_html__('Downloads selected Google fonts from typography options to your server and serves them locally, avoiding external requests to Google Fonts.', 'salient'),
+          'desc' => '',
+          'default' => '0'
+        ),
+        array(
+          'id' => 'lcp-optimize-top-level-images',
+          'type' => 'switch',
+          'class' => 'salient-new-badge',
+          'title' => esc_html__('Optimize Top-level Images', 'salient'),
+          'subtitle' => esc_html__('Optimizes loading for top-level images that appear first on your pages to load more quickly, improving the overall speed experience and Largest Contentful Paint metric.', 'salient'),
+          'desc' => '',
+          'default' => '0'
+        ),
 
          array(
           'id' => 'defer-javascript',
@@ -793,7 +867,7 @@
            'id' => 'typography_font_swap',
            'type' => 'switch',
            'title' => esc_html__('Font Display Swap', 'salient'),
-           'subtitle' => esc_html__('This is a font performance option which will your allow text to display in a default font before Google fonts have loaded. Enabling this will correct the page speed recommendation "Ensure text remains visible during webfont load".', 'salient'),
+           'subtitle' => esc_html__('This is a font performance option which will allow your text to display in a default font before Google fonts have loaded. Enabling this will correct the page speed recommendation "Ensure text remains visible during webfont load".', 'salient'),
            'desc' => '',
            'default' => '0'
          ),
@@ -802,7 +876,7 @@
            'id' => 'rm-block-editor-css',
            'type' => 'switch',
            'title' => esc_html__('Remove Block Editor (Gutenberg) CSS', 'salient'),
-           'subtitle' => esc_html__('Removes the block editor element css.', 'salient'),
+           'subtitle' => esc_html__('Removes the block editor element CSS.', 'salient'),
            'desc' => '',
            'default' => '0'
          ),
@@ -826,18 +900,10 @@
           'id' => 'rm-wp-emojis',
           'type' => 'switch',
           'title' => esc_html__('Remove WordPress Emoji Script/CSS', 'salient'),
-          'subtitle' => esc_html__('Removes the WordPress Emoji assets which automatically convert emoticons to WP specific emojis.', 'salient'),
+          'subtitle' => esc_html__('Removes the WordPress Emoji assets, which automatically convert emoticons to WP-specific emojis.', 'salient'),
           'desc' => '',
           'default' => '0'
-        ),
-         array(
-          'id' => 'page_header_responsive_images',
-          'type' => 'switch',
-          'title' => esc_html__('Responsive Page/Post Header Image Sizing', 'salient'),
-          'subtitle' => esc_html__('This will swap the background image of all page/post headers to use smaller sizes on mobile devices. Enabling this will decrease the Google lighthouse largest contentful paint metric wherever page headers are used.', 'salient'),
-          'desc' => '',
-          'default' => '0'
-        ),
+        )
        )
      ) );
 
@@ -846,7 +912,7 @@
      Redux::setSection( $opt_name, array(
       'title'            => esc_html__( 'Image Sizes', 'salient' ),
       'id'               => 'general-settings-image-sizes',
-      'desc' => esc_html__('Control which sizes that Salient registers. Disabling sizes will reduce number of variants that WordPress cuts when uploading new images. Removing unused sizes will reduce the amount of server space taken up by images and speed up upload time.', 'salient'),
+      'desc' => esc_html__('Control which sizes Salient registers. Disabling sizes reduces the number of variants WordPress creates when uploading new images. Removing unused sizes helps free up server space and speeds up upload times.', 'salient'),
       'subsection'       => true,
       'fields'           => array(
        array(
@@ -952,18 +1018,18 @@
         'default' => '#3452ff'
       ),
       'extra-color-1' => array(
-        'title' => esc_html__('Extra Color #1', 'salient'),
-        'subtitle' => esc_html__('Applicable theme elements will have the option to choose this as a color (i.e. buttons, icons etc..)', 'salient'),
+        'title' => esc_html__('Theme Extra Color #1', 'salient'),
+        'subtitle' => '',
         'default' => '#ff1053'
       ),
       'extra-color-2' => array(
-        'title' => esc_html__('Extra Color #2', 'salient'),
-        'subtitle' => esc_html__('Applicable theme elements will have the option to choose this as a color (i.e. buttons, icons etc..)', 'salient'),
+        'title' => esc_html__('Theme Extra Color #2', 'salient'),
+        'subtitle' => '',
         'default' => '#2AC4EA'
       ),
       'extra-color-3' => array(
-        'title' => esc_html__('Extra Color #3', 'salient'),
-        'subtitle' => esc_html__('Applicable theme elements will have the option to choose this as a color (i.e. buttons, icons etc..)', 'salient'),
+        'title' => esc_html__('Theme Extra Color #3', 'salient'),
+        'subtitle' => '',
         'default' => '#333333'
       ),
     );
@@ -1001,8 +1067,8 @@
         'id' => 'extra-color-gradient',
         'type' => 'color_gradient',
         'transparent' => false,
-        'title' => esc_html__('Extra Color Gradient', 'salient'),
-        'subtitle' => esc_html__('Applicable theme elements will have the option to choose this as a color (i.e. buttons, icons etc..)', 'salient'),
+        'title' => esc_html__('Theme Color Gradient', 'salient'),
+        'subtitle' => '',
         'desc' => '',
         'default'  => array(
           'from' => '#3452ff',
@@ -1014,8 +1080,8 @@
         'id' => 'extra-color-gradient-2',
         'type' => 'color_gradient',
         'transparent' => false,
-        'title' => esc_html__('Extra Color Gradient #2', 'salient'),
-        'subtitle' => esc_html__('Applicable theme elements will have the option to choose this as a color (i.e. buttons, icons etc..)', 'salient'),
+        'title' => esc_html__('Theme Color Gradient #2', 'salient'),
+        'subtitle' => '',
         'desc' => '',
         'default'  => array(
           'from' => '#2AC4EA',
@@ -1029,99 +1095,10 @@
      Redux::setSection( $opt_name, array(
        'id'               => 'accent-color',
        'customizer_width' => '450px',
-       'icon' => 'el el-brush',
+       'icon' => 'salient-admin-icon-paint-bucket',
        'title' => esc_html__('Accent Colors', 'salient'),
-       'desc' => esc_html__('All accent color related options are listed here.', 'salient'),
+       'desc' => '',
        'fields' => array_merge($salient_main_theme_colors, $salient_gradient_theme_colors)
-     ) );
-
-
-
-     Redux::setSection( $opt_name, array(
-       'id'               => 'boxed-layout',
-       'customizer_width' => '450px',
-       'icon' => 'el el-website',
-       'title' => esc_html__('Boxed Layout', 'salient'),
-       'desc' => esc_html__('All boxed layout related options are listed here.', 'salient'),
-       'fields'           => array(
-         array(
-           'id' => 'boxed_layout',
-           'type' => 'switch',
-           'title' => esc_html__('Enable Boxed Layout', 'salient'),
-           'subtitle' => '',
-           'desc' => '',
-           'next_to_hide' => '6',
-           'default' => '0'
-         ),
-         array(
-           'id' => 'background-color',
-           'type' => 'color',
-           'title' => esc_html__('Background Color', 'salient'),
-           'subtitle' => esc_html__('If you would rather simply use a solid color for your background, select one here.', 'salient'),
-           'desc' => '',
-           'transparent' => false,
-           'required' => array( 'boxed_layout', '=', '1' ),
-           'default' => '#f1f1f1'
-         ),
-         array(
-           'id' => 'background_image',
-           'type' => 'media',
-           'title' => esc_html__('Background Image', 'salient'),
-           'subtitle' => esc_html__('Upload your background here', 'salient'),
-           'required' => array( 'boxed_layout', '=', '1' ),
-           'desc' => ''
-         ),
-         array(
-           'id' => 'background-repeat',
-           'type' => 'select',
-           'title' => esc_html__('Background Repeat', 'salient'),
-           'subtitle' => esc_html__('Do you want your background to repeat? (Turn on when using patterns)', 'salient'),
-           'required' => array( 'boxed_layout', '=', '1' ),
-           'options' => array(
-             "no-repeat" => esc_html__('No-Repeat', 'salient'),
-             "repeat" => esc_html__('Repeat', 'salient'),
-           )
-         ),
-         array(
-           'id' => 'background-position',
-           'type' => 'select',
-           'title' => esc_html__('Background Position', 'salient'),
-           'subtitle' => esc_html__('How would you like your background image to be aligned?', 'salient'),
-           'required' => array( 'boxed_layout', '=', '1' ),
-           'options' => array(
-             "left top" => esc_html__("Left Top", "salient"),
-             "left center" => esc_html__("Left Center", "salient"),
-             "left bottom" => esc_html__("Left Bottom", "salient"),
-             "center top" => esc_html__("Center Top", "salient"),
-             "center center" => esc_html__("Center Center", "salient"),
-             "center bottom" => esc_html__("Center Bottom", "salient"),
-             "right top" => esc_html__("Right Top", "salient"),
-             "right center" => esc_html__("Right Center", "salient"),
-             "right bottom" => esc_html__("Right Bottom", "salient")
-           )
-         ),
-         array(
-           'id' => 'background-attachment',
-           'type' => 'select',
-           'title' => esc_html__('Background Attachment', 'salient'),
-           'subtitle' => esc_html__('Would you prefer your background to scroll with your site or be fixed and not move', 'salient'),
-           'required' => array( 'boxed_layout', '=', '1' ),
-           'options' => array(
-             "scroll" => esc_html__("Scroll", "salient"),
-             "fixed" => esc_html__("Fixed", "salient")
-           )
-         ),
-         array(
-           'id' => 'background-cover',
-           'type' => 'switch',
-           'title' => esc_html__('Auto resize background image to fit window', 'salient'),
-           'subtitle' => esc_html__('This will ensure your background image always fits no matter what size screen the user has. (Don\'t use with patterns)', 'salient'),
-           'required' => array( 'boxed_layout', '=', '1' ),
-           'desc' => '',
-           'default' => '0'
-         ),
-
-       )
      ) );
 
 
@@ -1130,7 +1107,7 @@
        'title'  => esc_html__( 'Typography', 'salient' ),
        'id'     => 'typography',
        'desc'   => esc_html__( 'All typography related options are listed here', 'salient' ),
-       'icon'   => 'el el-font',
+       'icon'   => 'salient-admin-icon-type',
        'fields' => array(
 
        )
@@ -1172,6 +1149,7 @@
              "from_theme" => esc_html__("Load from Theme", "salient"),
              "remove" => esc_html__("Do not load default font", "salient"),
            ),
+           // 'required' => array( 'typography_google_fonts_local', '!=', '1' ),
            'default' => 'from_google'
          ),
 
@@ -1183,6 +1161,8 @@
            'google'   => true,
            'all_styles'  => false,
            'fonts' =>  $nectar_std_fonts,
+           'font-size-px-only' => true,
+           'line-height-px-only' => true,
            'default'  => array()
          ),
          array(
@@ -1528,11 +1508,20 @@
        'subsection'       => true,
        'fields'           => array(
 
+        /* ADD NEW FIELD HERE  */
+         array(
+           'id' => 'fluid-typography-root',
+           'type' => 'fluid_typography',
+           'title' => esc_html__('Fluid Typography', 'salient'),
+           'subtitle' => esc_html__('Set fluid typography values for responsive text scaling using CSS clamp() function.', 'salient'),
+           'desc' => esc_html__('Configure fluid typography values for responsive text scaling. Used when setting rem values for typography fields to inherit from. Supports CSS calc() expressions with viewport units (vw, vh) and relative units (rem, em).', 'salient')
+         ),
+
          array(
            'id' => 'use-responsive-heading-typography',
            'type' => 'switch',
            'title' => esc_html__('Custom Responsive Headings', 'salient'),
-           'subtitle' => esc_html__('If left off, Salient will calculate the responsive typography settings for your h1-h6 tags & body automatically.', 'salient'),
+           'subtitle' => esc_html__('If left disabled, Salient will automatically generate responsive typography settings for your headings and body text.', 'salient'),
            'desc' => ''
          ),
 
@@ -1892,7 +1881,7 @@
 
 
          array(
-           'id'   =>'responsive-heading-typography-divider-6',
+           'id'   =>'responsive-heading-typography-divider-7',
            'desc' => '',
            'type' => 'divide',
            'required' => array( 'use-responsive-heading-typography', '=', '1' )
@@ -1951,8 +1940,7 @@
        'title'  => esc_html__( 'Header Navigation', 'salient' ),
        'id'     => 'header-nav',
        'desc'   => esc_html__( 'All header navigation related options are listed here.', 'salient' ),
-       'icon'   => 'el el-lines',
-       'fields' => array(
+       'icon'   => 'salient-admin-icon-menu',       'fields' => array(
 
        )
      ) );
@@ -2041,7 +2029,7 @@
            'id' => 'header-remove-fixed',
            'type' => 'switch',
            'title' => esc_html__('Header Remove Desktop Stickiness', 'salient'),
-           'subtitle' => esc_html__('By default your header will always remain at the top of the screen even when scrolling down the page. Enabling this will remove that functionality and cause it to stay at the top of the page.', 'salient'),
+           'subtitle' => esc_html__('By default, your header stays visible at the top while you scroll. Enabling this will make it static, so it only appears at the top of the page.', 'salient'),
            'desc' => '',
            'switch' => true,
            'default' => '0'
@@ -2065,7 +2053,7 @@
            'id'        => 'header-menu-item-spacing',
            'type'      => 'slider',
            'title'     => esc_html__('Menu Item Spacing', 'salient'),
-           'subtitle'  => esc_html__('Set the padding that will display on each side of your header menu items - space will be set in pixels.', 'salient'),
+           'subtitle'  => esc_html__('Set the padding (in pixels) applied to each side of your header menu items.', 'salient'),
            'desc'      => '',
            "default"   => 10,
            "min"       => 8,
@@ -2097,6 +2085,21 @@
           'default' => '0'
         ),
 
+
+        array(
+          'id' => 'header-blur-bg-type',
+          'type' => 'select',
+          'title' => esc_html__('Header Blur Background Type', 'salient'),
+          'subtitle' => '',
+          'desc' => '',
+          'required' => array( array( 'header-blur-bg', '=', '1' ) ),
+          'options' => array(
+            'default' => esc_html__('Default', 'salient'),
+            'gradient' => esc_html__('Progressive Gradient', 'salient')
+          ),
+          'default' => 'default'
+        ),
+
         array(
           'id' => 'header-blur-bg-func',
           'type' => 'select',
@@ -2106,6 +2109,7 @@
           'required' => array( array( 'header-blur-bg', '=', '1' ) ),
           'options' => array(
             'active_non_transparent' => esc_html__('Active when "Transparent header effect" is not', 'salient'),
+            'active_not_at_top' => esc_html__('Active when not at the top of the page', 'salient'),
             'active_all' => esc_html__('Active in all header states', 'salient')
           ),
           'default' => 'active_non_transparent'
@@ -2115,7 +2119,7 @@
            'id' => 'header-button-styling',
            'type' => 'select',
            'title' => esc_html__('Header Button Link Style', 'salient'),
-           'subtitle' => esc_html__('This effects any header links which are set to use','salient') . ' <a target="_blank" href="https://themenectar.com/docs/salient/header-button-links/">' . esc_html('button styling.', 'salient') .'</a>',
+           'subtitle' => esc_html__('This affects any header links which are set to use','salient') . ' <a target="_blank" href="https://themenectar.com/docs/salient/header-button-links/">' . esc_html('button styling.', 'salient') .'</a>',
            'desc' => '',
            'options' => array(
              'default' => esc_html__('Default', 'salient'),
@@ -2187,7 +2191,6 @@
            'default' => 'default'
          ),
 
-
          array(
           'id' => 'left-header-width',
           'type'      => 'slider',
@@ -2228,7 +2231,6 @@
            ),
            'default' => 'default'
          ),
-
 
          array(
            'id' => 'centered-menu-bottom-bar-separator',
@@ -2273,6 +2275,14 @@
            'desc' => '',
            'required' => array( 'header-fullwidth', '=', '1' )
          ),
+         array(
+           'id' => 'header-fullwidth-padding-mobile',
+           'type' => 'text',
+           'title' => esc_html__('Full Width Left/Right Padding Mobile', 'salient'),
+           'subtitle' => '',
+           'desc' => '',
+           'required' => array( 'header-fullwidth', '=', '1' )
+         ),
 
          array(
           'id' => 'header-size',
@@ -2293,6 +2303,28 @@
           ),
           'default' => 'default'
         ),
+
+        array(
+          'id' => 'header-contained-width',
+          'type' => 'select',
+          'required' => array(
+              array( 'header_format', '!=', 'left-header' ),
+              array( 'header_format', '!=', 'centered-menu-bottom-bar' ),
+              array( 'header_layout', '!=', 'header_with_secondary' ),
+              array( 'boxed_layout', '!=', '1' ),
+              array( 'header-size', '=', 'contained' ),
+          ),
+          'title' => esc_html__('Header Contained Width', 'salient'),
+          'subtitle' => esc_html__('Please select your header contained width here.', 'salient'),
+          'desc' => '',
+          'options' => array(
+            'default' => esc_html__('Match Content Width', 'salient'),
+            'auto' => esc_html__('Automatic Width', 'salient'),
+          ),
+          'default' => 'default'
+        ),
+
+
         array(
           'id' => 'header-border-radius',
           'type'      => 'slider',
@@ -2335,7 +2367,7 @@
            'id' => 'header-text-widget',
            'type' => 'editor',
            'title' => esc_html__('Text To Display In Header', 'salient'),
-           'subtitle' => esc_html__('Enter a small amount of text to display in your header navigation. e.g. a phone number, store address etc. The positioning of this content will be determined by the header layout that you are using.', 'salient'),
+           'subtitle' => esc_html__('Enter text to display in your header navigation, such as a phone number or address. Its position depends on your selected header layout.', 'salient'),
            'default' => '',
            'args' => array(
              'teeny' => true,
@@ -2347,17 +2379,23 @@
            'id' => 'enable_social_in_header',
            'type' => 'switch',
            'title' => esc_html__('Enable Social Icons', 'salient'),
-           'subtitle' => esc_html__('Do you want the your nav to display social icons? If using the secondary header navigation option, the icons will be displayed in that top bar instead of the main navigation.', 'salient'),
+           'subtitle' => esc_html__('Display social icons in your navigation? If you use the secondary header, the icons will appear in the top bar instead of the main menu.', 'salient'),
            'desc' => '',
+           // 'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'default' => '0'
          ),
+
+         // Legacy Social Icons
          array(
            'id' => 'use-facebook-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use Facebook Icon', 'salient'),
            'subtitle' => '',
            'desc' => '',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
          ),
          array(
            'id' => 'use-twitter-icon-header',
@@ -2365,7 +2403,10 @@
            'title' => esc_html__('Use Twitter Icon', 'salient'),
            'subtitle' => '',
            'desc' => '',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
          ),
          array(
           'id' => 'use-x-twitter-icon-header',
@@ -2373,7 +2414,10 @@
           'title' => esc_html__('Use X-Twitter Icon', 'salient'),
           'subtitle' => '',
           'desc' => '',
-          'required' => array( 'enable_social_in_header', '=', '1' ),
+          'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
         ),
         array(
           'id' => 'use-bluesky-icon-header',
@@ -2381,7 +2425,10 @@
           'title' => esc_html__('Use Bluesky Icon', 'salient'),
           'subtitle' => '',
           'desc' => '',
-          'required' => array( 'enable_social_in_header', '=', '1' ),
+          'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
         ),
          array(
            'id' => 'use-google-plus-icon-header',
@@ -2389,7 +2436,10 @@
            'title' => esc_html__('Use Google Icon', 'salient'),
            'subtitle' => '',
            'desc' => '',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
          ),
          array(
            'id' => 'use-vimeo-icon-header',
@@ -2397,21 +2447,30 @@
            'title' => esc_html__('Use Vimeo Icon', 'salient'),
            'subtitle' => '',
            'desc' => '',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
          ),
          array(
            'id' => 'use-dribbble-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use Dribbble Icon', 'salient'),
            'subtitle' => '',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'desc' => ''
          ),
          array(
            'id' => 'use-pinterest-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use Pinterest Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2419,7 +2478,10 @@
            'id' => 'use-youtube-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use Youtube Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2427,7 +2489,10 @@
            'id' => 'use-tumblr-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use Tumblr Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2435,7 +2500,10 @@
            'id' => 'use-linkedin-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use LinkedIn Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2443,7 +2511,10 @@
            'id' => 'use-rss-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use RSS Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2451,7 +2522,10 @@
            'id' => 'use-behance-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use Behance Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2459,7 +2533,10 @@
            'id' => 'use-instagram-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use Instagram Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2467,7 +2544,10 @@
            'id' => 'use-flickr-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use Flickr Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2475,7 +2555,10 @@
            'id' => 'use-spotify-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use Spotify Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2483,7 +2566,10 @@
            'id' => 'use-github-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use GitHub Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2491,7 +2577,10 @@
            'id' => 'use-stackexchange-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use StackExchange Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2499,7 +2588,10 @@
            'id' => 'use-soundcloud-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use SoundCloud Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
@@ -2507,14 +2599,20 @@
            'id' => 'use-vk-icon-header',
            'type' => 'checkbox',
            'title' => esc_html__('Use VK Icon', 'salient'),
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'subtitle' => '',
            'desc' => ''
          ),
          array(
            'id' => 'use-vine-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Vine Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2522,7 +2620,10 @@
          array(
            'id' => 'use-houzz-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Houzz Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2530,7 +2631,10 @@
          array(
            'id' => 'use-yelp-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Yelp Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2538,7 +2642,10 @@
          array(
            'id' => 'use-mixcloud-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+            'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Mixcloud Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2546,7 +2653,10 @@
          array(
            'id' => 'use-snapchat-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Snapchat Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2554,7 +2664,10 @@
          array(
            'id' => 'use-bandcamp-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Bandcamp Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2562,7 +2675,10 @@
          array(
            'id' => 'use-tripadvisor-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Tripadvisor Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2570,7 +2686,10 @@
          array(
            'id' => 'use-telegram-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Telegram Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2578,7 +2697,10 @@
          array(
            'id' => 'use-slack-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Slack Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2586,7 +2708,10 @@
          array(
            'id' => 'use-medium-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Medium Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2594,7 +2719,10 @@
          array(
            'id' => 'use-artstation-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Artstation Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2602,7 +2730,10 @@
          array(
            'id' => 'use-discord-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Discord Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2610,7 +2741,10 @@
          array(
            'id' => 'use-whatsapp-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use WhatsApp Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2618,7 +2752,10 @@
          array(
            'id' => 'use-messenger-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Messenger Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2626,7 +2763,10 @@
          array(
            'id' => 'use-tiktok-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use TikTok Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2634,7 +2774,10 @@
          array(
            'id' => 'use-twitch-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Twitch Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2642,7 +2785,10 @@
          array(
            'id' => 'use-applemusic-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Apple Music Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2650,7 +2796,10 @@
          array(
           'id' => 'use-patreon-icon-header',
           'type' => 'checkbox',
-          'required' => array( 'enable_social_in_header', '=', '1' ),
+          'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
           'title' => esc_html__('Use Patreon Icon', 'salient'),
           'subtitle' => '',
           'desc' => ''
@@ -2658,7 +2807,10 @@
          array(
           'id' => 'use-xing-icon-header',
           'type' => 'checkbox',
-          'required' => array( 'enable_social_in_header', '=', '1' ),
+          'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
           'title' => esc_html__('Use Xing Icon', 'salient'),
           'subtitle' => '',
           'desc' => ''
@@ -2666,7 +2818,10 @@
         array(
           'id' => 'use-mastodon-icon-header',
           'type' => 'checkbox',
-          'required' => array( 'enable_social_in_header', '=', '1' ),
+          'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
           'title' => esc_html__('Use Mastodon Icon', 'salient'),
           'subtitle' => '',
           'desc' => ''
@@ -2674,7 +2829,10 @@
         array(
           'id' => 'use-threads-icon-header',
           'type' => 'checkbox',
-          'required' => array( 'enable_social_in_header', '=', '1' ),
+          'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
           'title' => esc_html__('Use Threads Icon', 'salient'),
           'subtitle' => '',
           'desc' => ''
@@ -2682,7 +2840,10 @@
         array(
           'id' => 'use-trustpilot-icon-header',
           'type' => 'checkbox',
-          'required' => array( 'enable_social_in_header', '=', '1' ),
+          'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
           'title' => esc_html__('Use Trustpilot Icon', 'salient'),
           'subtitle' => '',
           'desc' => ''
@@ -2690,7 +2851,10 @@
          array(
            'id' => 'use-email-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Email Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2698,7 +2862,10 @@
          array(
            'id' => 'use-phone-icon-header',
            'type' => 'checkbox',
-           'required' => array( 'enable_social_in_header', '=', '1' ),
+           'required' => [
+            [ 'enable_social_in_header', '=', '1' ],
+            [ 'social_networks_mode', '=', 'legacy' ]
+           ],
            'title' => esc_html__('Use Phone Icon', 'salient'),
            'subtitle' => '',
            'desc' => ''
@@ -2900,12 +3067,11 @@
            'id' => 'transparent-header-shadow-helper',
            'type' => 'switch',
            'title' => esc_html__('Add Shadow Behind Transparent Header', 'salient'),
-           'subtitle' => esc_html__('If activated this will add a subtle shadow behind your transparent header to help with the visibility of your navigation items.', 'salient'),
+           'subtitle' => esc_html__('Adds a subtle shadow behind your transparent header.', 'salient'),
            'desc' => '',
            'required' => array( 'transparent-header', '=', '1' ),
            'default' => '0'
          ),
-
 
        )
      ) );
@@ -3252,7 +3418,7 @@
            'id' => 'header-slide-out-widget-area',
            'type' => 'switch',
            'title' => esc_html__('Off Canvas Menu', 'salient'),
-           'subtitle' => esc_html__('This will add an off canvas menu button on all viewports to your header navigation. When this is disabled, the off canvas menu will only be visible on mobile devices.', 'salient'),
+           'subtitle' => esc_html__('Adds an off-canvas menu button to the header on all devices. When disabled, it appears only on mobile.', 'salient'),
            'desc' => '',
            'required' => array(  array('header-slide-out-widget-area-style', '!=', 'simple') ),
            'default' => '1'
@@ -3309,23 +3475,43 @@
            'required' => array(  array('header-slide-out-widget-area-style', '!=', 'fullscreen'), array('header-slide-out-widget-area-style', '!=', 'fullscreen-inline-images' ), array('header-slide-out-widget-area-style', '!=', 'fullscreen-alt' ), array('header-slide-out-widget-area-style', '!=', 'simple' ) ),
          ),
 
+        array(
+          'id' => 'header-slide-out-widget-area-icon-variant',
+          'type' => 'select',
+          'title' => esc_html__('Off Canvas Menu Icon Style', 'salient'),
+          'desc' => '',
+          'subtitle' => esc_html__('Controls the lines within the menu icon.', 'salient'),
+          'options' => array(
+            'default' => esc_html__('Default', 'salient'),
+            'even_lines' => esc_html__('Even Lines', 'salient'),
+          ),
+          'default' => 'default',
+        ),
+
+        array(
+          'id'        => 'header-slide-out-widget-area-icon-width',
+          'type'      => 'slider',
+          'title'     => esc_html__('Off Canvas Menu Icon Width', 'salient'),
+          'subtitle'  => esc_html__('Define the width of the off canvas menu icon.', 'salient'),
+          'desc'      => '',
+          "default"   => 22,
+          "min"       => 20,
+          "step"      => 1,
+          "max"       => 50,
+          'display_value' => 'text'
+        ),
+
+
          array(
           'id' => 'header-slide-out-from-right-simplify-mobile',
           'type' => 'switch',
           'title' => esc_html__('Simplify Animation/Style of OCM on Mobile', 'salient'),
-          'subtitle' => esc_html__('The "Slide Out From Side" animation can be difficult for some mobile devices to render correctly. You can use this to offer a simplified version when accessed from a mobile device.', 'salient'),
+          'subtitle' => esc_html__('The “Slide Out From Side” animation may not render well on some mobile devices. Use this option to show a simpler version on mobile.', 'salient'),
           'desc' => '',
           'required' => array(  array('header-slide-out-widget-area-style', '=', 'slide-out-from-right'), array( 'theme-skin', '=', 'material') ),
           'default' => '0'
         ),
-         array(
-           'id' => 'header-menu-label',
-           'type' => 'switch',
-           'title' => esc_html__('Off Canvas Menu Add Menu Label', 'salient'),
-           'subtitle' => esc_html__('This will add a "Menu" label next to your off canvas link.', 'salient'),
-           'desc' => '',
-           'default' => '0'
-         ),
+
          array(
           'id' => 'ocm_btn_position',
           'type' => 'select',
@@ -3340,6 +3526,15 @@
           'default' => 'default',
         ),
 
+        array(
+          'id' => 'header-menu-label',
+          'type' => 'switch',
+          'title' => esc_html__('Off Canvas Menu Add "Menu" Label', 'salient'),
+          'subtitle' => esc_html__('This will add a "Menu" label next to your off canvas link.', 'salient'),
+          'desc' => '',
+          'default' => '0'
+        ),
+
          array(
            'id' => 'header-slide-out-widget-area-social',
            'type' => 'switch',
@@ -3348,6 +3543,15 @@
            'desc' => '',
            'default' => '0'
          ),
+         array(
+          'id' => 'header-slide-out-widget-area-top-nav-in-mobile',
+          'type' => 'switch',
+          'title' => esc_html__('Off Canvas Menu Mobile Nav Menu items', 'salient'),
+          'subtitle' => esc_html__('This will cause your off canvas menu to inherit any navigation items assigned in your "Top Navigation" menu location when viewing on a mobile device.', 'salient') . '<br/><br/>' . esc_html__('Enabled by default in the Material theme skin.','salient'),
+          'desc' => '',
+          'required' => array(  array('header-slide-out-widget-area-style', '!=', 'simple'), array('header-slide-out-widget-area', '!=', '0') ),
+          'default' => '0'
+        ),
          array(
            'id' => 'header-slide-out-widget-area-bottom-text',
            'type' => 'text',
@@ -3371,15 +3575,7 @@
            'default' => 'dark',
            'required' => array(  array('header-slide-out-widget-area-style', '!=', 'simple') )
          ),
-         array(
-           'id' => 'header-slide-out-widget-area-top-nav-in-mobile',
-           'type' => 'switch',
-           'title' => esc_html__('Off Canvas Menu Mobile Nav Menu items', 'salient'),
-           'subtitle' => esc_html__('This will cause your off canvas menu to inherit any navigation items assigned in your "Top Navigation" menu location when viewing on a mobile device.', 'salient') . '<br/><br/>' . esc_html__('Enabled by default in the Material theme skin.','salient'),
-           'desc' => '',
-           'required' => array(  array('header-slide-out-widget-area-style', '!=', 'simple'), array('header-slide-out-widget-area', '!=', '0') ),
-           'default' => '0'
-         ),
+
          array(
            'id' => 'header-slide-out-widget-area-icons-display',
            'type' => 'select',
@@ -3398,7 +3594,7 @@
            'id' => 'header-slide-out-widget-area-image-display',
            'type' => 'select',
            'title' => esc_html__('Off Canvas Menu Item Images', 'salient'),
-           'subtitle' => esc_html__('This will control how to display menu items which have an image set. Removing images will simply your menu items to their default mobile state. Menu Item images are defined by you on an individual menu item basis in Appearance > Menus.', 'salient'),
+           'subtitle' => esc_html__('Controls how menu items with images are displayed. Removing images reverts them to the default mobile style. You set images per item in Appearance > Menus.', 'salient'),
            'desc' => '',
            'options' => array(
              'remove_images' => esc_html__('Remove Images', 'salient'),
@@ -3406,18 +3602,7 @@
            ),
            'default' => 'remove_images'
          ),
-         array(
-          'id' => 'header-slide-out-widget-area-icon-variant',
-          'type' => 'select',
-          'title' => esc_html__('Off Canvas Icon Style', 'salient'),
-          'desc' => '',
-          'subtitle' => esc_html__('Controls the lines within the menu icon.', 'salient'),
-          'options' => array(
-            'default' => esc_html__('Default', 'salient'),
-            'even_lines' => esc_html__('Even Lines', 'salient'),
-          ),
-          'default' => 'default',
-        ),
+
          array(
            'id' => 'header-slide-out-widget-area-icon-style',
            'type' => 'select',
@@ -3546,7 +3731,7 @@
           'id' => 'header-background-color',
           'type' => 'color',
           'title' => esc_html__('Header Background', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Header background color', 'salient'),
           'desc' => '',
           'transparent' => false,
           'default' => '#ffffff'
@@ -3555,7 +3740,7 @@
           'id' => 'header-font-color',
           'type' => 'color',
           'title' => esc_html__('Header Font', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Header font color', 'salient'),
           'class' => 'no-border',
           'transparent' => false,
           'desc' => esc_html__('Default State', 'salient'),
@@ -3565,7 +3750,7 @@
           'id' => 'header-font-hover-color',
           'type' => 'color',
           'title' => '',
-          'subtitle' => '',
+          'subtitle' => __('Header font color', 'salient'),
           'transparent' => false,
           'desc' => esc_html__('Hover State', 'salient'),
           'class' => 'hover-state',
@@ -3576,7 +3761,7 @@
           'id' => 'header-font-button-bg',
           'type' => 'color',
           'title' => esc_html__('Header Button Effect', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Header button effect color', 'salient'),
           'transparent' => false,
           'class' => 'no-border',
           'desc' => esc_html__('BG Default State', 'salient'),
@@ -3587,7 +3772,7 @@
           'id' => 'header-font-button-bg-active',
           'type' => 'color',
           'title' => '',
-          'subtitle' => '',
+          'subtitle' => __('Header button effect color', 'salient'),
           'transparent' => false,
           'class' => 'hover-state no-border-middle',
           'desc' => esc_html__('BG Active State', 'salient'),
@@ -3598,7 +3783,7 @@
           'id' => 'header-font-button-text-active',
           'type' => 'color',
           'title' => '',
-          'subtitle' => '',
+          'subtitle' => __('Header button effect color', 'salient'),
           'transparent' => false,
           'class' => 'hover-state',
           'desc' => esc_html__('Text Active State', 'salient'),
@@ -3610,7 +3795,7 @@
           'id' => 'header-icon-color',
           'type' => 'color',
           'title' => esc_html__('Header Menu Item Icons', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Header menu item icons color', 'salient'),
           'transparent' => false,
           'desc' => '',
           'default' => '#888888'
@@ -3634,7 +3819,7 @@
           'id' => 'secondary-header-background-color',
           'type' => 'color',
           'title' => esc_html__('Secondary Header Background', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Secondary header background color', 'salient'),
           'desc' => '',
           'transparent' => false,
           'default' => '#F8F8F8'
@@ -3643,7 +3828,7 @@
           'id' => 'secondary-header-font-color',
           'type' => 'color',
           'title' => esc_html__('Secondary Header Font', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Secondary header font color', 'salient'),
           'class' => 'no-border',
           'transparent' => false,
           'desc' => esc_html__('Default State', 'salient'),
@@ -3653,7 +3838,7 @@
           'id' => 'secondary-header-font-hover-color',
           'type' => 'color',
           'title' => '',
-          'subtitle' => '',
+          'subtitle' => __('Secondary header font color', 'salient'),
           'transparent' => false,
           'desc' => esc_html__('Hover State', 'salient'),
           'class' => 'hover-state',
@@ -3681,7 +3866,7 @@
           'title' => esc_html__('Dropdown Background', 'salient'),
           'class' => 'no-border',
           'transparent' => false,
-          'subtitle' => '',
+          'subtitle' => __('Dropdown background color', 'salient'),
           'desc' => esc_html__('Default State', 'salient'),
           'default' => '#1F1F1F'
         ),
@@ -3689,7 +3874,7 @@
           'id' => 'header-dropdown-background-hover-color',
           'type' => 'color',
           'title' => '',
-          'subtitle' => '',
+          'subtitle' => __('Dropdown background color', 'salient'),
           'transparent' => false,
           'desc' => esc_html__('Hover State', 'salient'),
           'class' => 'hover-state',
@@ -3699,7 +3884,7 @@
           'id' => 'header-dropdown-font-color',
           'type' => 'color',
           'title' => esc_html__('Dropdown Font', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Dropdown font color', 'salient'),
           'class' => 'no-border',
           'transparent' => false,
           'desc' => esc_html__('Default State', 'salient'),
@@ -3709,7 +3894,7 @@
           'id' => 'header-dropdown-font-hover-color',
           'type' => 'color',
           'title' => '',
-          'subtitle' => '',
+          'subtitle' => __('Dropdown font color', 'salient'),
           'desc' => esc_html__('Hover State', 'salient'),
           'class' => 'hover-state',
           'transparent' => false,
@@ -3719,7 +3904,7 @@
           'id' => 'header-dropdown-icon-color',
           'type' => 'color',
           'title' => esc_html__('Dropdown Menu Item Icons', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Dropdown menu item icons color', 'salient'),
           'transparent' => false,
           'desc' => '',
           'default' => '#3452ff'
@@ -3728,7 +3913,7 @@
           'id' => 'header-dropdown-desc-font-color',
           'type' => 'color',
           'title' => esc_html__('Dropdown Description Font', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Dropdown description font color', 'salient'),
           'desc' => esc_html__('Default State', 'salient'),
           'class' => 'no-border',
           'transparent' => false,
@@ -3738,7 +3923,7 @@
           'id' => 'header-dropdown-desc-font-hover-color',
           'type' => 'color',
           'title' => '',
-          'subtitle' => '',
+          'subtitle' => __('Dropdown description font color', 'salient'),
           'class' => 'hover-state',
           'desc' => esc_html__('Hover State', 'salient'),
           'transparent' => false,
@@ -3748,7 +3933,7 @@
           'id' => 'header-dropdown-heading-font-color',
           'type' => 'color',
           'title' => esc_html__('Mega Menu Heading Font', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Mega menu heading font color', 'salient'),
           'class' => 'no-border',
           'transparent' => false,
           'desc' => esc_html__('Default State', 'salient'),
@@ -3758,7 +3943,7 @@
           'id' => 'header-dropdown-heading-font-hover-color',
           'type' => 'color',
           'title' => '',
-          'subtitle' => '',
+          'subtitle' => __('Mega menu heading font color', 'salient'),
           'transparent' => false,
           'class' => 'hover-state',
           'desc' => esc_html__('Hover State', 'salient'),
@@ -3768,7 +3953,7 @@
           'id' => 'header-separator-color',
           'type' => 'color',
           'title' => esc_html__('Header Separators', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Header separators color', 'salient'),
           'transparent' => false,
           'desc' => '',
           'default' => '#eeeeee'
@@ -3793,7 +3978,7 @@
           'id' => 'header-slide-out-widget-area-background-color',
           'type' => 'color',
           'title' => esc_html__('Off Canvas Navigation Background', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Off canvas navigation background color', 'salient'),
           'desc' => '',
           'class' => 'no-border',
           'transparent' => false,
@@ -3812,7 +3997,7 @@
           'id' => 'header-slide-out-widget-area-header-color',
           'type' => 'color',
           'title' => esc_html__('Off Canvas Navigation Headers', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Off canvas navigation headers color', 'salient'),
           'transparent' => false,
           'desc' => '',
           'default' => '#ffffff'
@@ -3821,7 +4006,7 @@
           'id' => 'header-slide-out-widget-area-color',
           'type' => 'color',
           'title' => esc_html__('Off Canvas Navigation Text', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Off canvas navigation text color', 'salient'),
           'class' => 'no-border',
           'transparent' => false,
           'desc' => esc_html__('Default State', 'salient'),
@@ -3831,7 +4016,7 @@
           'id' => 'header-slide-out-widget-area-hover-color',
           'type' => 'color',
           'title' => '',
-          'subtitle' => '',
+          'subtitle' => __('Off canvas navigation text color', 'salient'),
           'class' => 'hover-state',
           'transparent' => false,
           'desc' => esc_html__('Hover State', 'salient'),
@@ -3841,7 +4026,7 @@
           'id' => 'header-slide-out-widget-area-close-bg-color',
           'type' => 'color',
           'title' => esc_html__('Off Canvas Navigation Close Button Background', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Off canvas navigation close button background color', 'salient'),
           'required' => array( 'theme-skin', '=', 'material') ,
           'desc' => '',
           'transparent' => false,
@@ -3851,7 +4036,7 @@
           'id' => 'header-slide-out-widget-area-close-icon-color',
           'type' => 'color',
           'title' => esc_html__('Off Canvas Navigation Close Button Icon', 'salient'),
-          'subtitle' => '',
+          'subtitle' => __('Off canvas navigation close button icon color', 'salient'),
           'required' => array( 'theme-skin', '=', 'material') ,
           'desc' => '',
           'transparent' => false,
@@ -3888,54 +4073,50 @@
 
      }
 
-     Redux::setSection( $opt_name, array(
-       'title'  => esc_html__( 'Global Sections', 'salient' ),
-       'id'     => 'global-sections',
-       'desc'   => esc_html__( 'Use this area to assign templates from your ','salient') . '<a href="'.esc_url( admin_url('edit.php?post_type=salient_g_sections') ).'">' . esc_html__('Global Sections','salient') . '</a> ' . esc_html__('to various locations within Salient.','salient'),
-       'icon'   => 'el el-website',
-       'fields' => array(
-        array(
-          'id'    => 'info_success',
-          'type'  => 'info',
-          'class' => 'nectar-announcement',
-          'style' => 'success',
-          'title' => esc_html__('New Functionality Available', 'salient'),
-          'icon'  => 'el-icon-info-sign',
-          'desc'  => esc_html__( 'As of v16, Global Sections can now be assigned to locations from within each section settings with greater control over the display.', 'salient') . ' <a target="_blank" rel="noopener noreferrer" href="https://themenectar.com/docs/salient/page-builder-global-sections/#locations">' .esc_html__('See documentation for more information.','salient') . '</a>'
-        ),
-         array(
-           'id' => 'global-section-after-header-navigation',
-           'type' => 'select',
-           'title' => esc_html__('After Header Navigation', 'salient'),
-           'subtitle' => esc_html__('The area below your header navigation bar, before all page content. Note that assigning a template to this area will disable the Transparent Header Effect.', 'salient'),
-           'options' => $global_sections_arr
-         ),
-         array(
-           'id' => 'global-section-above-footer',
-           'type' => 'select',
-           'title' => esc_html__('After Page Content', 'salient'),
-           'subtitle' => esc_html__('The area above your footer, after all page content.', 'salient'),
-           'options' => $global_sections_arr
-         ),
-
-       )
-     ) );
-
 
      Redux::setSection( $opt_name, array(
        'title'  => esc_html__( 'Footer', 'salient' ),
        'id'     => 'footer',
-       'desc'   => esc_html__( 'All footer related options are listed here.', 'salient' ),
-       'icon'   => 'el el-file',
+       'desc'   => '',
+       'icon'   => 'salient-admin-icon-panel-bottom',
        'fields' => array(
+
+        array(
+          'id'    => 'footer_page_builder_info',
+          'type'  => 'info',
+          'class' => 'nectar-announcement',
+          'style' => 'success',
+          'title' => esc_html__('Footers can now be created using the page builder.', 'salient'),
+          'icon'  => 'el-icon-info-sign',
+          'desc'  => esc_html__( 'Did you know you can use Global Sections assigned to footer locations to create a fully custom footer?', 'salient') . ' <a target="_blank" rel="noopener noreferrer" href="https://themenectar.com/docs/salient/page-builder-global-sections/">' .esc_html__('See documentation for more information.','salient') . '</a>'
+        ),
          array(
            'id' => 'enable-main-footer-area',
            'type' => 'switch',
            'title' => esc_html__('Main Footer Area', 'salient'),
-           'subtitle' => esc_html__('Do you want use the main footer that contains all the widgets areas?', 'salient'),
+           'subtitle' => esc_html__('Do you want to use the main footer that contains all the widgets areas?', 'salient'),
            'desc' => '',
-           'default' => '1'
+           'default' => '0'
          ),
+
+         array(
+          'id' => 'disable-copyright-footer-area',
+          'type' => 'switch',
+          'title' => esc_html__('Disable Footer Copyright Area', 'salient'),
+          'subtitle' => esc_html__('This will hide the copyright bar in your footer', 'salient'),
+          'desc' => '',
+          'default' => ''
+        ),
+
+        array(
+          'id' => 'enable_social_in_copyright',
+          'type' => 'switch',
+          'title' => esc_html__('Enable Social Icons in Copyright Area', 'salient'),
+          'subtitle' => '',
+          'desc' => '',
+          'required' => array( 'social_networks_mode', '=', 'dynamic' ),
+          'default' => '1'
+        ),
 
          array(
            'id' => 'footer_columns',
@@ -4107,14 +4288,8 @@
            'default' => 'default'
          ),
 
-         array(
-           'id' => 'disable-copyright-footer-area',
-           'type' => 'switch',
-           'title' => esc_html__('Disable Footer Copyright Area', 'salient'),
-           'subtitle' => esc_html__('This will hide the copyright bar in your footer', 'salient'),
-           'desc' => '',
-           'default' => ''
-         ),
+
+
 
          array(
            'id' => 'footer-copyright-text',
@@ -4158,6 +4333,7 @@
            'id' => 'use-facebook-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Facebook Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4165,6 +4341,7 @@
            'id' => 'use-twitter-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Twitter Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4172,6 +4349,7 @@
           'id' => 'use-x-twitter-icon',
           'type' => 'checkbox',
           'title' => esc_html__('Use X-Twitter Icon', 'salient'),
+          'required' => array( 'social_networks_mode', '=', 'legacy' ),
           'subtitle' => '',
           'desc' => ''
         ),
@@ -4179,6 +4357,7 @@
           'id' => 'use-bluesky-icon',
           'type' => 'checkbox',
           'title' => esc_html__('Use Bluesky Icon', 'salient'),
+          'required' => array( 'social_networks_mode', '=', 'legacy' ),
           'subtitle' => '',
           'desc' => '',
         ),
@@ -4186,6 +4365,7 @@
            'id' => 'use-google-plus-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Google Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4193,6 +4373,7 @@
            'id' => 'use-vimeo-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Vimeo Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4200,6 +4381,7 @@
            'id' => 'use-dribbble-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Dribbble Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4207,6 +4389,7 @@
            'id' => 'use-pinterest-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Pinterest Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4214,6 +4397,7 @@
            'id' => 'use-youtube-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Youtube Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4221,6 +4405,7 @@
            'id' => 'use-tumblr-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Tumblr Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4228,6 +4413,7 @@
            'id' => 'use-linkedin-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use LinkedIn Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4235,6 +4421,7 @@
            'id' => 'use-rss-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use RSS Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4242,6 +4429,7 @@
            'id' => 'use-behance-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Behance Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4249,6 +4437,7 @@
            'id' => 'use-instagram-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Instagram Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4256,6 +4445,7 @@
            'id' => 'use-flickr-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Flickr Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4263,6 +4453,7 @@
            'id' => 'use-spotify-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Spotify Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4270,6 +4461,7 @@
            'id' => 'use-github-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use GitHub Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4277,6 +4469,7 @@
            'id' => 'use-stackexchange-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use StackExchange Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4284,6 +4477,7 @@
            'id' => 'use-soundcloud-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use SoundCloud Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4291,6 +4485,7 @@
            'id' => 'use-vk-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use VK Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4298,6 +4493,7 @@
            'id' => 'use-vine-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Vine Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4305,6 +4501,7 @@
            'id' => 'use-houzz-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Houzz Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4312,6 +4509,7 @@
            'id' => 'use-yelp-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Yelp Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4319,6 +4517,7 @@
            'id' => 'use-snapchat-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Snapchat Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4326,6 +4525,7 @@
            'id' => 'use-mixcloud-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Mixcloud Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4333,6 +4533,7 @@
            'id' => 'use-bandcamp-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Bandcamp Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4340,6 +4541,7 @@
            'id' => 'use-tripadvisor-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Tripadvisor Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4347,6 +4549,7 @@
            'id' => 'use-telegram-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Telegram Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4354,6 +4557,7 @@
            'id' => 'use-slack-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Slack Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4361,6 +4565,7 @@
            'id' => 'use-medium-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Medium Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4368,6 +4573,7 @@
            'id' => 'use-artstation-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Artstation Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4375,6 +4581,7 @@
            'id' => 'use-discord-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Discord Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4382,6 +4589,7 @@
            'id' => 'use-whatsapp-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use WhatsApp Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4389,6 +4597,7 @@
            'id' => 'use-messenger-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Messenger Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4396,6 +4605,7 @@
            'id' => 'use-tiktok-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use TikTok Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4403,6 +4613,7 @@
            'id' => 'use-twitch-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Twitch Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4410,6 +4621,7 @@
            'id' => 'use-applemusic-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Apple Music Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4417,6 +4629,7 @@
           'id' => 'use-patreon-icon',
           'type' => 'checkbox',
           'title' => esc_html__('Use Patreon Icon', 'salient'),
+          'required' => array( 'social_networks_mode', '=', 'legacy' ),
           'subtitle' => '',
           'desc' => ''
         ),
@@ -4424,6 +4637,7 @@
           'id' => 'use-trustpilot-icon',
           'type' => 'checkbox',
           'title' => esc_html__('Use Trustpilot Icon', 'salient'),
+          'required' => array( 'social_networks_mode', '=', 'legacy' ),
           'subtitle' => '',
           'desc' => ''
         ),
@@ -4431,6 +4645,7 @@
           'id' => 'use-mastodon-icon',
           'type' => 'checkbox',
           'title' => esc_html__('Use Mastodon Icon', 'salient'),
+          'required' => array( 'social_networks_mode', '=', 'legacy' ),
           'subtitle' => '',
           'desc' => ''
         ),
@@ -4438,6 +4653,7 @@
           'id' => 'use-threads-icon',
           'type' => 'checkbox',
           'title' => esc_html__('Use Threads Icon', 'salient'),
+          'required' => array( 'social_networks_mode', '=', 'legacy' ),
           'subtitle' => '',
           'desc' => ''
         ),
@@ -4445,6 +4661,7 @@
           'id' => 'use-xing-icon',
           'type' => 'checkbox',
           'title' => esc_html__('Use Xing Icon', 'salient'),
+          'required' => array( 'social_networks_mode', '=', 'legacy' ),
           'subtitle' => '',
           'desc' => ''
         ),
@@ -4452,6 +4669,7 @@
            'id' => 'use-email-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Email Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          ),
@@ -4459,6 +4677,7 @@
            'id' => 'use-phone-icon',
            'type' => 'checkbox',
            'title' => esc_html__('Use Phone Icon', 'salient'),
+           'required' => array( 'social_networks_mode', '=', 'legacy' ),
            'subtitle' => '',
            'desc' => ''
          )
@@ -4472,9 +4691,9 @@
      Redux::setSection( $opt_name, array(
        'title'            => esc_html__( 'Page Transitions', 'salient' ),
        'id'               => 'page_transitions',
-       'desc'             => esc_html__( 'All page transition options are listed here.', 'salient' ),
+       'desc'             => '',
        'customizer_width' => '400px',
-       'icon'   => 'el el-refresh',
+       'icon'   => 'salient-admin-icon-refresh-ccw',
        'fields' => array(
 
         array(
@@ -4507,7 +4726,8 @@
           'options' => array(
             "fade" => esc_html__('Fade', 'salient'),
             "gradient-wipe" => esc_html__('Horizontal Gradient Wipe', 'salient'),
-            "reveal-from-bottom" => esc_html__('Vertical Reveal', 'salient'),
+            "reveal-from-bottom" => esc_html__('Vertical Reveal Scale', 'salient'),
+            "vertical-reveal" => esc_html__('Vertical Reveal', 'salient'),
           ),
           'required' => array( 'page-transition-type', '=', 'view-transitions' ),
           'default' => 'fade'
@@ -4527,7 +4747,7 @@
            'id' => 'disable-transition-fade-on-click',
            'type' => 'switch',
            'title' => esc_html__('Disable Fade Out On Click', 'salient'),
-           'subtitle' => esc_html__('This will disable the default functionality of your page fading out when clicking a link with the Standard transition method. Is useful if your page transitions are conflicting with third party plugins that take over certain anchors such as lighboxes.', 'salient'),
+           'subtitle' => esc_html__('This will disable the default functionality of your page fading out when clicking a link with the Standard transition method. Is useful if your page transitions are conflicting with third party plugins that take over certain anchors such as lightboxes.', 'salient'),
            'desc' => '',
            'default' => '0',
            'required' => array( 'page-transition-type', '=', 'default' ),
@@ -4636,7 +4856,7 @@
        'id'               => 'page_header',
        'desc'             => esc_html__( 'All global page header options are listed here. (there are also many options located in your page header metabox available on every edit page screen which are configured on a per-page basis', 'salient' ),
        'customizer_width' => '400px',
-       'icon'   => 'el el-file',
+       'icon'   => 'salient-admin-icon-layout-panel-top',
        'fields' => array(
 
          array(
@@ -4724,9 +4944,9 @@
      Redux::setSection( $opt_name, array(
        'title'            => esc_html__( 'Form Styling', 'salient' ),
        'id'               => 'form_styling',
-       'desc'             => esc_html__( 'All form styling options are listed here.', 'salient' ),
+       'desc'             => '',
        'customizer_width' => '400px',
-       'icon'             => 'el el-edit',
+       'icon'             => 'salient-admin-icon-text-cursor-input',
        'fields' => array(
 
          array(
@@ -4752,6 +4972,15 @@
          ),
 
          array(
+          'id' => 'form-fancy-checkbox',
+          'type' => 'switch',
+          'title' => esc_html__('Enable Fancy Checkbox Styling', 'salient'),
+          'subtitle' => esc_html__('Add a fancy checkbox styling to your form.', 'salient'),
+          'desc' => '',
+          'default' => '0'
+        ),
+
+         array(
            'id' => 'form-submit-btn-style',
            'type' => 'select',
            'title' => esc_html__('Form Submit Button Style', 'salient'),
@@ -4759,8 +4988,8 @@
            'desc' => '',
            'options' => array(
              'default' => esc_html__('Default', 'salient'),
-             'regular' => esc_html__('Nectar Btn', 'salient'),
-             'see-through' => esc_html__('Nectar Btn See Through', 'salient')
+             'regular' => esc_html__('Nectar Button', 'salient'),
+             'see-through' => esc_html__('Nectar Button See Through', 'salient')
            ),
            'default' => 'regular'
          ),
@@ -4831,7 +5060,7 @@
          'subtitle' =>  esc_html__('Use this to define the background color of form inputs', 'salient'),
          'desc' => '',
          'default' => '',
-         'transparent' => false
+         'transparent' => true
        ),
        array(
          'id' => 'form-input-text-color',
@@ -4899,75 +5128,80 @@
        );
      }
 
-     Redux::setSection( $opt_name, array(
-       'title'            => esc_html__( 'Call To Action', 'salient' ),
-       'id'               => 'cta',
-       'desc'             => esc_html__( 'All call to action options are listed here.', 'salient' ),
-       'customizer_width' => '400px',
-       'icon'             => 'el el-bell',
-       'fields' => array(
 
-         array(
-           'id' => 'cta-text',
-           'type' => 'text',
-           'title' => esc_html__('Call to Action Text', 'salient'),
-           'subtitle' => esc_html__('Add the text that you would like to appear in the global call to action section.', 'salient'),
-           'desc' => ''
-         ),
-         array(
-           'id' => 'cta-btn',
-           'type' => 'text',
-           'title' => esc_html__('Call to Action Button Text', 'salient'),
-           'subtitle' => esc_html__('If you would like a button to be the link in the global call to action section, please enter the text for it here.', 'salient'),
-           'desc' => ''
-         ),
-         array(
-           'id' => 'cta-btn-link',
-           'type' => 'text',
-           'title' => esc_html__('Call to Action Button Link URL', 'salient'),
-           'subtitle' => esc_html__('Please enter the URL for the call to action section here.', 'salient'),
-           'desc' => ''
-         ),
-         $exclude_cta_option,
-         array(
-           'id' => 'cta-background-color',
-           'type' => 'color',
-           'title' => esc_html__('Call to Action Background Color', 'salient'),
-           'subtitle' => '',
-           'desc' => '',
-           'default' => '#ECEBE9',
-           'transparent' => false
-         ),
+     $active_cta_option = ( isset($options['cta-text']) && !empty($options['cta-text']) || isset($options['cta-btn']) && !empty($options['cta-btn']) ) ? true : false;
+     if (true === $active_cta_option) {
 
-         array(
-           'id' => 'cta-text-color',
-           'type' => 'color',
-           'title' => esc_html__('Call to Action Font Color', 'salient'),
-           'subtitle' => '',
-           'desc' => '',
-           'default' => '#4B4F52',
-           'transparent' => false
-         ),
+        Redux::setSection( $opt_name, array(
+          'title'            => esc_html__( 'Call To Action', 'salient' ),
+          'id'               => 'cta',
+          'desc'             => '',
+          'customizer_width' => '400px',
+          'icon'             => 'salient-admin-icon-external-link',
+          'fields' => array(
 
-         array(
-           'id' => 'cta-btn-color',
-           'type' => 'select',
-           'title' => esc_html__('Call to Action Button Color', 'salient'),
-           'subtitle' => '',
-           'desc' => '',
-           'options' => array(
-             'accent-color' => esc_html__('Accent Color', 'salient'),
-             'extra-color-1' => esc_html__('Extra Color 1', 'salient'),
-             'extra-color-2' => esc_html__('Extra Color 2', 'salient'),
-             'extra-color-3' => esc_html__('Extra Color 3', 'salient'),
-             'see-through' => esc_html__('See Through', 'salient')
-           ),
-           'default' => 'accent-color'
-         )
+            array(
+              'id' => 'cta-text',
+              'type' => 'text',
+              'title' => esc_html__('Call to Action Text', 'salient'),
+              'subtitle' => esc_html__('Add the text that you would like to appear in the global call to action section.', 'salient'),
+              'desc' => ''
+            ),
+            array(
+              'id' => 'cta-btn',
+              'type' => 'text',
+              'title' => esc_html__('Call to Action Button Text', 'salient'),
+              'subtitle' => esc_html__('If you would like a button to be the link in the global call to action section, please enter the text for it here.', 'salient'),
+              'desc' => ''
+            ),
+            array(
+              'id' => 'cta-btn-link',
+              'type' => 'text',
+              'title' => esc_html__('Call to Action Button Link URL', 'salient'),
+              'subtitle' => esc_html__('Please enter the URL for the call to action section here.', 'salient'),
+              'desc' => ''
+            ),
+            $exclude_cta_option,
+            array(
+              'id' => 'cta-background-color',
+              'type' => 'color',
+              'title' => esc_html__('Call to Action Background Color', 'salient'),
+              'subtitle' => '',
+              'desc' => '',
+              'default' => '#ECEBE9',
+              'transparent' => false
+            ),
+
+            array(
+              'id' => 'cta-text-color',
+              'type' => 'color',
+              'title' => esc_html__('Call to Action Font Color', 'salient'),
+              'subtitle' => '',
+              'desc' => '',
+              'default' => '#4B4F52',
+              'transparent' => false
+            ),
+
+            array(
+              'id' => 'cta-btn-color',
+              'type' => 'select',
+              'title' => esc_html__('Call to Action Button Color', 'salient'),
+              'subtitle' => '',
+              'desc' => '',
+              'options' => array(
+                'accent-color' => esc_html__('Accent Color', 'salient'),
+                'extra-color-1' => esc_html__('Extra Color 1', 'salient'),
+                'extra-color-2' => esc_html__('Extra Color 2', 'salient'),
+                'extra-color-3' => esc_html__('Extra Color 3', 'salient'),
+                'see-through' => esc_html__('See Through', 'salient')
+              ),
+              'default' => 'accent-color'
+            )
 
 
-       )
-     ) );
+          )
+        ) );
+          }
 
 
 
@@ -4977,7 +5211,7 @@
        'id'               => 'portfolio',
        'desc'             => '',
        'customizer_width' => '400px',
-       'icon'   => 'el el-th',
+       'icon'   => 'salient-admin-icon-table-cells-split',
        'fields' => array(
 
        )
@@ -5295,14 +5529,14 @@
              'id' => 'carousel-title',
              'type' => 'text',
              'title' => esc_html__('Custom Recent Projects Title', 'salient'),
-             'subtitle' => esc_html__('This is be used anywhere you place the recent work shortcode and on the "Recent Work" home layout. e.g. Recent Work', 'salient'),
+             'subtitle' => esc_html__('This is used anywhere you place the recent work shortcode and on the "Recent Work" home layout. e.g. Recent Work', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'carousel-link',
              'type' => 'text',
              'title' => esc_html__('Custom Recent Projects Link Text', 'salient'),
-             'subtitle' => esc_html__('This is be used anywhere you place the recent work shortcode and on the "Recent Work" home layout. e.g. View All Work', 'salient'),
+             'subtitle' => esc_html__('This is used anywhere you place the recent work shortcode and on the "Recent Work" home layout. e.g. View All Work', 'salient'),
              'desc' => ''
            ),
 
@@ -5316,7 +5550,7 @@
          'id'               => 'blog',
          'desc'             => esc_html__( 'All blog options are listed here.', 'salient' ),
          'customizer_width' => '400px',
-         'icon'             => 'el el-list',
+         'icon'             => 'salient-admin-icon-square-menu',
          'fields' => array(
 
 
@@ -5554,7 +5788,7 @@
          'id' => 'blog_next_post_limit_cat',
          'type' => 'switch',
          'title' => esc_html__('Limit Post Navigation To Same Category', 'salient'),
-         'subtitle' => esc_html__('This will ensure that the next/prev links will only show posts that are set in the same catgory of the post being viewed.', 'salient'),
+         'subtitle' => esc_html__('This will ensure that the next/prev links will only show posts that are set in the same category of the post being viewed.', 'salient'),
          'desc' => '',
          'type' => 'switch',
          'required' => array( 'blog_next_post_link', '=', '1' ),
@@ -5724,6 +5958,7 @@
              '56.25' => esc_html__('Regular (16:9)', 'salient'),
              '66.66' => esc_html__('Tall (3:2)', 'salient'),
              '100' => esc_html__('Square (1:1)', 'salient'),
+             'auto' => esc_html__('Auto', 'salient'),
            ),
            'default' => '40'
          ),
@@ -6053,14 +6288,14 @@
              'id' => 'recent-posts-title',
              'type' => 'text',
              'title' => esc_html__('Custom Recent Posts Title', 'salient'),
-             'subtitle' => esc_html__('This is be used anywhere you place the recent posts shortcode and on the "Recent Posts" home layout. e.g. Recent Posts', 'salient'),
+             'subtitle' => esc_html__('This is used anywhere you place the recent posts shortcode and on the "Recent Posts" home layout. e.g. Recent Posts', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'recent-posts-link',
              'type' => 'text',
              'title' => esc_html__('Custom Recent Posts Link Text', 'salient'),
-             'subtitle' => esc_html__('This is be used anywhere you place the recent posts shortcode and on the "Recent Posts" home layout. e.g. View All Posts', 'salient'),
+             'subtitle' => esc_html__('This is used anywhere you place the recent posts shortcode and on the "Recent Posts" home layout. e.g. View All Posts', 'salient'),
              'desc' => ''
            ),
 
@@ -6174,7 +6409,7 @@
            'id'               => 'woocommerce',
            'desc'             => esc_html__( 'All WooCommerce options are listed here.', 'salient' ),
            'customizer_width' => '400px',
-           'icon'             => 'el el-shopping-cart',
+           'icon'             => 'salient-admin-icon-shopping-cart',
            'fields' => array(
 
            )
@@ -6185,7 +6420,7 @@
            'title'            => esc_html__( 'General', 'salient' ),
            'id'               => 'woocommerce-general',
            'subsection'       => true,
-           'desc'             => esc_html__( 'All general WooCommerce related options are listed here', 'salient' ),
+           'desc'             => '',
            'customizer_width' => '400px',
            'fields' => array(
 
@@ -6490,7 +6725,7 @@
                'id' => 'woo-products-per-page',
                'type' => 'text',
                'title' => esc_html__('Products Per Page', 'salient'),
-               'subtitle' => esc_html__('Please enter your desired your products per page (default is 12)', 'salient'),
+               'subtitle' => esc_html__('Please enter your desired products per page (default is 12)', 'salient'),
                'desc' => '',
                'validate' => 'numeric'
              ),
@@ -6538,6 +6773,21 @@
                ),
                'default' => 'ios_slider'
              ),
+
+             array(
+              'id' => 'single_product_left_thumb_sticky_click_event',
+              'type' => 'radio',
+              'title' => esc_html__('Product Image Click Event', 'salient'),
+              'sub_desc' => esc_html__('Please select what click event you would like on your left thumbnails + sticky product info', 'salient'),
+              'desc' => '',
+              'options' => array(
+                'default' => esc_html__('Zoom In Place', 'salient'),
+                'open_in_lightbox' => esc_html__('Open In Lightbox', 'salient'),
+              ),
+              'required' => array( 'single_product_gallery_type', '=', 'left_thumb_sticky' ),
+              'default' => 'default'
+            ),
+
              array(
                'id' => 'single_product_gallery_custom_width',
                'type' => 'switch',
@@ -6816,10 +7066,11 @@
 
 
        Redux::setSection( $opt_name, array(
-         'title'            => esc_html__( 'General WordPress Pages', 'salient' ),
+         'title'            => esc_html__( 'WordPress Pages', 'salient' ),
          'id'               => 'general-wordpress-pages',
          'customizer_width' => '450px',
          'desc'             => esc_html__('Here you can find options related to general WordPress templates such as the search results template, 404 template etc.', 'salient'),
+         'icon'             => 'salient-admin-icon-settings',
          'fields'           => array(
 
          )
@@ -6931,81 +7182,121 @@
 
 
        Redux::setSection( $opt_name, array(
-         'title'            => esc_html__( 'Social Media', 'salient' ),
+         'title'            => esc_html__( 'Social Networks', 'salient' ),
          'id'               => 'social_media',
          'desc'             => esc_html__( 'Enter in your social media locations here and then activate which ones you would like to display in your footer options & header options tabs. Remember to include the "http://" in all URLs!', 'salient' ),
          'customizer_width' => '400px',
-         'icon'             => 'el el-share',
+         'icon'             => 'salient-admin-icon-share-2',
          'fields' => array(
+
+          array(
+            'id' => 'social_networks_mode',
+            'type' => 'button_set',
+            'title' => esc_html__('Mode', 'salient'),
+            'subtitle' =>  esc_html__('Legacy: Choose from a predefined list of networks.', 'salient') . '<br /><br />' . esc_html__('Dynamic: Add your own social networks with custom icons, URLs, and display order.', 'salient'),
+            'desc' => '',
+            'options' => array(
+              'legacy' => esc_html__('Legacy', 'salient'),
+              'dynamic' => esc_html__('Dynamic', 'salient')
+            ),
+            'default' => 'legacy'
+          ),
+         array(
+            'id' => 'custom_social_networks',
+            'type' => 'social_repeater',
+            'title' => esc_html__('Social Networks', 'salient'),
+            'subtitle' => esc_html__('Add social network icons with your own icons and URLs.', 'salient'),
+            'desc' => '',
+            'required' => array( 'enable_social_in_header', '=', '1' ),
+            'content_title' => esc_html__('Social Network', 'salient'),
+            'max_items' => 10,
+            'required' => array( 'social_networks_mode', '=', 'dynamic' ),
+            'placeholder' => array(
+              'name' => esc_html__('e.g. Facebook, TikTok, etc.', 'salient'),
+              'url' => esc_html__('e.g. https://facebook.com/', 'salient')
+            )
+          ),
            array(
              'id' => 'facebook-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Facebook URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'twitter-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Twitter URL', 'salient'),
              'desc' => ''
            ),
            array(
             'id' => 'x-twitter-url',
             'type' => 'text',
+            'required' => array( 'social_networks_mode', '=', 'legacy' ),
             'title' => esc_html__('X-Twitter URL', 'salient'),
             'desc' => ''
           ),
           array(
             'id' => 'bluesky-url',
             'type' => 'text',
+            'required' => array( 'social_networks_mode', '=', 'legacy' ),
             'title' => esc_html__('Bluesky URL', 'salient'),
             'desc' => ''
           ),
            array(
              'id' => 'google-plus-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Google URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'vimeo-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Vimeo URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'dribbble-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Dribbble URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'pinterest-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Pinterest URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'youtube-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Youtube URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'tumblr-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Tumblr URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'linkedin-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('LinkedIn URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'rss-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('RSS URL', 'salient'),
              'subtitle' => esc_html__('If you have an external RSS feed such as Feedburner, please enter it here. Will use built in Wordpress feed if left blank.', 'salient'),
              'desc' => ''
@@ -7013,198 +7304,231 @@
            array(
              'id' => 'behance-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Behance URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'flickr-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Flickr URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'spotify-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Spotify URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'instagram-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Instagram URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'github-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('GitHub URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'stackexchange-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('StackExchange URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'soundcloud-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('SoundCloud URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'vk-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('VK URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'vine-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Vine URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'vine-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Vine URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'houzz-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Houzz URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'yelp-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Yelp URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'snapchat-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Snapchat URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'mixcloud-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Mixcloud URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'bandcamp-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Bandcamp URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'tripadvisor-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Tripadvisor URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'telegram-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Telegram URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'slack-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Slack URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'medium-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Medium URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'artstation-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Artstation URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'discord-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Discord URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'whatsapp-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('WhatsApp URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'messenger-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Messenger URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'tiktok-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('TikTok URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'twitch-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Twitch URL', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'applemusic-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Apple Music URL', 'salient'),
              'desc' => ''
            ),
            array(
             'id' => 'patreon-url',
             'type' => 'text',
+            'required' => array( 'social_networks_mode', '=', 'legacy' ),
             'title' => esc_html__('Patreon URL', 'salient'),
             'desc' => ''
           ),
            array(
             'id' => 'xing-url',
             'type' => 'text',
+            'required' => array( 'social_networks_mode', '=', 'legacy' ),
             'title' => esc_html__('Xing URL', 'salient'),
             'desc' => ''
           ),
           array(
             'id' => 'trustpilot-url',
             'type' => 'text',
+            'required' => array( 'social_networks_mode', '=', 'legacy' ),
             'title' => esc_html__('Trustpilot URL', 'salient'),
             'desc' => ''
           ),
           array(
             'id' => 'mastodon-url',
             'type' => 'text',
+            'required' => array( 'social_networks_mode', '=', 'legacy' ),
             'title' => esc_html__('Mastodon URL', 'salient'),
             'desc' => ''
           ),
           array(
             'id' => 'threads-url',
             'type' => 'text',
+            'required' => array( 'social_networks_mode', '=', 'legacy' ),
             'title' => esc_html__('Threads URL', 'salient'),
             'desc' => ''
           ),
            array(
              'id' => 'email-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Email link', 'salient'),
              'desc' => ''
            ),
            array(
              'id' => 'phone-url',
              'type' => 'text',
+             'required' => array( 'social_networks_mode', '=', 'legacy' ),
              'title' => esc_html__('Phone Link', 'salient'),
              'desc' => ''
            )
@@ -7231,9 +7555,9 @@
        Redux::setSection( $opt_name, array(
          'title'            => esc_html__( 'Contact Map', 'salient' ),
          'id'               => 'contact',
-         'desc'             => esc_html__( 'The settings on this page will configure the Google map which gets placed at the top of "Contact" page template. These are legacy options which you can still use, however, with the introduction of the interactive map page builder element there is a better and more flexible way to add a map to pages.','salient') . ' <br/><h3>' . esc_html__('We reccomend using the more powerful "Interactive Map" page builder element instead of this.','salient') .  '</h3> ',
+         'desc'             => esc_html__( 'The settings on this page will configure the Google map which gets placed at the top of "Contact" page template. These are legacy options which you can still use, however, with the introduction of the interactive map page builder element there is a better and more flexible way to add a map to pages.','salient') . ' <br/><h3>' . esc_html__('We recommend using the more powerful "Interactive Map" page builder element instead of this.','salient') .  '</h3> ',
          'customizer_width' => '400px',
-         'icon'             => 'el el-phone',
+         'icon'             => 'salient-admin-icon-settings',
          'fields' => array(
 
 
@@ -7639,6 +7963,129 @@
      } // Using contact template conditional.
 
 
+
+
+     Redux::setSection( $opt_name, array(
+      'title'  => esc_html__( 'Global Sections', 'salient' ),
+      'id'     => 'global-sections',
+      'desc'   => esc_html__( 'Use this area to assign templates from your ','salient') . '<a href="'.esc_url( admin_url('edit.php?post_type=salient_g_sections') ).'">' . esc_html__('Global Sections','salient') . '</a> ' . esc_html__('to various locations within Salient.','salient'),
+      'icon'   => 'salient-admin-icon-layout-template',
+      'fields' => array(
+       array(
+         'id'    => 'info_success',
+         'type'  => 'info',
+         'class' => 'nectar-announcement',
+         'style' => 'success',
+         'title' => esc_html__('New Functionality Available', 'salient'),
+         'icon'  => 'el-icon-info-sign',
+         'desc'  => esc_html__( 'As of v16, Global Sections can now be assigned to locations from within each section settings with greater control over the display.', 'salient') . ' <a target="_blank" rel="noopener noreferrer" href="https://themenectar.com/docs/salient/page-builder-global-sections/#locations">' .esc_html__('See documentation for more information.','salient') . '</a>'
+       ),
+        array(
+          'id' => 'global-section-after-header-navigation',
+          'type' => 'select',
+          'title' => esc_html__('After Header Navigation', 'salient'),
+          'subtitle' => esc_html__('The area below your header navigation bar, before all page content. Note that assigning a template to this area will disable the Transparent Header Effect.', 'salient'),
+          'options' => $global_sections_arr
+        ),
+        array(
+          'id' => 'global-section-above-footer',
+          'type' => 'select',
+          'title' => esc_html__('After Page Content', 'salient'),
+          'subtitle' => esc_html__('The area above your footer, after all page content.', 'salient'),
+          'options' => $global_sections_arr
+        ),
+
+      )
+    ) );
+
+
+     Redux::setSection( $opt_name, array(
+      'id'               => 'boxed-layout',
+      'customizer_width' => '450px',
+      'icon' => 'salient-admin-icon-square-dashed-top-solid',
+      'title' => esc_html__('Boxed Layout', 'salient'),
+      'desc' => '',
+      'fields'           => array(
+        array(
+          'id' => 'boxed_layout',
+          'type' => 'switch',
+          'title' => esc_html__('Enable Boxed Layout', 'salient'),
+          'subtitle' => '',
+          'desc' => '',
+          'next_to_hide' => '6',
+          'default' => '0'
+        ),
+        array(
+          'id' => 'background-color',
+          'type' => 'color',
+          'title' => esc_html__('Background Color', 'salient'),
+          'subtitle' => esc_html__('If you would rather simply use a solid color for your background, select one here.', 'salient'),
+          'desc' => '',
+          'transparent' => false,
+          'required' => array( 'boxed_layout', '=', '1' ),
+          'default' => '#f1f1f1'
+        ),
+        array(
+          'id' => 'background_image',
+          'type' => 'media',
+          'title' => esc_html__('Background Image', 'salient'),
+          'subtitle' => esc_html__('Upload your background here', 'salient'),
+          'required' => array( 'boxed_layout', '=', '1' ),
+          'desc' => ''
+        ),
+        array(
+          'id' => 'background-repeat',
+          'type' => 'select',
+          'title' => esc_html__('Background Repeat', 'salient'),
+          'subtitle' => esc_html__('Do you want your background to repeat? (Turn on when using patterns)', 'salient'),
+          'required' => array( 'boxed_layout', '=', '1' ),
+          'options' => array(
+            "no-repeat" => esc_html__('No-Repeat', 'salient'),
+            "repeat" => esc_html__('Repeat', 'salient'),
+          )
+        ),
+        array(
+          'id' => 'background-position',
+          'type' => 'select',
+          'title' => esc_html__('Background Position', 'salient'),
+          'subtitle' => esc_html__('How would you like your background image to be aligned?', 'salient'),
+          'required' => array( 'boxed_layout', '=', '1' ),
+          'options' => array(
+            "left top" => esc_html__("Left Top", "salient"),
+            "left center" => esc_html__("Left Center", "salient"),
+            "left bottom" => esc_html__("Left Bottom", "salient"),
+            "center top" => esc_html__("Center Top", "salient"),
+            "center center" => esc_html__("Center Center", "salient"),
+            "center bottom" => esc_html__("Center Bottom", "salient"),
+            "right top" => esc_html__("Right Top", "salient"),
+            "right center" => esc_html__("Right Center", "salient"),
+            "right bottom" => esc_html__("Right Bottom", "salient")
+          )
+        ),
+        array(
+          'id' => 'background-attachment',
+          'type' => 'select',
+          'title' => esc_html__('Background Attachment', 'salient'),
+          'subtitle' => esc_html__('Would you prefer your background to scroll with your site or be fixed and not move?', 'salient'),
+          'required' => array( 'boxed_layout', '=', '1' ),
+          'options' => array(
+            "scroll" => esc_html__("Scroll", "salient"),
+            "fixed" => esc_html__("Fixed", "salient")
+          )
+        ),
+        array(
+          'id' => 'background-cover',
+          'type' => 'switch',
+          'title' => esc_html__('Auto resize background image to fit window', 'salient'),
+          'subtitle' => esc_html__('This will ensure your background image always fits no matter what size screen the user has. (Don\'t use with patterns)', 'salient'),
+          'required' => array( 'boxed_layout', '=', '1' ),
+          'desc' => '',
+          'default' => '0'
+        ),
+
+      )
+    ) );
+
        $nectar_home_slider_active_str = '';
 
        if( !class_exists('Salient_Home_Slider') ) {
@@ -7650,7 +8097,7 @@
          'id'               => 'home_slider',
          'desc'             => esc_html__( 'All Home Slider plugin related options are listed here.', 'salient' ) . ' ' . wp_kses_post($nectar_home_slider_active_str),
          'customizer_width' => '400px',
-         'icon'             => 'el el-home',
+         'icon'             => 'salient-admin-icon-images',
          'fields' => array(
 
 
@@ -7848,3 +8295,4 @@
             return $defaults;
         }
     }
+

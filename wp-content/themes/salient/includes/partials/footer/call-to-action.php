@@ -11,16 +11,16 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
- 
+
 global $post;
 global $wp;
 
 $nectar_options = get_nectar_theme_options();
-$exclude_pages  = ( ! empty( $nectar_options['exclude_cta_pages'] ) ) ? $nectar_options['exclude_cta_pages'] : array();
-$cta_link       = ( ! empty( $nectar_options['cta-btn-link'] ) ) ? $nectar_options['cta-btn-link'] : '#';
-$cta_btn_color  = ( ! empty( $nectar_options['cta-btn-color'] ) ) ? $nectar_options['cta-btn-color'] : 'accent-color';
+$exclude_pages  = ( isset($nectar_options['exclude_cta_pages']) && ! empty( $nectar_options['exclude_cta_pages'] ) ) ? $nectar_options['exclude_cta_pages'] : [];
+$cta_link       = ( isset($nectar_options['cta-btn-link']) && ! empty( $nectar_options['cta-btn-link'] ) ) ? $nectar_options['cta-btn-link'] : '#';
+$cta_btn_color  = ( isset($nectar_options['cta-btn-color']) && ! empty( $nectar_options['cta-btn-color'] ) ) ? $nectar_options['cta-btn-color'] : 'accent-color';
 
-if ( ! empty( $nectar_options['cta-text'] ) && ! in_array( $post->ID, $exclude_pages ) ) {
+if ( isset($nectar_options['cta-text']) && ! empty( $nectar_options['cta-text'] ) && ! in_array( $post->ID, $exclude_pages ) ) {
 
 ?>
 
@@ -28,7 +28,7 @@ if ( ! empty( $nectar_options['cta-text'] ) && ! in_array( $post->ID, $exclude_p
 	<div class="container">
 		  <div class="triangle"></div>
 		  <span> <?php echo wp_kses_post( $nectar_options['cta-text'] ); ?> </span>
-		  <a class="nectar-button 
+		  <a class="nectar-button
 		  <?php
 			if ( $cta_btn_color !== 'see-through' ) {
 				echo 'regular-button ';}

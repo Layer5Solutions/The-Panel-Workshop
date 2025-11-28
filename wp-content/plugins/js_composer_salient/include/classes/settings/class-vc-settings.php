@@ -278,6 +278,11 @@ class Vc_Settings {
 			'subscribe_user_to_beta',
 		], 10, 2 );
 
+		add_filter( 'vc_get_editor_wpb_data', [
+			$this,
+			'add_shortcuts_to_wpb_data',
+		] );
+
 		$this->set_sections();
 
 		/**
@@ -357,9 +362,20 @@ class Vc_Settings {
 		], [
 			$this,
 			'beta_version_callback',
-		) );
-		 */
-		/* nectar addition end */
+		] );
+        */
+        /* nectar addition end */
+
+		$this->addField( $tab, esc_html__( 'Disable Keyboard Shortcuts', 'js_composer' ), 'shortcuts', [
+			$this,
+			'sanitize_shortcuts_callback',
+		], [
+			$this,
+			'shortcuts_callback',
+		], [
+			'info' => esc_html__( 'Disable keyboard shortcuts.', 'js_composer' ),
+		] );
+		
 	}
 
 	/**
@@ -444,7 +460,7 @@ class Vc_Settings {
 	 */
 	public function adminLoad() {
 		wp_register_script( 'wpb_js_composer_settings', vc_asset_url( 'js/dist/settings.min.js' ), [], WPB_VC_VERSION, true );
-		wp_register_script( 'wpb-popper', vc_asset_url( 'lib/vendor/node_modules/@popperjs/core/dist/umd/popper.min.js' ), [], WPB_VC_VERSION, true );
+		wp_register_script( 'wpb-popper', vc_asset_url( 'lib/vendor/dist/@popperjs/core/dist/umd/popper.min.js' ), [], WPB_VC_VERSION, true );
 		wp_enqueue_style( 'js_composer_settings', vc_asset_url( 'css/js_composer_settings.min.css' ), false, WPB_VC_VERSION );
 		wp_enqueue_script( 'backbone' );
 		wp_enqueue_script( 'shortcode' );
@@ -751,6 +767,34 @@ class Vc_Settings {
 	}
 
 	/**
+	 * Sanitizes the shortcuts option.
+	 *
+	 * @param mixed $value The shortcuts value.
+	 * @return bool Sanitized shortcuts status.
+	 * @since 8.6
+	 */
+	public function sanitize_shortcuts_callback( $value ) {
+		return (bool) $value;
+	}
+
+	/**
+	 * Renders the shortcuts checkbox.
+	 *
+	 * @since 8.6
+	 */
+	public function shortcuts_callback() {
+		$disabled = $this->get( 'shortcuts' ); // Default false means enabled.
+		?>
+		<label>
+			<input type="checkbox"<?php echo $disabled ? ' checked' : ''; ?> value="1"
+				id="<?php echo esc_attr( self::$field_prefix . 'shortcuts' ); ?>"
+				name="<?php echo esc_attr( self::$field_prefix . 'shortcuts' ); ?>">
+			<?php esc_html_e( 'Disable', 'js_composer' ); ?>
+		</label>
+		<?php
+	}
+
+	/**
 	 * Rebuilding.
 	 */
 	public function rebuild() {
@@ -966,5 +1010,28 @@ class Vc_Settings {
 		];
 
 		wp_remote_post( $this->support_portal_beta_testers_endpoint, $params );
+	}
+
+	/**
+	 * Add shortcuts enabled data to wpbData.
+	 *
+	 * @param array $data Existing wpbData.
+	 * @return array Modified wpbData.
+	 * @since 8.6
+	 */
+	public function add_shortcuts_to_wpb_data( $data ) {
+		$data['shortcuts_enabled'] = self::areShortcutsEnabled();
+		return $data;
+	}
+
+	/**
+	 * Check if keyboard shortcuts are enabled.
+	 *
+	 * @since 8.6
+	 * @return bool
+	 */
+	public static function areShortcutsEnabled() {
+		$shortcuts_disabled = vc_settings()->get( 'shortcuts' );
+		return ! $shortcuts_disabled;
 	}
 }

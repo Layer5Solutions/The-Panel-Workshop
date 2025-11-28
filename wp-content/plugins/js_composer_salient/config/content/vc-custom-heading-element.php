@@ -66,7 +66,9 @@ function vc_custom_heading_element_params() {
 						'font_size',
 						'line_height',
 						'color',
-						'default_colorpicker_color' => '#111111',
+						// nectar addition - remove default colorpicker color
+						// 'default_colorpicker_color' => '#111111',
+						// nectar addition end
 						'tag_description' => esc_html__( 'Select element tag.', 'js_composer' ),
 						'text_align_description' => esc_html__( 'Select text alignment.', 'js_composer' ),
 						'font_size_description' => esc_html__( 'Enter font size.', 'js_composer' ),

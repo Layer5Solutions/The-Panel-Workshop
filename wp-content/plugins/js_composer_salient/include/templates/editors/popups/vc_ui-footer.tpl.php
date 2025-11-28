@@ -22,6 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					'data_change_status' => '',
 					'id' => '',
 					'link' => '',
+					'title' => '',
 				], (array) $control ) );
 				?>
 				<span
@@ -30,6 +31,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<?php echo ! empty( $data_change_status ) ? 'data-change-status="' . esc_attr( $data_change_status ) . '"' : ''; ?>
 					<?php echo ! empty( $id ) ? 'id="' . esc_attr( $id ) . '"' : ''; ?>
 					<?php echo ! empty( $link ) ? 'data-button-link="' . esc_url( $link ) . '"' : ''; ?>
+					<?php echo ! empty( $title ) ? 'title="' . esc_attr( $title ) . '"' : ''; ?>
 					<?php echo 'Insert' === $label ? 'style="display: none;"' : ''; ?>>
 					<?php echo esc_html( $label ); ?>
 				</span>

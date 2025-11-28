@@ -111,6 +111,11 @@ class Vc_Custom_Css_Module extends Vc_Module {
 			$this,
 			'enqueue_editor_js',
 		]);
+
+		// Add custom code filters.
+		add_filter( 'vc_template_custom_code', [ $this, 'add_template_to_custom_code' ] );
+		add_filter( 'vc_custom_code_categories', [ $this, 'add_custom_code_categories' ] );
+		add_filter( 'vc_custom_code_templates', [ $this, 'add_custom_code_templates' ] );
 	}
 
 	/**
@@ -195,11 +200,7 @@ class Vc_Custom_Css_Module extends Vc_Module {
 	 * @return bool
 	 */
 	public function build_custom_css() {
-		/**
-		 * Filesystem API init.
-		 * */
-		$url = wp_nonce_url( 'admin.php?page=vc-color&build_css=1', 'wpb_js_settings_save_action' );
-		vc_settings()::getFileSystem( $url );
+		vc_settings()::getFileSystem();
 
 		/**
 		 * Filesystem API object.
@@ -254,5 +255,48 @@ class Vc_Custom_Css_Module extends Vc_Module {
 		$dependencies[] = 'wpb-code-editor';
 
 		return $dependencies;
+	}
+
+	/**
+	 * Add template info to custom code.
+	 *
+	 * @since 8.5
+	 * @param array $custom_code_info
+	 * @return array
+	 */
+	public function add_template_to_custom_code( $custom_code_info ) {
+		global $post;
+		$custom_code_info['custom_css'] = get_post_meta( $post->ID, '_wpb_post_custom_css', true );
+		$custom_code_info['css_info_template'] = 'editors/partials/param-info.tpl.php';
+		$custom_code_info['css_info_description'] = esc_html__( 'Enter custom CSS (Note: it will be outputted only on this particular page).', 'js_composer' );
+		return $custom_code_info;
+	}
+
+	/**
+	 * Add categories to custom code.
+	 *
+	 * @since 8.5
+	 * @param array $categories
+	 * @return array
+	 */
+	public function add_custom_code_categories( $categories ) {
+		if ( vc_modules_manager()->is_module_on( 'vc-custom-css' ) ) {
+			$categories[] = esc_html__( 'CSS', 'js_composer' );
+		}
+		return $categories;
+	}
+
+	/**
+	 * Add templates to custom code.
+	 *
+	 * @since 8.5
+	 * @param array $templates
+	 * @return array
+	 */
+	public function add_custom_code_templates( $templates ) {
+		if ( vc_modules_manager()->is_module_on( 'vc-custom-css' ) ) {
+			$templates[] = 'editors/popups/custom-code/css-tab.tpl.php';
+		}
+		return $templates;
 	}
 }

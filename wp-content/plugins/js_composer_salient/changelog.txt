@@ -1,5 +1,75 @@
 *** WPBakery Page Builder changelog ***
 
+2025-08-05 - version 8.6.1
+  - Compatibility: WPBakery and WPRocket works properly
+  - Fix: Design Options saving works properly
+
+2025-08-04 - version 8.6
+  - New: Keyboard shortcuts are introduced for the common editor functions and documented in the knowledge base - http://kb.wpbakery.com 
+  - Update: The default element icon for custom elements has been updated
+  - Update: Content deletion popup has been removed for consistency
+  - Update: The folder structure of the plugin has been updated
+  - Update: The UI folder structure has been refactored for better code quality
+  - Update: Vendor library management improved
+  - Update: The deprecated "Call-to-Action" button is being removed
+  - Compatibility: Compatibility with Gutenberg improved via the Gutenberg element
+  - Compatibility: Compatibility with WPML improved
+  - Fix: Single image works properly with on-click actions
+  - Fix: Security is being improved for the Backend editor
+  - Fix: Publish and Update buttons work properly in the Settings panel while using the Backend editor
+  - Fix: Sanitization before saving user input is working properly
+  - Fix: Custom CSS is not being lost when working with the WordPress page revisions
+  - Fix: front_enqueue_css element parameter is working properly
+  - Fix: The editor does not strip <br> tags for the buttons
+  - Fix: The checkbox parameter works properly in grouped elements
+  - Fix: Element parameters are being deleted properly with auto-save enabled
+  - Fix: Icon sets are working properly inside the Message Box element
+  - Fix: Monosocial icon set is working properly inside the editor
+  - Fix: The Copyright element is being displayed properly
+  - Fix: The edit element option works properly for nested elements
+  - Fix: Editor panel switching does not trigger console errors
+  - Fix: The Edge browser does not display the deprecation message
+  - Fix: The AI credit usage report is being displayed properly
+  - Fix: The color picker attribute is working properly
+  - Fix: On-page settings work properly with the module manager and role manager
+  - Fix: Empty space is being removed for large screens
+  - Fix: Row layout fields are aligned properly for a better user interface
+  - Fix: The undo option works properly with columns
+  - Fix: The border radius option is available for simplified controls in Design Options
+  - Fix: The editor works properly with the WordPress lazy loading controls
+  - Fix: Titles in the grouped elements are encoded properly
+  - Fix: Template previews do not trigger warnings
+  - Fix: Element icons are displayed properly in Role Manager
+  - Fix: Image gallery grid view is working properly with responsiveness
+  - Fix: Custom CSS is being kept properly when editing the page with Quick Edit
+  - Fix: Grid elements do not trigger warnings
+
+2025-06-17 - version 8.5
+  - New: The custom code (CSS, JavaScript) has been moved to a separate section in the navigation bar and does not require page reload
+  - New: SEO prompts added to WPBakery AI for better search engine optimization
+  - Update: The row stretching has been updated for the use of CSS when applicable to improve performance
+  - Update: A link to the knowledge base has been added to clarify restrictions and warnings
+  - Update: An ability to enable the Backend editor by default for the Admin user role
+  - Update: The assets/js/editor/panels.js file has been refactored
+  - Update: Helpers have been refactored
+  - Update: The packages have been updated for keeping the codebase up-to-date
+  - Fix: The vulnerability issue has been resolved for the RawJS element
+  - Fix: The Flickr widget has the proper image number displayed
+  - Fix: Editor window tabs are working properly for the Call-to-Action element
+  - Fix: Layout switch in the Backend editor does not trigger viewport changes
+  - Fix: Cloning elements in the Backend editor does not trigger viewport changes
+  - Fix: The default color option works properly with the auto-save option enabled
+  - Fix: The Frontend editor works properly on websites with WordPress version 6 and below
+  - Fix: Saving for general settings works properly when the default template has been set
+  - Fix: The cloning option works properly on mobile devices
+  - Fix: The category controls for the post settings work properly
+  - Fix: The Gutenberg element has proper spacings applied
+  - Fix: The row controls work properly inside the accordion element
+  - Fix: After the publishing, redirect leads to a proper environment
+  - Fix: Removing element templates does not trigger warnings and work properly
+  - Fix: Element changes are applied properly for the custom design options
+  - Fix: Redundant space in AI content has been removed
+
 2025-04-17 - version 8.4.1
   - Fix: The post grid elements with custom heading work properly
   

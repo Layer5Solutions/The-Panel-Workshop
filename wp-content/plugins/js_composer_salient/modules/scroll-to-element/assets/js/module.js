@@ -14,6 +14,11 @@
 		var scrollTop = window.scrollY || document.documentElement.scrollTop;
 		var offsetPosition = elementTop + scrollTop - offset;
 
+		// Don't scroll if element is already in viewport
+		if ( elementTop >= 0 && elementTop <= window.innerHeight ) {
+			return;
+		}
+
 		if ( iframe ) {
 			// For frontend editor
 			var iframeWindow = iframe.contentWindow;

@@ -322,7 +322,8 @@ Description: CSS for the frontned editor
   background-color: transparent!important;
 }
 .vc_ui-panel-window[data-sidebar-view="true"] .vc_ui-panel-header-container .vc_ui-panel-header,
-.vc_ui-panel-window[data-sidebar-view="true"] .vc_general.vc_ui-tabs-line>.vc_active>.vc_ui-tabs-line-trigger {
+.vc_ui-panel-window[data-sidebar-view="true"] .vc_general.vc_ui-tabs-line>.vc_active>.vc_ui-tabs-line-trigger,
+.vc_ui-panel-window[data-sidebar-view="true"] .vc_general.vc_ui-tabs-line>.vc_edit-form-tab-control>.vc_ui-tabs-line-trigger {
   color: #000!important;
 }
 

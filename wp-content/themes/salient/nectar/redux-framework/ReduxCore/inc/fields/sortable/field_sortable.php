@@ -11,14 +11,14 @@ if ( ! class_exists( 'ReduxFramework_sortable' ) ) {
         public $field = array();
         public $value = '';
         public $parent = null;
-        
+
         /**
          * Field Constructor.
          * Required - must call the parent constructor, then assign field and value to vars, and obviously call the render field function
          *
          * @since Redux_Options 2.0.1
          */
-        function __construct( $field = array(), $value = '', $parent ) {
+        function __construct( $field = array(), $value = '', $parent = null ) {
             $this->parent = $parent;
             $this->field  = $field;
             $this->value  = $value;
@@ -92,7 +92,7 @@ if ( ! class_exists( 'ReduxFramework_sortable' ) ) {
                     $label_class = ' labeled';
                 }
             }
-            
+
             echo '<ul id="' . esc_attr($this->field['id']) . '-list" class="redux-sortable ' . $class . ' ' . $label_class . '">';
 
 
@@ -128,10 +128,10 @@ if ( ! class_exists( 'ReduxFramework_sortable' ) ) {
                 echo '<input rel="' . esc_attr($this->field['id']) . '-' . esc_attr($k) . '-hidden" class="' . esc_attr($class) . '" ' . $checked . 'type="' . $this->field['mode'] . '" ' . $name . 'id="' . esc_attr($this->field['id']) . '[' . $k . ']" value="' . esc_attr( $value_display ) . '" placeholder="' . $nicename . '" />';
 
                 echo '<span class="compact drag"><i class="el el-move icon-large"></i></span>';
-      
+
                 if ($this->field['mode'] == "checkbox") {
                     if ( $this->field['mode'] != "checkbox" ) {
-                
+
                     } else {
                         echo '<label for="' . esc_attr($this->field['id']) . '[' . esc_attr($k) . ']"><strong>' .  wp_kses_post($options[$k]) . '</strong></label>';
                     }

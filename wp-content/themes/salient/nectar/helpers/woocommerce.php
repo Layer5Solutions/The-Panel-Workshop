@@ -308,6 +308,10 @@ if ( !function_exists( 'nectar_woo_shop_markup' ) ) {
 
 				$cate          = get_queried_object();
 				$t_id          = ( property_exists( $cate, 'term_id' ) ) ? $cate->term_id : '';
+				if ( class_exists('Sitepress') ) {
+                    $default_lang = apply_filters('wpml_default_language', NULL );
+                    $t_id  = apply_filters( 'wpml_object_id', $t_id, $cate->taxonomy, TRUE, $default_lang );
+                }
 				$product_terms = get_option( "taxonomy_$t_id" );
 
 				$using_cat_bg = ( ! empty( $product_terms['product_category_image'] ) ) ? true : false;
@@ -1472,12 +1476,12 @@ if( !function_exists('nectar_lazyload_woocommerce_imgs') ) {
 		isset($attr['class']) ) {
 
 			if( strpos($attr['class'],'woocommerce_thumbnail') ||
-			strpos($attr['class'],'shop_single') ||
+			strpos($attr['class'],'woocommerce_single') ||
 			strpos($attr['class'],'shop_thumbnail') ||
 			strpos($attr['class'],'over-gallery-imag') ) {
 
 				// Skip first on shop single.
-				if( strpos($attr['class'],'shop_single') && 0 == NectarLazyImages::$woo_single_main_count ) {
+				if( strpos($attr['class'],'woocommerce_single') && 0 == NectarLazyImages::$woo_single_main_count ) {
 					NectarLazyImages::$woo_single_main_count = 1;
 					return $attr;
 				}

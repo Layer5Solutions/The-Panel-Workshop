@@ -99,7 +99,7 @@ foreach ( $values as $data ) {
 }
 
 foreach ( $graph_lines_data as $line ) {
-	$unit = ( '' !== $units ) ? ' <span class="vc_label_units">' . esc_attr( $line['value'] ) . $units . '</span>' : '';
+	$unit = ( '' !== $units ) ? ' <span class="vc_label_units">' . esc_attr( $line['value'] ) . wp_kses_post( $units ) . '</span>' : '';
 	$output .= '<div class="vc_general vc_single_bar' . ( ( isset( $line['color'] ) && 'custom' !== $line['color'] ) ?
 			' vc_progress-bar-color-' . esc_attr( $line['color'] ) : '' )
 		. '">';

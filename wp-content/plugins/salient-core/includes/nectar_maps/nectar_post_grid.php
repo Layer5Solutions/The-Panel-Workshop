@@ -56,10 +56,13 @@ $post_types['Custom'] = 'custom';
 
 $postTypesList = array();
 if($is_admin) {
-	$postTypes = get_post_types( array('public' => true) );
+	$postTypes = get_post_types(
+    apply_filters('nectar_post_grid_post_types', array('public' => true))
+  );
 	$excludedPostTypes = array(
 		'revision',
 		'nav_menu_item',
+    'wpb_gutenberg_param',
 		'attachment',
 		'home_slider',
 		'vc_grid_item',
@@ -282,6 +285,15 @@ $nectar_post_grid_params = array(
 			"param_name" => "enable_gallery_lightbox",
 			'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
 			"description" => esc_html__("Make each item link to the featured image in a lightbox rather than the single post URL.", "salient-core"),
+			"value" => Array(esc_html__("Yes, please", "salient-core") => 'yes')
+		),
+
+    array(
+			"type" => 'checkbox',
+			"heading" => esc_html__("Remove Links", "salient-core"),
+			"param_name" => "remove_links",
+			'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+			"description" => esc_html__("Remove the post permalink links from the grid items.", "salient-core"),
 			"value" => Array(esc_html__("Yes, please", "salient-core") => 'yes')
 		),
 
@@ -549,7 +561,7 @@ $nectar_post_grid_params = array(
         "6%" => "3vw",
         "8%" => "4vw",
       ),
-      "description" => esc_html__("Please select the spacing you would like between your items. ", "salient-core")
+      "description" => esc_html__("The spacing between each item in the grid.", "salient-core")
     ),
 
     array(
@@ -570,6 +582,16 @@ $nectar_post_grid_params = array(
       ),
       "description" => esc_html__("Please select the height you would like for your items to display in. The percentage is based on the viewport height that the grid is viewed on. You can also choose a fixed ratio instead below.", "salient-core")
     ),
+
+    array(
+			"type" => 'checkbox',
+			"heading" => esc_html__("Subtract Navigation Height from Grid Item Height", "salient-core"),
+			"param_name" => "grid_item_height_subtract_nav_height",
+			'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+			"description" => '',
+			"value" => Array(esc_html__("Yes, please", "salient-core") => 'yes'),
+			"dependency" => array('element' => "grid_style", 'value' => array('content_overlaid','content_under_image')),
+		),
 
 
 		array(
@@ -874,7 +896,7 @@ $nectar_post_grid_params = array(
         "Default" => "90",
 				"None" => "1",
         "Small" => "100",
-        "Medium" => "200",
+        "Medium" => "150",
         "Large" => "400",
       ),
       'std' => '90',
@@ -941,6 +963,7 @@ $nectar_post_grid_params = array(
       "param_name" => "heading_tag",
       "value" => array(
         "Default" => "default",
+        "Heading 1" => "h1",
 				"Heading 2" => "h2",
 				"Heading 3" => "h3",
 				"Heading 4" => "h4",
@@ -987,7 +1010,7 @@ $nectar_post_grid_params = array(
   $nectar_post_grid_params = array_merge($nectar_post_grid_params, array(
 		array(
       "type" => 'checkbox',
-      "heading" => esc_html__("Add Link Mouse Indicator", "salient-core"),
+      "heading" => esc_html__("Add Mouse Indicator", "salient-core"),
       "param_name" => "enable_indicator",
 			'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
       "description" => esc_html__("This will add an indicator when hovering over each item ", "salient-core"),
@@ -1127,9 +1150,19 @@ $nectar_post_grid_params = array(
       "type" => "colorpicker",
       "class" => "",
 			"group" => esc_html__("Meta Data", "salient-core"),
-      'heading' => esc_html__( 'Category Color', 'salient-core' ),
+      'heading' => esc_html__( 'Category BG Color', 'salient-core' ),
       "param_name" => "category_button_color",
       "value" => "",
+			"dependency" => array('element' => "category_style", 'value' => 'button'),
+    ),
+
+    array(
+      "type" => "colorpicker",
+      "class" => "",
+			"group" => esc_html__("Meta Data", "salient-core"),
+      'heading' => esc_html__( 'Category Text Color', 'salient-core' ),
+      "param_name" => "category_button_text_color",
+      "value" => "#ffffff",
 			"dependency" => array('element' => "category_style", 'value' => 'button'),
     ),
 
@@ -1171,6 +1204,21 @@ $nectar_post_grid_params = array(
     ),
 
     array(
+			'type' => 'nectar_range_slider',
+			'heading' => esc_html__('Meta Gap', 'salient-core'),
+			'param_name' => 'meta_gap',
+			'value' => '10',
+			'options' => array(
+				'min' => '5',
+				'max' => '30',
+				'step' => '1',
+				'suffix' => 'px'
+			),
+      "group" => esc_html__("Meta Data", "salient-core"),
+			'description' => ''
+		),
+
+    array(
       "type" => 'checkbox',
       "heading" => esc_html__("Display Excerpt", "salient-core"),
 			"dependency" => array('element' => "grid_style", 'value' => array('content_overlaid','content_under_image','vertical_list','content_next_to_image')),
@@ -1189,6 +1237,20 @@ $nectar_post_grid_params = array(
       "dependency" => array('element' => "display_excerpt", 'value' => 'yes'),
 			"description" => esc_html__("Enter the number of words you want your excerpt to display. Example \"10\"", "salient-core")
 		),
+
+
+    array(
+      'type' => 'dropdown',
+      'heading' => esc_html__( 'Excerpt Location', 'salient-core' ),
+      'param_name' => 'content_next_to_image_excerpt_pos',
+      'value' => array(
+        esc_html__('Default', 'salient-core') => 'default',
+        esc_html__('Below Image', 'salient-core') => 'below_image',
+      ),
+      "group" => esc_html__("Meta Data", "salient-core"),
+			"dependency" => array('element' => "grid_style", 'value' => array('content_next_to_image')),
+      'save_always' => true,
+    ),
 
     array(
       'type' => 'dropdown',
@@ -1325,6 +1387,7 @@ $nectar_post_grid_params = array(
       "value" => array(
         esc_html__("None", "salient-core") => "none",
         esc_html__("Featured Image Reveal", "salient-core") => "featured_image",
+        esc_html__("Featured Image Follow", "salient-core") => "featured_image_follow",
         esc_html__("Color Change", "salient-core") => "bg_color_change",
         esc_html__("Slight Move", "salient-core") => "slight_move",
       )
@@ -1337,7 +1400,7 @@ $nectar_post_grid_params = array(
       "heading" => "Background Color on Hover",
       "param_name" => "vertical_list_bg_color_hover",
       "value" => "",
-			"dependency" => array('element' => "vertical_list_hover_effect", 'value' => array('bg_color_change','featured_image'))
+			"dependency" => array('element' => "vertical_list_hover_effect", 'value' => array('bg_color_change','featured_image','featured_image_follow'))
     ),
 
     array(
@@ -1347,7 +1410,7 @@ $nectar_post_grid_params = array(
       "heading" => "Text Color on Hover",
       "param_name" => "vertical_list_text_color_hover",
       "value" => "",
-			"dependency" => array('element' => "vertical_list_hover_effect", 'value' => array('bg_color_change','featured_image'))
+			"dependency" => array('element' => "vertical_list_hover_effect", 'value' => array('bg_color_change','featured_image','featured_image_follow'))
     ),
 
     array(
@@ -1392,6 +1455,18 @@ $nectar_post_grid_params = array(
       "group" => esc_html__("Item Style", "salient-core"),
       "value" => Array(esc_html__("Yes, please", "salient-core") => 'yes'),
       "dependency" => array('element' => "grid_style", 'value' => array('vertical_list'))
+    ),
+    array(
+      "type" => 'dropdown',
+      "heading" => esc_html__("Read More Button Style", "salient-core"),
+      "param_name" => "vertical_list_read_more_style",
+      'save_always' => true,
+			"dependency" => array('element' => "vertical_list_read_more", 'value' => 'yes'),
+      "group" => esc_html__("Item Style", "salient-core"),
+      "value" => array(
+        esc_html__("Text", "salient-core") => "text",
+        esc_html__("Arrow", "salient-core") => "arrow",
+      )
     ),
 		array(
       "type" => 'checkbox',
@@ -1566,6 +1641,36 @@ $nectar_post_grid_params = array(
       'std' => 'light',
     ),
 
+    array(
+      "type" => "colorpicker",
+      "class" => "",
+      "group" => esc_html__("Item Style", "salient-core"),
+      "heading" => "Light Text Color",
+      "param_name" => "light_text_color",
+      "value" => "",
+			"dependency" => array(
+        'element'  => "text_color",
+        'value'    => 'light',
+        'callback' => 'nectarPostGridTextColorDependency',
+      ),
+      "description" => '',
+    ),
+
+    array(
+      "type" => "colorpicker",
+      "class" => "",
+      "group" => esc_html__("Item Style", "salient-core"),
+      "heading" => "Dark Text Color",
+      "param_name" => "dark_text_color",
+      "value" => "",
+			"dependency" => array(
+        'element'  => "text_color",
+        'value'    => 'dark',
+        'callback' => 'nectarPostGridTextColorDependency',
+      ),
+      "description" => '',
+    ),
+
 
     array(
       "type" => "colorpicker",
@@ -1589,6 +1694,7 @@ $nectar_post_grid_params = array(
         esc_html__("Top", "salient-core") => "top",
         esc_html__("Middle", "salient-core") => "middle",
         esc_html__("Bottom", "salient-core") => "bottom",
+        esc_html__("Sticky", "salient-core") => "sticky",
       ),
       'std' => 'top',
     ),
@@ -1618,6 +1724,35 @@ $nectar_post_grid_params = array(
         esc_html__("Light", "salient-core") => "light",
       ),
       'std' => 'light',
+    ),
+
+    array(
+      "type" => "colorpicker",
+      "class" => "",
+      "group" => esc_html__("Item Style", "salient-core"),
+      "heading" => "Light Text Color Hover",
+      "param_name" => "light_text_color_hover",
+      "value" => "",
+			"dependency" => array(
+        'element'  => "text_color_hover",
+        'value'    => 'light',
+        'callback' => 'nectarPostGridTextColorDependency',
+      ),
+      "description" => '',
+    ),
+    array(
+      "type" => "colorpicker",
+      "class" => "",
+      "group" => esc_html__("Item Style", "salient-core"),
+      "heading" => "Dark Text Color Hover",
+      "param_name" => "dark_text_color_hover",
+      "value" => "",
+			"dependency" => array(
+        'element'  => "text_color_hover",
+        'value'    => 'dark',
+        'callback' => 'nectarPostGridTextColorDependency',
+      ),
+      "description" => '',
     ),
 
 		array(
@@ -1737,7 +1872,7 @@ $nectar_post_grid_params = array(
       "group" => esc_html__("Item Style", "salient-core"),
       'save_always' => true,
       "heading" => esc_html__("Border Radius", "salient-core"),
-      "dependency" => array('element' => "grid_style", 'value' => array('content_overlaid','mouse_follow_image','content_under_image', 'content_next_to_image')),
+      "dependency" => array('element' => "grid_style", 'value' => array('content_overlaid','mouse_follow_image','vertical_list','content_under_image', 'content_next_to_image')),
       "param_name" => "border_radius",
       "value" => array(
         "None" => "none",

@@ -20,14 +20,14 @@ nectar_page_header(get_option('page_for_posts')); ?>
 
 	<div class="container main-content">
 
-		<?php do_action('nectar_before_blog_loop_row'); 
-		
+		<?php do_action('nectar_before_blog_loop_row');
+
 		$row_class = apply_filters('nectar_blog_row_class', 'row');
 
-		echo '<div class="'.$row_class.'">';
-		
+		echo '<div class="'.esc_attr($row_class).'">';
+
 			$nectar_options = get_nectar_theme_options();
-			
+
 			$blog_type = apply_filters('nectar_blog_type', $nectar_options['blog_type']);
 			if ($blog_type === null) {
 				$blog_type = 'std-blog-sidebar';
@@ -62,7 +62,7 @@ nectar_page_header(get_option('page_for_posts')); ?>
 
 			if (
 				!empty($nectar_options['blog_pagination_type']) &&
-				$nectar_options['blog_pagination_type'] === 'infinite_scroll' && 
+				$nectar_options['blog_pagination_type'] === 'infinite_scroll' &&
 				!has_action('nectar_blog_loop_post_item')
 			) {
 				$infinite_scroll_class = ' infinite_scroll';
@@ -93,7 +93,7 @@ nectar_page_header(get_option('page_for_posts')); ?>
 			}
 
 			if ($blog_type === 'std-blog-sidebar' || $blog_type === 'masonry-blog-sidebar') {
-				echo '<div class="post-area col ' . $std_minimal_class . ' span_9 ' . esc_attr($masonry_class) . ' ' . esc_attr($masonry_style) . ' ' . $infinite_scroll_class . '" role="main" data-ams="' . esc_attr($auto_masonry_spacing) . '" data-remove-post-date="' . esc_attr($remove_post_date) . '" data-remove-post-author="' . esc_attr($remove_post_author) . '" data-remove-post-comment-number="' . esc_attr($remove_post_comment_number) . '" data-remove-post-nectar-love="' . esc_attr($remove_post_nectar_love) . '"> <div class="posts-container"  data-load-animation="' . esc_attr($load_in_animation) . '">'; // WPCS: XSS ok.
+				echo '<div class="post-area col ' . esc_attr($std_minimal_class) . ' span_9 ' . esc_attr($masonry_class) . ' ' . esc_attr($masonry_style) . ' ' . esc_attr($infinite_scroll_class) . '" role="main" data-ams="' . esc_attr($auto_masonry_spacing) . '" data-remove-post-date="' . esc_attr($remove_post_date) . '" data-remove-post-author="' . esc_attr($remove_post_author) . '" data-remove-post-comment-number="' . esc_attr($remove_post_comment_number) . '" data-remove-post-nectar-love="' . esc_attr($remove_post_nectar_love) . '"> <div class="posts-container"  data-load-animation="' . esc_attr($load_in_animation) . '">'; // WPCS: XSS ok.
 			} else {
 
 				if (
@@ -105,9 +105,9 @@ nectar_page_header(get_option('page_for_posts')); ?>
 					echo '<div class="full-width-content blog-fullwidth-wrap">';
 				}
 
-				echo '<div class="post-area col ' . $std_minimal_class . ' span_12 col_last ' . esc_attr($masonry_class) . ' ' . esc_attr($masonry_style) . ' ' . $infinite_scroll_class . '" role="main" data-ams="' . esc_attr($auto_masonry_spacing) . '" data-remove-post-date="' . esc_attr($remove_post_date) . '" data-remove-post-author="' . esc_attr($remove_post_author) . '" data-remove-post-comment-number="' . esc_attr($remove_post_comment_number) . '" data-remove-post-nectar-love="' . esc_attr($remove_post_nectar_love) . '"> <div class="posts-container" data-load-animation="' . esc_attr($load_in_animation) . '">'; // WPCS: XSS ok.
+				echo '<div class="post-area col ' . esc_attr($std_minimal_class) . ' span_12 col_last ' . esc_attr($masonry_class) . ' ' . esc_attr($masonry_style) . ' ' . esc_attr($infinite_scroll_class) . '" role="main" data-ams="' . esc_attr($auto_masonry_spacing) . '" data-remove-post-date="' . esc_attr($remove_post_date) . '" data-remove-post-author="' . esc_attr($remove_post_author) . '" data-remove-post-comment-number="' . esc_attr($remove_post_comment_number) . '" data-remove-post-nectar-love="' . esc_attr($remove_post_nectar_love) . '"> <div class="posts-container" data-load-animation="' . esc_attr($load_in_animation) . '">'; // WPCS: XSS ok.
 			}
-			
+
 
 			add_filter('wp_get_attachment_image_attributes', 'nectar_remove_lazy_load_functionality');
 
@@ -152,7 +152,7 @@ nectar_page_header(get_option('page_for_posts')); ?>
 			do_action('nectar_before_blog_loop_end');
 
 		echo '</div>'; // closing posts-container.
-			
+
 		nectar_pagination(); ?>
 
 		</div>
@@ -161,12 +161,12 @@ nectar_page_header(get_option('page_for_posts')); ?>
 		if ($blog_type === 'masonry-blog-full-screen-width') {
 			echo '</div>';
 		}
-		
+
 		if ( strpos($blog_type, 'sidebar') !== false ) { ?>
 			<div id="sidebar" data-nectar-ss="<?php echo esc_attr($enable_ss); ?>" class="col span_3 col_last">
-				<?php 
+				<?php
 					nectar_hook_sidebar_top();
-					get_sidebar(); 
+					get_sidebar();
 					nectar_hook_sidebar_bottom();
 				?>
 			</div>

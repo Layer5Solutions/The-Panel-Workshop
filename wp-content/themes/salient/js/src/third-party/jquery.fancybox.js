@@ -3466,7 +3466,6 @@
     vimeo: {
       matcher: /^.+vimeo.com\/(.*\/)?([\d]+)(.*)?/,
       params: {
-        autoplay: 1,
         hd: 1,
         show_title: 1,
         show_byline: 1,
@@ -3561,11 +3560,11 @@
 
       // Vimeo Advanced - Nectar Addition.
       // Unlisted videos have a different URL scheme as of 2021.
-      if ( providerName === 'vimeo' && 
-          vRes && 
-          vRes[3] && 
+      if ( providerName === 'vimeo' &&
+          vRes &&
+          vRes[3] &&
           vRes[4] ) {
-          
+
         var extraParams = (typeof vRes[5] !== 'undefined' && vRes[5]) ? vRes[5].replace('?', '&') : '';
         var coreParams = $.param(providerOpts.params, true);
 
@@ -3574,20 +3573,20 @@
 
         type = providerOpts.type;
         provider = providerName;
-        
+
         paramObj = {};
         params = $.extend(true, {}, providerOpts.params, paramObj);
         thumb = $.type(providerOpts.thumb) === "function" ? providerOpts.thumb.call(this, rez, params, item) : format(providerOpts.thumb, rez);
-       
+
         return false;
 
-      } 
+      }
       else {
         // All other types
         rez = url.match(providerOpts.matcher);
       }
 
-    
+
       if (!rez) {
         return;
       }
@@ -3748,11 +3747,109 @@
     }
   };
 
-  $(document).on({
+  // Nectar enhanced Vimeo autoplay handling
+  var VimeoAutoplayHandler = {
+    initialized: false,
+    messageHandler: null,
+
+    init: function() {
+      if (this.initialized) return;
+
+      var self = this;
+
+      // Listen for messages from Vimeo iframe
+      this.messageHandler = function(event) {
+        try {
+          var data = JSON.parse(event.data);
+          if (event.origin === "https://player.vimeo.com" && data.event === "ready") {
+            // Vimeo player is ready, now we can control it
+            self.handleVimeoReady(event.source, data);
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      };
+
+      window.addEventListener("message", this.messageHandler);
+      this.initialized = true;
+    },
+
+    destroy: function() {
+      if (this.messageHandler) {
+        window.removeEventListener("message", this.messageHandler);
+        this.messageHandler = null;
+      }
+      this.initialized = false;
+    },
+
+        handleVimeoReady: function(source, data) {
+      var instance = $.fancybox.getInstance();
+      if (!instance || !instance.current) return;
+
+      var current = instance.current;
+      if (current.contentSource === "vimeo" && current.opts.video && current.opts.video.autoStart) {
+        this.triggerAutoplay(source);
+      }
+    },
+
+    checkAndTriggerAutoplay: function(iframe) {
+      var instance = $.fancybox.getInstance();
+      if (!instance || !instance.current) return;
+
+      var current = instance.current;
+      if (current.contentSource === "vimeo" && current.opts.video && current.opts.video.autoStart) {
+        this.triggerAutoplay(iframe.contentWindow);
+      }
+    },
+
+    triggerAutoplay: function(source) {
+      // First unmute the video
+      source.postMessage(JSON.stringify({
+        method: "setVolume",
+        value: 1
+      }), "*");
+
+      // Then play the video
+      setTimeout(function() {
+        source.postMessage(JSON.stringify({
+          method: "play",
+          value: "true"
+        }), "*");
+      }, 100);
+    }
+  };
+
+    $(document).on({
+
+    // Nectar Vimeo autoplay handling
+    "beforeShow.fb": function (e, instance, current) {
+      // Initialize Vimeo autoplay handler early when Vimeo content is detected
+      if (current.contentSource === "vimeo") {
+        VimeoAutoplayHandler.init();
+      }
+    },
+
     "afterShow.fb": function (e, instance, current) {
       if (instance.group.length > 1 && (current.contentSource === "youtube" || current.contentSource === "vimeo")) {
         VideoAPILoader.load(current.contentSource);
       }
+
+      // Nectar Vimeo autoplay handling
+      // Check for existing Vimeo iframe that might already be ready
+      if (current.contentSource === "vimeo" && current.opts.video && current.opts.video.autoStart) {
+        var $iframe = current.$content.find("iframe");
+        if ($iframe.length > 0 && $iframe.attr("src").indexOf("vimeo.com") !== -1) {
+          // If iframe is already loaded, try to trigger autoplay
+          setTimeout(function() {
+            VimeoAutoplayHandler.checkAndTriggerAutoplay($iframe[0]);
+          }, 500);
+        }
+      }
+    },
+
+    "beforeClose.fb": function (e, instance) {
+      // Clean up Vimeo autoplay handler when closing
+      VimeoAutoplayHandler.destroy();
     }
   });
 })(jQuery);

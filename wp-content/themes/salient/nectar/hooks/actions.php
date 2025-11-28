@@ -31,6 +31,9 @@ add_action('nectar_hook_before_content', 'nectar_fullpage_markup_open');
 add_action('nectar_hook_after_content', 'nectar_hook_global_section_after_content', 2);
 add_action('nectar_hook_after_content', 'nectar_fullpage_markup_close');
 
+// Before Header Menu.
+add_action('nectar_hook_before_header_element_open', 'nectar_transparent_header_gradient_blur_markup');
+
 // Before Header Navigation.
 add_action('nectar_hook_before_header_nav', 'nectar_material_skin_ocm_wrap_open');
 add_action('nectar_hook_before_header_nav', 'nectar_page_trans_markup');
@@ -38,7 +41,7 @@ add_action('nectar_hook_before_header_nav', 'nectar_page_trans_markup');
 // Before Logo.
 if( in_array(NectarThemeManager::$header_format, array('default','centered-menu','menu-left-aligned')) ) {
   add_action('nectar_hook_before_logo', 'nectar_left_ocm_button_markup');
-} 
+}
 else if( in_array(NectarThemeManager::$header_format, array('centered-logo-between-menu-alt')) ) {
   add_action('nectar_hook_before_pull_left_items', 'nectar_left_ocm_button_markup');
   add_action('nectar_hook_before_logo', 'nectar_left_ocm_button_markup');
@@ -142,7 +145,7 @@ if( !function_exists('nectar_custom_js_after_body') ) {
 
     global $nectar_options;
 
-		if ( isset($nectar_options['custom-js-after-body']) && 
+		if ( isset($nectar_options['custom-js-after-body']) &&
          !empty($nectar_options['custom-js-after-body']) ) {
 
         echo nectar_remove_p_tags( $nectar_options['custom-js-after-body'] );
@@ -157,7 +160,7 @@ if( !function_exists('nectar_custom_js_after_body') ) {
 * @since 13.0
 */
 function nectar_skip_to_content_link() {
-	echo '<a href="#ajax-content-wrap" class="nectar-skip-to-content">'. esc_html__('Skip to main content','salient') . '</a>';
+	echo '<nav aria-label="'.esc_html__('Skip links','salient').'" class="nectar-skip-to-content-wrap"><a href="#ajax-content-wrap" class="nectar-skip-to-content">'. esc_html__('Skip to main content','salient') . '</a></nav>';
 }
 
 
@@ -193,7 +196,7 @@ function nectar_mobile_header_persistent_items() {
   if( in_array($nectar_header_format, array('centered-logo-between-menu-alt','centered-menu-bottom-bar') ) ) {
     $menu_locations[] = 'top_nav_pull_left';
   }
-  
+
   if( in_array($nectar_header_format, array(
     'menu-left-aligned',
     'centered-logo-between-menu-alt',
@@ -215,12 +218,36 @@ function nectar_mobile_header_persistent_items() {
 					'container_class' => 'mobile-header-menu-items',
 					'items_wrap'      => '<ul id="%1$s" class="sf-menu">%3$s</ul>',
 				)
-			); 
+			);
 		}
-		
-	} 
-	
 
+	}
+
+
+}
+
+/**
+ * Adds gradient blur markup before header menu.
+ *
+ * @since 18.0
+ */
+if( !function_exists('nectar_transparent_header_gradient_blur_markup') ) {
+	function nectar_transparent_header_gradient_blur_markup() {
+		$nectar_options = get_nectar_theme_options();
+		$header_blur_type = (isset($nectar_options['header-blur-bg-type'])) ? $nectar_options['header-blur-bg-type'] : 'default';
+		$header_format = (isset($nectar_options['header_format'])) ? $nectar_options['header_format'] : 'default';
+		$header_blur = (isset($nectar_options['header-blur-bg'])) ? $nectar_options['header-blur-bg'] : '0';
+
+		if( $header_blur_type === 'gradient' && $header_blur === '1' && $header_format !== 'left-header' ) {
+			echo '<div class="header-outer__gradient-blur-wrapper">
+			<div class="header-outer__gradient-blur"></div>
+			<div class="header-outer__gradient-blur"></div>
+			<div class="header-outer__gradient-blur"></div>
+			<div class="header-outer__gradient-blur"></div>
+			<div class="header-outer__gradient-blur"></div>
+			</div>';
+		}
+	}
 }
 
 
@@ -237,8 +264,8 @@ function nectar_left_ocm_button_markup() {
 	$header_format = ( ! empty( $nectar_options['header_format'] ) ) ? $nectar_options['header_format'] : 'default';
 	$side_widget_area = ( ! empty( $nectar_options['header-slide-out-widget-area'] ) && $header_format != 'left-header' ) ? $nectar_options['header-slide-out-widget-area'] : 'off';
 	$side_widget_area_pos = ( isset( $nectar_options['ocm_btn_position'] ) ) ? esc_html($nectar_options['ocm_btn_position']) : 'default';
-	
-	if ($side_widget_class !== 'simple' && 
+
+	if ($side_widget_class !== 'simple' &&
 		 $side_widget_area_pos === 'left' ) {
 			echo '<ul class="left-aligned-ocm" data-user-set="'.$side_widget_area.'">';
 				nectar_ocm_button_markup();
@@ -442,7 +469,7 @@ function nectar_material_skin_ocm_wrap_open() {
  * @since 10.1
  */
 function nectar_material_skin_ocm_wrap_close() {
-	
+
 	$theme_skin = NectarThemeManager::$skin;
 
 	if ( 'material' === $theme_skin ) {

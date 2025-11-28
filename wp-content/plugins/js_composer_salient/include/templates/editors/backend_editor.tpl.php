@@ -5,6 +5,7 @@
  * @var Vc_Backend_Editor $editor
  * @var WP_Post $post
  * @var bool $wpb_vc_status
+ * @var string $wpb_vc_editor_type
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // [shortcodes presets data]
 if ( vc_user_access()->part( 'presets' )->can()->get() ) {
-	require_once vc_path_dir( 'AUTOLOAD_DIR', 'class-vc-settings-presets.php' );
+	require_once vc_path_dir( 'CORE_DIR', 'presets/class-vc-settings-presets.php' );
 	$vc_all_presets = Vc_Settings_Preset::listAllPresets();
 } else {
 	$vc_all_presets = [];
@@ -32,7 +33,7 @@ if ( $is_gutenberg ) {
 		window.vc_post_id = <?php echo esc_js( get_the_ID() ); ?>;
 		window.wpbGutenbergEditorUrl = '<?php echo esc_js( set_url_scheme( admin_url( 'post-new.php?post_type=wpb_gutenberg_param' ) ) ); ?>';
 		window.wpbGutenbergEditorSwitchUrl = '<?php echo esc_js( set_url_scheme( admin_url( 'post.php?post=' . get_the_ID() . '&action=edit&vcv-gutenberg-editor' ) ) ); ?>';
-		window.wpbGutenbergEditorClassicSwitchUrl = '<?php echo esc_js( set_url_scheme( admin_url( 'post.php?post=' . get_the_ID() . '&action=edit&classic-editor' ) ) ); ?>';
+		window.wpbGutenbergEditorClassicSwitchUrl = '<?php echo esc_js( set_url_scheme( admin_url( 'post.php?post=' . get_the_ID() . '&action=edit&wpb-classic-editor' ) ) ); ?>';
 		window.wpbGutenbergEditorBackendSwitchUrl = '<?php echo esc_js( set_url_scheme( admin_url( 'post.php?post=' . get_the_ID() . '&action=edit&wpb-backend-editor' ) ) ); ?>';
 		window.wpbIsGutenberg = <?php echo $is_gutenberg ? 'true' : 'false'; ?>;
 		window.vc_auto_save = <?php echo wp_json_encode( get_option( 'wpb_js_auto_save' ) ); ?>;
@@ -64,6 +65,7 @@ $first_tag = 'style';
 if ( ! vc_is_gutenberg_editor() ) {
 	?>
 	<input type="hidden" id="wpb_vc_js_status" name="wpb_vc_js_status" value="<?php echo esc_attr( wp_json_encode( $wpb_vc_status ) ); ?>"/>
+	<input type="hidden" id="wpb_vc_editor_type" name="wpb_vc_editor_type" value="<?php echo esc_attr( $wpb_vc_editor_type ); ?>"/>
 	<?php
 }
 ?>

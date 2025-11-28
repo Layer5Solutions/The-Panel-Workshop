@@ -74,6 +74,17 @@ class Vc_Ai_Modal_Controller {
 			return $response;
 		}
 
+		$ai_form_template = $this->get_ai_form_template( $modal_param );
+		if ( is_wp_error( $ai_form_template ) ) {
+			$response['content'] = $this->get_ai_promo_template(
+				'sad',
+				'custom',
+				$modal_param,
+				$ai_form_template->get_error_message()
+			);
+			return $response;
+		}
+
 		switch ( $access_status ) {
 			case 'license_not_valid':
 				$response['content'] =
@@ -85,7 +96,7 @@ class Vc_Ai_Modal_Controller {
 				break;
 			default:
 				$response['type'] = 'content';
-				$response['content'] = $this->get_ai_form_template( $modal_param );
+				$response['content'] = $ai_form_template;
 				$response['tokens_left'] = $api_connector->api_response_data['tokens-left'];
 				$response['tokens_total'] = $api_connector->api_response_data['tokens-total'];
 		}
@@ -200,7 +211,10 @@ class Vc_Ai_Modal_Controller {
 			$this->get_modal_template_path( $data['ai_element_type'], $data['ai_element_id'] );
 
 		if ( is_wp_error( $element_form_fields_template_path ) ) {
-			return $element_form_fields_template_path;
+			return new WP_Error(
+				$element_form_fields_template_path->get_error_code(),
+				$element_form_fields_template_path->get_error_message()
+			);
 		}
 
 		return vc_get_template(
@@ -294,6 +308,9 @@ class Vc_Ai_Modal_Controller {
 		$type_dependency = [
 			'textarea_html' => 'editors/popups/ai/generate-text.php',
 			'textarea' => 'editors/popups/ai/generate-text.php',
+			'seo_title' => 'editors/popups/ai/generate-text.php',
+			'seo_meta_description' => 'editors/popups/ai/generate-text.php',
+			'seo_meta_description_social' => 'editors/popups/ai/generate-text.php',
 			'textarea_ace' => [
 				'textarea_ace_raw_html' => 'editors/popups/ai/generate-text.php',
 				'textarea_ace_javascript_code' => 'editors/popups/ai/generate-code.php',
@@ -460,6 +477,16 @@ class Vc_Ai_Modal_Controller {
 				],
 				'textfield' => [
 					'[10,15]' => 'Title (up to 15 words)',
+				],
+				// seo fields length we always have the same in response.
+				'seo_title' => [
+					'[0,60]' => 'SEO: Title',
+				],
+				'seo_meta_description' => [
+					'[0,160]' => 'SEO: Meta description',
+				],
+				'seo_meta_description_social' => [
+					'[0,120]' => 'SEO: Meta description (Social)',
 				],
 			],
 			$this->ai_element_type

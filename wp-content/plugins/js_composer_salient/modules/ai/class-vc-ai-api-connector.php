@@ -143,6 +143,42 @@ class Vc_Ai_Api_Connector {
 					],
 				],
 			],
+			'seo_title' => [
+				'path' => vc_path_dir( 'MODULES_DIR', 'ai/class-vc-ai-content-generator.php' ),
+				'class' => 'Vc_Ai_Content_Generator',
+				'method' => 'generate',
+				'endpoint' => [
+					'default' => 'generate-seo-title',
+					'contentType' => [
+						'improve_existing' => 'rewrite-text',
+						'translate' => 'translate-text',
+					],
+				],
+			],
+			'seo_meta_description' => [
+				'path' => vc_path_dir( 'MODULES_DIR', 'ai/class-vc-ai-content-generator.php' ),
+				'class' => 'Vc_Ai_Content_Generator',
+				'method' => 'generate',
+				'endpoint' => [
+					'default' => 'generate-seo-meta-description',
+					'contentType' => [
+						'improve_existing' => 'rewrite-text',
+						'translate' => 'translate-text',
+					],
+				],
+			],
+			'seo_meta_description_social' => [
+				'path' => vc_path_dir( 'MODULES_DIR', 'ai/class-vc-ai-content-generator.php' ),
+				'class' => 'Vc_Ai_Content_Generator',
+				'method' => 'generate',
+				'endpoint' => [
+					'default' => 'generate-seo-meta-description-social',
+					'contentType' => [
+						'improve_existing' => 'rewrite-text',
+						'translate' => 'translate-text',
+					],
+				],
+			],
 			'custom_css' => [
 				'path' => vc_path_dir( 'MODULES_DIR', 'ai/class-vc-ai-code-generator.php' ),
 				'class' => 'Vc_Ai_Code_Generator',

@@ -36,20 +36,19 @@ if ( class_exists( 'WPBakeryVisualComposerAbstract' ) && defined( 'SALIENT_VC_AC
 
             $salient_colors_val_arr = [];
             if( defined( 'NECTAR_THEME_NAME' ) && class_exists('NectarThemeManager') && function_exists('get_nectar_theme_options') ) {
-                $salient_colors = NectarThemeManager::$available_theme_colors;
-                $nectar_options = get_nectar_theme_options();
-                $index = 0;
 
-                foreach( $salient_colors as $color_key => $label) {
-                    // Only grab the solids and skip gradients.
-                    if($index > 4) {
-                        return;
-                    }
-                    if( isset($nectar_options[$color_key]) && !empty($nectar_options[$color_key]) ) {
-                        $salient_colors_val_arr[] = $nectar_options[$color_key];
-                        $index++;
-                    }
+            $salient_colors = NectarThemeManager::$available_theme_colors;
+            $nectar_options = get_nectar_theme_options();
+
+            foreach( $salient_colors as $color_key => $label) {
+                // Only grab the solids and skip gradients.
+                if( stripos($color_key, 'gradient') !== false ) {
+                    continue;
                 }
+                if( isset($nectar_options[$color_key]) && !empty($nectar_options[$color_key]) ) {
+                    $salient_colors_val_arr[] = $nectar_options[$color_key];
+                }
+            }
 
                 // Salient colors are set.
                 if ( ! empty ( $salient_colors_val_arr ) ) {
@@ -206,7 +205,11 @@ if ( class_exists( 'WPBakeryVisualComposerAbstract' ) && defined( 'SALIENT_VC_AC
                 if ( vc_is_frontend_editor() ||
                 vc_backend_editor()->isValidPostType( get_post_type() ) ) {
 
-                    $depends_on = (vc_is_frontend_editor()) ? 'vc-frontend-editor-min-js' : 'vc-backend-min-js';
+                    if ( version_compare( WPB_VC_VERSION, '8.6', '>=' ) ) {
+                        $depends_on = (vc_is_frontend_editor()) ? ['wpb-dompurify', 'vc-frontend-editor-min-js'] : ['wpb-dompurify', 'vc-backend-min-js'];
+                    } else {
+                        $depends_on = (vc_is_frontend_editor()) ? ['vc-frontend-editor-min-js'] : ['vc-backend-min-js'];
+                    }
                     $current_screen = get_current_screen();
 
 
@@ -214,18 +217,27 @@ if ( class_exists( 'WPBakeryVisualComposerAbstract' ) && defined( 'SALIENT_VC_AC
 
                         wp_enqueue_style( 'font-awesome', get_template_directory_uri() . '/css/font-awesome-legacy.min.css' );
                         wp_enqueue_style( 'grapick', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/css/grapick.css', array(), $Salient_Core->plugin_version );
-                        wp_enqueue_script( 'grapick', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/grapick.js', array($depends_on), $Salient_Core->plugin_version, true );
-                        wp_enqueue_script( 'nectar_multi_range_slider', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/multi-rangeslider.js', array($depends_on), $Salient_Core->plugin_version, true );
+                        wp_enqueue_script( 'grapick', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/grapick.js', $depends_on, $Salient_Core->plugin_version, true );
+                        wp_enqueue_script( 'nectar_multi_range_slider', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/multi-rangeslider.js', $depends_on, $Salient_Core->plugin_version, true );
                         wp_enqueue_style( 'nectar_range_slider', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/css/rangeslider.css', array(), $Salient_Core->plugin_version );
-                        wp_enqueue_script( 'nectar_range_slider', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/rangeslider.js', array($depends_on), $Salient_Core->plugin_version, true );
-                        wp_enqueue_script( 'nectar_lottie_player', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/lottie-player.js', array($depends_on), $Salient_Core->plugin_version, true );
+                        wp_enqueue_script( 'nectar_range_slider', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/rangeslider.js', $depends_on, $Salient_Core->plugin_version, true );
+                        wp_enqueue_script( 'nectar_lottie_player', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/lottie-player.js', $depends_on, $Salient_Core->plugin_version, true );
                         wp_register_script( 'wnumb', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/wnumb.js', array(), $Salient_Core->plugin_version);
 
-                        wp_enqueue_script( 'spectrum', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/spectrum.js', array($depends_on), $Salient_Core->plugin_version, true );
+                        wp_enqueue_script( 'spectrum', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/spectrum.js', $depends_on, $Salient_Core->plugin_version, true );
                         wp_enqueue_style( 'spectrum', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/css/spectrum.css', array(), $Salient_Core->plugin_version );
 
+                        $hide_template_library = get_option( 'salient_custom_branding_hide_studio', false );
+                        if (isset($hide_template_library) && $hide_template_library === 'on' ) {
+                             wp_add_inline_style( 'nectar-vc', '#vc_no-content-helper > .vc_ui-help-block {
+                                display: none;
+                            }');
+                        }
 
-                        wp_enqueue_script( 'nectar-page-builder-edit', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/nectar-element-edit.js', array($depends_on, 'wnumb', 'nectar_lottie_player', 'spectrum'), $Salient_Core->plugin_version, true );
+                        wp_enqueue_script( 'nectar-page-builder-edit', SALIENT_CORE_PLUGIN_PATH.'/includes/admin/assets/js/nectar-element-edit.js', array_merge(
+                            $depends_on,
+                            ['wnumb', 'nectar_lottie_player', 'spectrum']
+                        ), $Salient_Core->plugin_version, true );
                         $translation_array = array(
                             'alphabetical' => __( 'Alphabetical', 'salient-core' ),
                             'date'         => __( 'Date', 'salient-core' ),

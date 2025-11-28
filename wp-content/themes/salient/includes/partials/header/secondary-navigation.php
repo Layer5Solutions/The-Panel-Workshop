@@ -34,6 +34,7 @@ if ( $header_format === 'left-header' ) {
 $using_secondary      	 	= ( ! empty( $nectar_options['header_layout'] ) && $header_format !== 'left-header' ) ? $nectar_options['header_layout'] : ' ';
 $secondary_header_text 		= ( ! empty( $nectar_options['secondary-header-text'] ) ) ? 'true' : 'false';
 
+nectar_hook_before_secondary_header_before_scrolling();
 nectar_hook_before_secondary_header();
 
 if ( $using_secondary === 'header_with_secondary' ) { ?>

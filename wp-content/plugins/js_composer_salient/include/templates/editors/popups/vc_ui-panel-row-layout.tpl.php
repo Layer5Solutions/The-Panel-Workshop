@@ -45,10 +45,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 							<div class="wpb_element_label"><?php esc_html_e( 'Enter custom layout for your row', 'js_composer' ); ?></div>
 							<?php if ( is_string( $customRowInfo ) ) { echo $customRowInfo ; } ?>
 						</div>
-						<div class="edit_form_line">
-							<input name="padding" class="wpb-textinput vc_row_layout" type="text" value="" id="vc_row-layout">
-							<span class="vc_general vc_ui-button vc_ui-button-size-sm vc_ui-button-action vc_ui-button-shape-rounded vc_ui-button-update-layout" data-vc-ui-element="button-update-layout"><?php esc_html_e( 'Update', 'js_composer' ); ?></span>
-
+						<div class="edit_form_line vc_row-layout-container">
+							<div class="vc_row-layout-column">	
+								<input name="padding" class="wpb-textinput vc_row_layout" type="text" value="" id="vc_row-layout">
+							</div>
+							<div class="vc_row-layout-column">
+								<span class="vc_general vc_ui-button vc_ui-button-action vc_ui-button-shape-rounded vc_ui-button-update-layout" data-vc-ui-element="button-update-layout"><?php esc_html_e( 'Update', 'js_composer' ); ?></span>
+							</div>
 						</div>
 					</div>
 				</div>

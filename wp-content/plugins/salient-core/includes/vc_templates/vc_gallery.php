@@ -18,6 +18,10 @@ extract(shortcode_atts(array(
 	'flickity_touch_total_style' => 'default',
 	'flickity_touch_total_indicator_bg_color' => '#000',
 	'flickity_touch_total_indicator_icon_color' => '#fff',
+	'flickity_autorotate_type' => 'default',
+	'flickity_ticker_speed' => 'slow',
+	'flickity_mask_edges' => '',
+	'flickity_autorotate_pause_on_hover' => '',
     'onclick' => 'link_image',
     'custom_links' => '',
     'custom_links_target' => '',
@@ -32,6 +36,7 @@ extract(shortcode_atts(array(
 	'ns_image_aspect_ratio' => 'default',
     'flexible_slider_height' => '',
     'disable_auto_rotate' => '',
+	'nectar_slider_autorotate_dur' => '5500',
     'hide_arrow_navigation' => '',
     'bullet_navigation' => '',
     'masonry_style' => '',
@@ -205,7 +210,8 @@ if ( $type === 'flexslider_style' ) {
   }
 	$arrow_markup = ($hide_arrow_navigation == true) ? 'data-arrows="false"': 'data-arrows="true"';
 
-  $autorotation_attr = ($disable_auto_rotate != 'true') ? 'data-autorotate="5500"' : '';
+	$nectar_slider_autorotate_dur = (empty($nectar_slider_autorotate_dur)) ? '5500' : $nectar_slider_autorotate_dur;
+  $autorotation_attr = ($disable_auto_rotate != 'true') ? 'data-autorotate="'.esc_attr($nectar_slider_autorotate_dur).'"' : '';
 
   if( isset($_GET['vc_editable']) ) {
   	$nectar_using_VC_front_end_editor = sanitize_text_field($_GET['vc_editable']);
@@ -217,7 +223,7 @@ if ( $type === 'flexslider_style' ) {
   if($nectar_using_VC_front_end_editor) {
     $autorotation_attr = '';
   }
-  	
+
 	$aspect_ratio_attr = '';
 	if ( $ns_image_aspect_ratio !== 'default' && !empty($ns_image_aspect_ratio) ) {
 		$aspect_ratio_attr = 'data-aspect-ratio="'.esc_attr($ns_image_aspect_ratio).'" ';
@@ -256,12 +262,25 @@ if ( $type === 'flexslider_style' ) {
     $touch_total_minimal_class = ' drag-indicator-only';
   }
 
+
   $flickity_attrs = '';
   if( $flickity_touch_total_style == 'solid_bg' ) {
 
     $flickity_attrs .= 'data-indicator-bg="'.esc_attr($flickity_touch_total_indicator_bg_color).'" ';
     $flickity_attrs .= 'data-indicator-icon="'.esc_attr($flickity_touch_total_indicator_icon_color).'" ';
 
+  }
+
+   // Autorotation type.
+   if( isset($flickity_autorotate_type) && 'ticker' === $flickity_autorotate_type ) {
+	$touch_total_minimal_class .= ' ticker-rotate';
+	$flickity_attrs .= 'data-ticker-speed="'.esc_attr($flickity_ticker_speed).'" ';
+	$flickity_attrs .= 'data-pause-on-hover="'.esc_attr($flickity_autorotate_pause_on_hover).'" ';
+  }
+
+  // mask edges.
+  if( isset($flickity_mask_edges) && 'yes' === $flickity_mask_edges ) {
+	$flickity_attrs .= 'data-mask-edges="true" ';
   }
 
   if( $type === 'flickity_static_height_style' ) {
@@ -293,7 +312,7 @@ if ( $type === 'flexslider_style' ) {
       }
     }';
 
-    
+
     $slides_wrap_start .= '<style>'.$flickity_img_height_css .'</style>';
 
 
@@ -400,7 +419,7 @@ if ( $type === 'flexslider_style' ) {
 }
 
 
-if ( $images == '' && $type !== 'image_grid' ) { $images = '-1,-2,-3,-4,-5,-6'; }
+if ( $images == '' && $type !== 'image_grid' ) { $images = '-1,-2,-3,-4,-5,-6,-7,-8,-9,-10'; }
 else if( $images == '' && $type === 'image_grid' ) { $images = '-1,-2,-3,-4'; }
 
 $pretty_rel_random = ''; //rel-'.rand();
@@ -559,16 +578,16 @@ foreach ( $images as $attach_id ) {
               if( 'lazy-load' === $image_loading && isset($post_thumbnail['thumbnail']) ) {
 
                 $content = false;
-				
+
 				// Lazy loading svg src.
 				$placeholder_img_src = '';
-				if( isset($post_thumbnail['p_img_large']) && 
-					isset($post_thumbnail['p_img_large'][1]) && 
+				if( isset($post_thumbnail['p_img_large']) &&
+					isset($post_thumbnail['p_img_large'][1]) &&
 					isset($post_thumbnail['p_img_large'][2]) ) {
 					$placeholder_img_src = "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20".esc_attr($post_thumbnail['p_img_large'][1]).'%20'.esc_attr($post_thumbnail['p_img_large'][2])."'%2F%3E";
 				}
-				
-				
+
+
                 // Srcset.
                 if( strpos($post_thumbnail['thumbnail'],'srcset') !== false ) {
                   preg_match( '/< *img[^>]*srcset *= *["\']?([^"\']*)/i', $post_thumbnail['thumbnail'], $srcset_match);
@@ -599,11 +618,11 @@ foreach ( $images as $attach_id ) {
 				if(!empty($flickity_desktop_columns) && $flickity_desktop_columns == '3') {
 					$post_thumbnail['thumbnail'] = '<img src="' . SALIENT_CORE_PLUGIN_PATH . '/includes/img/500x500.svg" />';
 					$post_thumbnail['p_img_large'][0] = SALIENT_CORE_PLUGIN_PATH . '/includes/img/500x500.svg';
-				} 
+				}
               else if(!empty($flickity_desktop_columns) && $flickity_desktop_columns == '4') {
 				$post_thumbnail['thumbnail'] = '<img src="' . SALIENT_CORE_PLUGIN_PATH . '/includes/img/350x600.svg" />';
 				$post_thumbnail['p_img_large'][0] = SALIENT_CORE_PLUGIN_PATH . '/includes/img/350x600.svg';
-			        } 
+			        }
               else if( $type === 'flickity_static_height_style' ) {
 
                 $random = mt_rand(0,1);
@@ -640,7 +659,7 @@ foreach ( $images as $attach_id ) {
       $thumbnail = '<div class="cell" data-lazy="'.esc_attr($lazy_load).'">' . $post_thumbnail['thumbnail'];
     }
 
-  
+
 
 		if( $display_title_caption == 'true' || $onclick === 'link_image' ) {
 			if($attach_id > 0) {
@@ -970,7 +989,7 @@ foreach ( $images as $attach_id ) {
 									if ($attach_id > 0) {
 
 										$gallery_images_to_skip = (!empty($image_grid_lazy_skip) || $image_grid_lazy_skip === '0' ) ? intval($image_grid_lazy_skip) : 8;
-									
+
 										if( $masonry_layout == 'true' && $layout != '3' && $layout != '4' && $layout != '2' && $bypass_image_cropping != 'true') {
 
 											$image_width = null;
@@ -983,7 +1002,7 @@ foreach ( $images as $attach_id ) {
 
 											$image_src = '';
 											$image_src = wp_get_attachment_image_src($attach_id, $masonry_item_sizing);
-											
+
 											if(!empty($image_src)) {
 												$image_src = $image_src[0];
 											}
@@ -1014,7 +1033,7 @@ foreach ( $images as $attach_id ) {
 											} else {
 												$post_thumbnail['thumbnail'] = '<img class="size-'.esc_attr($masonry_item_sizing).$simulated_lazy_fade_class.'" src="'.esc_url($image_src).'" alt="'.esc_attr($wp_img_alt_tag).'" height="'.esc_attr($image_height).'" width="'.esc_attr($image_width).'" ' .$image_srcset.' '.$image_sizes.' />';
 											}
-											
+
 											$post_thumbnail['p_img_large'][0] = '';
 
 										}

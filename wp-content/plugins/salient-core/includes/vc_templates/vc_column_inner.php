@@ -227,7 +227,7 @@ if( !empty($top_margin) ) {
     // actual margin proc
     if( strpos($top_margin,'%' ) !== false) {
         $style .= 'margin-top: '. esc_attr($top_margin) .'; ';
-    } 
+    }
     else if( strpos($top_margin,'vh' ) !== false) {
       $style .= 'margin-top: '. floatval($top_margin) .'vh; ';
     }
@@ -242,13 +242,13 @@ if( !empty($top_margin) ) {
 if( !empty($bottom_margin) ) {
     if( strpos($bottom_margin,'%' ) !== false){
         $style .= 'margin-bottom: '. esc_attr($bottom_margin) .'; ';
-    } 
+    }
     else if( strpos($bottom_margin,'vh' ) !== false){
       $style .= 'margin-bottom: '. floatval($bottom_margin) .'vh; ';
-    } 
+    }
     else if( strpos($bottom_margin,'vw' ) !== false){
       $style .= 'margin-bottom: '. floatval($bottom_margin) .'vw; ';
-    } 
+    }
     else {
         $style .= 'margin-bottom: '. intval($bottom_margin) .'px; ';
     }
@@ -262,7 +262,7 @@ if( isset($zindex) && !empty($zindex) ) {
 // Custom shadows.
 if( 'custom' === $column_shadow ) {
   if( 'true' === $mask_enable) {
-    $atts['box_shadow_method'] = 'filter'; 
+    $atts['box_shadow_method'] = 'filter';
   }
   $custom_shadow_markup = nectar_generate_shadow_css($atts);
   if( !empty($custom_shadow_markup) ) {
@@ -274,7 +274,7 @@ if( 'custom' === $column_shadow ) {
 if( !empty($translate_y) || !empty($translate_x) ) {
 
   $inner_columns_style .= 'transform: ';
-  
+
   if( !empty($translate_y) ) {
       if( strpos($translate_y,'%' ) !== false){
         $inner_columns_style .= ' translateY('. intval($translate_y) .'%)';
@@ -303,11 +303,11 @@ if( !empty($translate_y) || !empty($translate_x) ) {
 }
 
 
-if( empty($background_color) && 
-  empty($background_image) && 
-  empty($font_color) && 
-  empty($zindex) && 
-  empty($top_margin) && 
+if( empty($background_color) &&
+  empty($background_image) &&
+  empty($font_color) &&
+  empty($zindex) &&
+  empty($top_margin) &&
   empty($bottom_margin) ) {
     $style = '';
 } else {
@@ -380,7 +380,7 @@ if( !empty($background_color_string) ) {
 $column_overlay_layer_style = null;
 $column_overlay_layer_markup = null;
 
-if( !empty($color_overlay) || 
+if( !empty($color_overlay) ||
     !empty($color_overlay_2) ||
     'advanced' === $gradient_type) {
 
@@ -512,7 +512,7 @@ if( $video_bg ) {
     $video_markup .= '
     <div class="mobile-video-image column-bg-layer column-video" style="background-image: url('. esc_url( $video_image_src ) .')"></div>';
   }
-  
+
   $video_markup .= '
   <div class="nectar-video-wrap column-bg-layer column-video"'.$column_bg_overlay_wrap_attrs_escaped.'>';
 
@@ -546,8 +546,8 @@ if( $column_link_target == 'lightbox' ) {
 }
 
 $column_link_sr_text  = (!empty($column_link_screen_reader)) ? '<span class="screen-reader-text">'.esc_html($column_link_screen_reader).'</span>' : '';
-$column_link_html     = (!empty($column_link)) ? '<a class="'.$column_link_class.'" target="'.$column_link_target.'" href="'.esc_attr($column_link).'">'.$column_link_sr_text.'</a>' : null;
-$column_bg_color_html = (!empty($column_link)) ? '<a class="'.$column_link_class.'" target="'.$column_link_target.'" href="'.esc_attr($column_link).'"></a>' : null;
+$column_link_html     = (!empty($column_link)) ? '<a class="'.$column_link_class.'" target="'.$column_link_target.'" href="'.esc_url($column_link).'">'.$column_link_sr_text.'</a>' : null;
+$column_bg_color_html = (!empty($column_link)) ? '<a class="'.$column_link_class.'" target="'.$column_link_target.'" href="'.esc_url($column_link).'"></a>' : null;
 
 $css_class            = apply_filters( VC_SHORTCODE_CUSTOM_CSS_FILTER_TAG, $width . $el_class . vc_shortcode_custom_css_class( $css, ' ' ), $this->settings['base'], $atts );
 
@@ -616,7 +616,7 @@ if( in_array($animation_type, array('parallax','entrance_and_parallax')) ) {
 if( 'scroll_pos_advanced' === $animation_type ) {
 
   $animation_atts = array_merge(
-    $atts, 
+    $atts,
     array(
       'animation_inner_selector' => ''
     )

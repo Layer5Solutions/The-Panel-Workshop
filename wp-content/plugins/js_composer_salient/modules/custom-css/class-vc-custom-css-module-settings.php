@@ -98,7 +98,7 @@ class Vc_Custom_Css_Module_Settings {
 	 * @since 7.8
 	 */
 	public function load_module_settings_assets() {
-		wp_enqueue_script( 'ace-editor', vc_asset_url( 'lib/vendor/node_modules/ace-builds/src-min-noconflict/ace.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
+		wp_enqueue_script( 'ace-editor', vc_asset_url( 'lib/vendor/dist/ace-builds/src-min-noconflict/ace.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_enqueue_script( 'wpb-code-editor', vc_asset_url( 'js/dist/post-code-editor.min.js' ), [ 'jquery-core' ], WPB_VC_VERSION, true );
 		wp_enqueue_script( 'wpb_custom_css_module', vc_asset_url( '../modules/custom-css/assets/dist/module.min.js' ), [], WPB_VC_VERSION, true );
 		wp_enqueue_style( 'wpb_custom_css_module', vc_asset_url( '../modules/custom-css/assets/dist/module.min.css' ), false, WPB_VC_VERSION );

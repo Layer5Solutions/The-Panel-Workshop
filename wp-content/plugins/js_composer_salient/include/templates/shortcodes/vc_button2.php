@@ -5,6 +5,8 @@
  * This template can be overridden by copying it to yourtheme/vc_templates/vc_button2.php.
  *
  * @see https://kb.wpbakery.com/docs/developers-how-tos/change-shortcodes-html-output
+ *
+ * @depreacted
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

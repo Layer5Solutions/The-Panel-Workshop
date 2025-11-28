@@ -280,6 +280,19 @@ return array(
 			"description" => ''
 		),
 
+
+		array(
+			"type" => "nectar_numerical",
+			"class" => "",
+			"placeholder" => '',
+			"heading" =>  esc_html__("Shrink Column Width By", "salient-core"),
+			"value" => "",
+			"edit_field_class" => "zero-floor vc_col-xs-12",
+			"param_name" => "flickity_subtract_from_column_width",
+			"dependency" => array('element' => "script", 'value' => array('flickity')),
+			"description" => esc_html__("Reduce the default column width by this amount. Useful for fine-tuning layouts.", "salient-core")
+		),
+
 		array(
 			  "type" => "dropdown",
 			  "heading" => esc_html__("Controls", "salient-core"),
@@ -316,7 +329,7 @@ return array(
 			"param_name" => "flickity_touch_total_indicator_bg_color",
 			"value" => "",
       "dependency" => array('element' => "flickity_touch_total_style", 'value' => array('solid_bg','tooltip_text')),
-			"description" =>  esc_html__("The color of the background of your touch indicator button.", "salient-core")	  	
+			"description" =>  esc_html__("The color of the background of your touch indicator button.", "salient-core")
 		),
     array(
 			"type" => "colorpicker",
@@ -325,7 +338,7 @@ return array(
 			"param_name" => "flickity_touch_total_indicator_icon_color",
 			"value" => "",
       		"dependency" => array('element' => "flickity_touch_total_style", 'value' => array('solid_bg','tooltip_text')),
-			"description" =>  esc_html__("The color of your touch indicator button icon.", "salient-core")	  	
+			"description" =>  esc_html__("The color of your touch indicator button icon.", "salient-core")
 		),
 		array(
 			"type" => 'checkbox',
@@ -345,7 +358,7 @@ return array(
 				 'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
 				 "dependency" => array('element' => "flickity_controls", 'value' => array('touch_total')),
 		 ),
-		 
+
 		 array(
  			  "type" => "dropdown",
  			  "heading" => esc_html__("Touch Indicator Icon Coloring", "salient-core"),
@@ -536,7 +549,7 @@ return array(
 				 'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
  				 "dependency" => array('element' => "flickity_formatting", 'value' => array('default')),
 		  ),
-		  
+
 		array(
 			"type" => "textfield",
 			"heading" => esc_html__("Transition Scroll Speed", 'salient-core'),
@@ -589,6 +602,17 @@ return array(
 			"dependency" => array('element' => "script", 'value' => array('flickity')),
 			"description" => "This add a subtle border to your columns"
 		),
+
+		array(
+			"type" => 'checkbox',
+			"heading" => esc_html__("Mask Edges", "salient-core"),
+			"param_name" => "mask_edges",
+			"description" => esc_html__("This will mask the edges of the carousel.", "salient-core"),
+			'edit_field_class' => 'vc_col-xs-12 salient-fancy-checkbox',
+			"dependency" => array('element' => "script", 'value' => array('flickity')),
+			"value" => Array(esc_html__("Yes, please", "salient-core") => 'yes')
+		),
+
 		array(
 			"type" => "checkbox",
 			"class" => "",
@@ -828,7 +852,7 @@ return array(
         "param_name" => "simple_slider_touch_indicator_bg_color",
         "value" => "",
         "dependency" => Array('element' => "simple_slider_touch_indicator", 'not_empty' => true),
-        "description" =>  esc_html__("The color of the background of your touch indicator button.", "salient-core")	  	
+        "description" =>  esc_html__("The color of the background of your touch indicator button.", "salient-core")
       ),
       array(
         "type" => "colorpicker",
@@ -837,7 +861,7 @@ return array(
         "param_name" => "simple_slider_touch_indicator_icon_color",
         "value" => "",
         "dependency" => Array('element' => "simple_slider_touch_indicator", 'not_empty' => true),
-        "description" =>  esc_html__("The color of your touch indicator button icon.", "salient-core")	  	
+        "description" =>  esc_html__("The color of your touch indicator button icon.", "salient-core")
       ),
 
 			array(

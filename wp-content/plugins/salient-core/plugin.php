@@ -5,7 +5,7 @@
 * Description: Core functionality required by the Salient theme. Adds the Salient collection of WPBakery page builder elements, template library and page/post options.
 * Author: ThemeNectar
 * Author URI: https://themenectar.com
-* Version: 3.0.8
+* Version: 3.1.1
 * Text Domain: salient-core
 */
 
@@ -18,7 +18,7 @@ define( 'SALIENT_CORE_ROOT_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SALIENT_CORE_PLUGIN_PATH', plugins_url( 'salient-core' ) );
 
 if ( ! defined( 'SALIENT_CORE_VERSION' ) ) {
-    define( 'SALIENT_CORE_VERSION', '3.0.8' );
+    define( 'SALIENT_CORE_VERSION', '3.1.1' );
 }
 
 class Salient_Core {
@@ -57,7 +57,7 @@ class Salient_Core {
         wp_register_style( 'salient-wpbakery-addons', plugins_url( '/css/salient-wpbakery-addons-basic.css', __FILE__ ), '', $this->plugin_version );
 
         wp_register_script( 'twentytwenty', plugins_url( '/js/third-party/jquery.twentytwenty.js', __FILE__ ), array( 'jquery' ), $this->plugin_version, true );
-        wp_register_script( 'touchswipe', plugins_url( '/js/third-party/touchswipe.min.js', __FILE__ ), array( 'jquery' ), '1.0', true );
+        wp_register_script( 'touchswipe', plugins_url( '/js/third-party/touchswipe.min.js', __FILE__ ), array( 'jquery' ), $this->plugin_version, true );
 
         // Enqueue assets when Salient is not active.
         if ( ! defined( 'NECTAR_THEME_NAME' ) ) {

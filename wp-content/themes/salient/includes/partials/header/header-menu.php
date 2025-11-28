@@ -4,7 +4,7 @@
 *
 * @package Salient WordPress Theme
 * @subpackage Partials
-* @version 13.1
+* @version 18.0
 */
 
 // Exit if accessed directly
@@ -28,7 +28,9 @@ if( $nectar_header_format === 'centered-menu-bottom-bar' &&
 }
 ?>
 
+<?php do_action('nectar_hook_before_header_element_open'); ?>
 <header id="top" role="banner" aria-label="<?php echo esc_attr__('Main Menu', 'salient'); ?>">
+	<?php do_action('nectar_hook_before_header_menu'); ?>
 	<div class="container">
 		<div class="row">
 			<div class="col span_3">
@@ -77,7 +79,7 @@ if( $nectar_header_format === 'centered-menu-bottom-bar' &&
 						}
 						nectar_hook_pull_left_menu_items();
 
-						if( ! empty( $nectar_options['enable_social_in_header'] ) && $nectar_options['enable_social_in_header'] === '1' ) {
+						if( function_exists('nectar_header_social_icons_has_items') && nectar_header_social_icons_has_items() ) {
 						?>
 						<ul class="nectar-social"><li id="social-in-menu" class="button_social_group"><?php nectar_header_social_icons( 'main-nav' ); ?> </li></ul>
 				 	 <?php } ?>
@@ -218,8 +220,7 @@ if( $nectar_header_format === 'centered-menu-bottom-bar' &&
 									echo '<li class="no-menu-assigned"><a href="#"></a></li>';
 								}
 
-								if ( ! empty( $nectar_options['enable_social_in_header'] ) &&
-								$nectar_options['enable_social_in_header'] === '1' &&
+								if ( function_exists('nectar_header_social_icons_has_items') && nectar_header_social_icons_has_items() &&
 								$nectar_header_options['using_secondary'] !== 'header_with_secondary' &&
 								$nectar_header_format !== 'menu-left-aligned' &&
 								$nectar_header_format !== 'centered-menu' &&
@@ -238,12 +239,9 @@ if( $nectar_header_format === 'centered-menu-bottom-bar' &&
 
 						if ( false === in_array($nectar_header_format, array('menu-left-aligned','centered-logo-between-menu-alt') ) &&
 						     false === $alt_button_location ) { ?>
-							<ul class="buttons sf-menu" data-user-set-ocm="<?php echo esc_attr( $nectar_header_options['user_set_side_widget_area'] ); ?>">
+							<ul class="buttons sf-menu" data-user-set-ocm="<?php echo esc_attr( $nectar_header_options['user_set_side_widget_area'] ); ?>"><?php
 
-								<?php
-
-								if ( ! empty( $nectar_options['enable_social_in_header'] ) &&
-								$nectar_options['enable_social_in_header'] === '1' &&
+								if ( function_exists('nectar_header_social_icons_has_items') && nectar_header_social_icons_has_items() &&
 								$nectar_header_options['using_secondary'] !== 'header_with_secondary' &&
 								$nectar_header_format === 'centered-menu' ) {
 
@@ -271,9 +269,7 @@ if( $nectar_header_format === 'centered-menu-bottom-bar' &&
 								nectar_hook_before_button_menu_items();
 
 								nectar_header_button_items();
-								?>
-
-							</ul>
+								?></ul>
 						<?php } ?>
 
 					</nav>
@@ -294,9 +290,7 @@ if( $nectar_header_format === 'centered-menu-bottom-bar' &&
 				<?php if ( in_array($nectar_header_format, array('menu-left-aligned','centered-logo-between-menu-alt') ) ) { ?>
 					<div class="right-aligned-menu-items">
 						<nav>
-							<ul class="buttons sf-menu" data-user-set-ocm="<?php echo esc_attr( $nectar_header_options['user_set_side_widget_area'] ); ?>">
-
-								<?php
+							<ul class="buttons sf-menu" data-user-set-ocm="<?php echo esc_attr( $nectar_header_options['user_set_side_widget_area'] ); ?>"><?php
 								// Pull right.
 								if ( $nectar_header_options['using_pr_menu'] === 'true' ) {
 									wp_nav_menu(
@@ -313,13 +307,10 @@ if( $nectar_header_format === 'centered-menu-bottom-bar' &&
 								nectar_hook_before_button_menu_items();
 
 								nectar_header_button_items();
-								?>
-
-							</ul>
+								?></ul>
 
 							<?php
-							if ( ! empty( $nectar_options['enable_social_in_header'] ) &&
-							$nectar_options['enable_social_in_header'] === '1' &&
+							if ( function_exists('nectar_header_social_icons_has_items') && nectar_header_social_icons_has_items() &&
 							$nectar_header_options['using_secondary'] !== 'header_with_secondary' ) {
 
 								echo '<ul><li id="social-in-menu" class="button_social_group">';
@@ -334,8 +325,7 @@ if( $nectar_header_format === 'centered-menu-bottom-bar' &&
 				}
 				elseif ( $nectar_header_format === 'left-header' ) {
 
-					if ( ! empty( $nectar_options['enable_social_in_header'] ) &&
-					$nectar_options['enable_social_in_header'] === '1' &&
+					if ( function_exists('nectar_header_social_icons_has_items') && nectar_header_social_icons_has_items() &&
 					$nectar_header_options['using_secondary'] !== 'header_with_secondary' ) {
 						echo '<div class="button_social_group"><ul><li id="social-in-menu">';
 						nectar_header_social_icons( 'main-nav' );
