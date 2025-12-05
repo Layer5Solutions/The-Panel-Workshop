@@ -12,24 +12,6 @@ function salient_child_enqueue_styles() {
 		}
 }
 
-add_action('wp', function(){
-
-    if ( ! class_exists( 'YITH_WCAN' ) ) return;
-
-    if ( is_page_template( 'page-collection-left-sidebar.php' ) ) {
-
-        wp_enqueue_script(
-            'child-filter-fix',
-            get_stylesheet_directory_uri() . '/filter-fix.js',
-            array('jquery'),
-            '1.0.0',
-            true
-        );
-
-    }
-
-});
-
 
 /**
  * Register widget areas.
